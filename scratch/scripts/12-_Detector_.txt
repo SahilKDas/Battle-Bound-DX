@@ -1,0 +1,109 @@
+SPRITE: [Detector]
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+event_whenbroadcastreceived BROADCAST_OPTION='update'  # a~)
+looks_hide  # arh
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='Empty')  # Q7
+data_changevariableby VARIABLE='__timer' VALUE=('1')  # ari
+control_if CONDITION=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'__timer timer') NUM2=('0.1')))  # mL
+  SUBSTACK:
+    control_if CONDITION=(operator_gt OPERAND1=(variable:'__timer') OPERAND2=('5'))  # mN
+      SUBSTACK:
+        motion_gotoxy X=('0') Y=('0')  # ark
+        looks_switchcostumeto COSTUME=(looks_costume COSTUME='Fast framerate')  # Q9
+        looks_show  # arl
+        looks_gotofrontback FRONT_BACK='front'  # arm
+        looks_cleargraphiceffects  # arn
+        pen_clear  # aro
+        control_stop STOP_OPTION='all'  # a~/
+    data_setvariableto VARIABLE='__timer' VALUE=('0')  # arj
+    data_setvariableto VARIABLE='__timer timer' VALUE=(sensing_timer)  # arp
+control_if CONDITION=(operator_or OPERAND1=(operator_or OPERAND1=(sensing_mousedown) OPERAND2=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='any'))) OPERAND2=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(sensing_mousex) OPERAND2=(variable:'__mouse x'))) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(sensing_mousey) OPERAND2=(variable:'__mouse y')))))  # mM
+  SUBSTACK:
+    data_setvariableto VARIABLE='__AFK timer' VALUE=(sensing_timer)  # arq
+control_if CONDITION=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'__AFK timer') NUM2=('70')))  # mO
+  SUBSTACK:
+    motion_gotoxy X=('0') Y=('0')  # arw
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='kicked')  # Q*
+    looks_show  # arx
+    looks_cleargraphiceffects  # ary
+    looks_gotofrontback FRONT_BACK='front'  # arz
+    pen_clear  # arA
+    control_stop STOP_OPTION='all'  # a~`
+data_setvariableto VARIABLE='__mouse x' VALUE=(sensing_mousex)  # Q(
+data_setvariableto VARIABLE='__mouse y' VALUE=(sensing_mousey)  # Q+
+control_if CONDITION=(operator_equals OPERAND1=(variable:'e') OPERAND2=('1'))  # Q,
+  SUBSTACK:
+    motion_gotoxy X=('0') Y=('0')  # arB
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='reported')  # Q-
+    looks_show  # arC
+    looks_gotofrontback FRONT_BACK='front'  # arD
+    looks_cleargraphiceffects  # arE
+    pen_clear  # arF
+    control_stop STOP_OPTION='all'  # baa
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # baD
+looks_hide  # ar-
+motion_gotoxy X=('0') Y=('0')  # ar.
+looks_setsizeto SIZE=('100')  # ar/
+motion_pointindirection DIRECTION=('90')  # baE
+
+event_whenbroadcastreceived BROADCAST_OPTION='DELETE GAME CLONES'  # baF
+control_delete_this_clone  # baG
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # baH
+data_setvariableto VARIABLE='__AFK timer' VALUE=('0')  # ar:
+data_setvariableto VARIABLE='__timer timer' VALUE=('0')  # ar;
+data_setvariableto VARIABLE='__timer' VALUE=('0')  # baI
+
+event_whenbroadcastreceived BROADCAST_OPTION='Check screen ratio'  # bab
+procedures_call Check fencing and resolution   # arG
+motion_gotoxy X=('0') Y=('0')  # arH
+data_setvariableto VARIABLE='_x' VALUE=('0')  # arI
+data_setvariableto VARIABLE='_y' VALUE=('0')  # bac
+
+procedures_definition custom_block=(procedures_prototype Check fencing and resolution )  # arJ
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='Empty')  # Q.
+control_repeat TIMES=('3')  # Q/
+  SUBSTACK:
+    data_setvariableto VARIABLE='_x' VALUE=(operator_random FROM=('2000') TO=('3000'))  # Q:
+    data_setvariableto VARIABLE='_y' VALUE=(operator_random FROM=('2000') TO=('3000'))  # Q;
+    motion_gotoxy X=(variable:'_x') Y=(variable:'_y')  # bag
+control_if_else CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:'_x') OPERAND2=(motion_xposition)) OPERAND2=(operator_equals OPERAND1=(variable:'_y') OPERAND2=(motion_yposition)))  # bu
+  SUBSTACK:
+    data_setvariableto VARIABLE='Fencing?' VALUE=('0')  # arK
+    data_setvariableto VARIABLE='&Screen Length x' VALUE=('240')  # arO
+    data_setvariableto VARIABLE='&Screen Length y' VALUE=('180')  # arP
+    motion_gotoxy X=('0') Y=('0')  # arQ
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='fencing')  # Q?
+    looks_show  # arR
+    looks_gotofrontback FRONT_BACK='front'  # arS
+    looks_cleargraphiceffects  # arT
+    pen_clear  # arU
+    control_stop STOP_OPTION='all'  # bal
+  SUBSTACK2:
+    data_setvariableto VARIABLE='Fencing?' VALUE=('1')  # arL
+    data_setvariableto VARIABLE='&Screen Length x' VALUE=(motion_xposition)  # Q@
+    data_setvariableto VARIABLE='&Screen Length y' VALUE=(motion_yposition)  # arV
+control_if CONDITION=(operator_or OPERAND1=(operator_gt OPERAND1=(variable:'&Screen Length x') OPERAND2=('320')) OPERAND2=(operator_gt OPERAND1=(variable:'&Screen Length y') OPERAND2=('180')))  # mP
+  SUBSTACK:
+    data_setvariableto VARIABLE='&Screen Length x' VALUE=('320')  # arW
+    data_setvariableto VARIABLE='&Screen Length y' VALUE=('180')  # arX
+    motion_gotoxy X=('0') Y=('0')  # arY
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='big screen')  # Q^
+    looks_show  # arZ
+    looks_gotofrontback FRONT_BACK='front'  # ar0
+    looks_cleargraphiceffects  # ar1
+    pen_clear  # ar2
+    control_stop STOP_OPTION='all'  # bar
+data_setvariableto VARIABLE='i2' VALUE=(operator_divide NUM1=(variable:'&Screen Length x') NUM2=(variable:'&Screen Length y'))  # Q[
+control_if_else CONDITION=(operator_equals OPERAND1=(operator_subtract NUM1=(operator_multiply NUM1=(variable:'i2') NUM2=('9')) NUM2=('9')) OPERAND2=('0'))  # bv
+  SUBSTACK:
+    data_setvariableto VARIABLE='i' VALUE=(operator_join STRING1=('1') STRING2=(operator_join STRING1=(':') STRING2=('1')))  # ar4
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_contains STRING1=(operator_divide NUM1=(operator_multiply NUM1=(variable:'i2') NUM2=('9')) NUM2=(operator_subtract NUM1=(operator_multiply NUM1=(variable:'i2') NUM2=('9')) NUM2=('9'))) STRING2=('.'))  # mQ
+      SUBSTACK:
+        data_setvariableto VARIABLE='i' VALUE=(operator_join STRING1=(operator_round NUM=(operator_multiply NUM1=(variable:'i2') NUM2=('9'))) STRING2=(operator_join STRING1=(':') STRING2=('9')))  # ar8
+      SUBSTACK2:
+        data_setvariableto VARIABLE='i' VALUE=(operator_join STRING1=(operator_round NUM=(operator_divide NUM1=(operator_multiply NUM1=(variable:'i2') NUM2=('9')) NUM2=(operator_subtract NUM1=(operator_multiply NUM1=(variable:'i2') NUM2=('9')) NUM2=('9')))) STRING2=(operator_join STRING1=(':') STRING2=(operator_round NUM=(operator_divide NUM1=('9') NUM2=(operator_subtract NUM1=(operator_multiply NUM1=(variable:'i2') NUM2=('9')) NUM2=('9'))))))  # ar9
+data_setvariableto VARIABLE='Screen ratio' VALUE=(variable:'i')  # bat

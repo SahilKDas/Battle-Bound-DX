@@ -1,0 +1,484 @@
+SPRITE: [Introduction]
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+event_whenbroadcastreceived BROADCAST_OPTION='DELETE GAME CLONES'  # bdo
+looks_hide  # au(
+control_delete_this_clone  # bdp
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # bdm
+looks_hide  # bdn
+
+event_whenflagclicked  # bbf
+procedures_call Setup  # as(
+looks_hide  # bbg
+
+event_whenbroadcastreceived BROADCAST_OPTION='RESET'  # bc*
+data_setvariableto VARIABLE='prosjekt skjørt' VALUE=('0')  # bc+
+
+event_whenbroadcastreceived BROADCAST_OPTION='Introduction'  # baJ
+data_setvariableto VARIABLE='intro over' VALUE=('0')  # ar=
+data_setvariableto VARIABLE='Players Spectating' VALUE=('0')  # ar?
+data_setvariableto VARIABLE=';SCENE' VALUE=('introduction')  # ar@
+procedures_call Setup  # ar[
+control_if CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:'&Screen Length x') OPERAND2=('240')) OPERAND2=(operator_equals OPERAND1=(variable:'prosjekt skjørt') OPERAND2=('0')))  # mR
+  SUBSTACK:
+    looks_seteffectto EFFECT='GHOST' VALUE=('10')  # ar^
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='HAXXING')  # Q~
+    looks_show  # ar_
+    control_repeat_until CONDITION=(operator_and OPERAND1=(sensing_mousedown) OPERAND2=(operator_gt OPERAND1=(sensing_mousey) OPERAND2=('-110')))  # mS
+      SUBSTACK:
+        control_if_else CONDITION=(operator_lt OPERAND1=(sensing_mousey) OPERAND2=('-110'))  # mT
+          SUBSTACK:
+            data_showlist LIST='Turbowarp Link:'  # baP
+          SUBSTACK2:
+            data_hidelist LIST='Turbowarp Link:'  # baQ
+    sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # Ra
+    looks_hide  # ar|
+    data_hidelist LIST='Turbowarp Link:'  # baT
+procedures_call Create clone %s id=('skip')  # ar]
+event_broadcast BROADCAST_INPUT=('intro music')  # ar}
+procedures_call Setup  # ar~
+control_wait DURATION=('1')  # asa
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='NFE')  # Rc
+control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # mU
+  SUBSTACK:
+    looks_hide  # asc
+    control_stop STOP_OPTION='this script'  # baW
+looks_show  # asb
+procedures_call Ghost %s Costume change %s long=('-10') costume=('0')  # asd
+control_wait DURATION=('1.3')  # ase
+procedures_call Ghost %s Costume change %s long=('10') costume=('0')  # asf
+control_wait DURATION=('1.4')  # asg
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='special thanks')  # Rd
+procedures_call Ghost %s Costume change %s long=('-10') costume=('0')  # ash
+control_wait DURATION=('1.5')  # asi
+procedures_call Ghost %s Costume change %s long=('10') costume=('0')  # asj
+control_wait DURATION=('1.5')  # ask
+control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # mV
+  SUBSTACK:
+    looks_hide  # asm
+    control_stop STOP_OPTION='this script'  # baZ
+looks_show  # asl
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='waiting for')  # Re
+procedures_call Ghost %s Costume change %s long=('-5') costume=('0')  # asn
+control_wait DURATION=('1')  # aso
+control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # mW
+  SUBSTACK:
+    looks_hide  # asq
+    control_stop STOP_OPTION='this script'  # ba2
+procedures_call Ghost %s Costume change %s long=('5') costume=('0')  # asp
+control_wait DURATION=('1.4')  # asr
+control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # mX
+  SUBSTACK:
+    looks_hide  # ast
+    control_stop STOP_OPTION='this script'  # ba4
+looks_setsizeto SIZE=('120')  # ass
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='presents')  # Rf
+control_repeat TIMES=('60')  # Rg
+  SUBSTACK:
+    looks_changeeffectby EFFECT='GHOST' CHANGE=('-5')  # asv
+    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('10'))  # asw
+procedures_call Ghost %s Costume change %s long=('10') costume=('0')  # asu
+control_wait DURATION=('1.5')  # asz
+control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # mY
+  SUBSTACK:
+    looks_hide  # asB
+    control_stop STOP_OPTION='this script'  # ba8
+looks_setsizeto SIZE=('160')  # asA
+looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # asC
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='Battle bound')  # Rh
+control_repeat TIMES=('100')  # Ri
+  SUBSTACK:
+    looks_changeeffectby EFFECT='GHOST' CHANGE=('-2')  # asE
+    looks_changeeffectby EFFECT='BRIGHTNESS' CHANGE=('-1')  # asF
+    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('16'))  # asG
+control_wait DURATION=('1')  # asD
+control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # mZ
+  SUBSTACK:
+    looks_hide  # asK
+    control_stop STOP_OPTION='this script'  # ba%
+looks_setsizeto SIZE=('100')  # asJ
+control_repeat TIMES=('10')  # Rj
+  SUBSTACK:
+    looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # asM
+    looks_changesizeby CHANGE=('-0.5')  # ba(
+looks_hide  # asL
+procedures_call Setup  # asN
+control_wait DURATION=('1.5')  # asO
+control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # m0
+  SUBSTACK:
+    looks_hide  # asQ
+    control_stop STOP_OPTION='this script'  # ba*
+procedures_call Create clone %s id=('info')  # asP
+procedures_call Create clone %s id=('fullscreen')  # asR
+data_setvariableto VARIABLE='Players Spectating' VALUE=('1')  # asS
+control_repeat_until CONDITION=(operator_equals OPERAND1=(variable:'Players Spectating') OPERAND2=('0'))  # Rk
+  SUBSTACK:
+    control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # m1
+      SUBSTACK:
+        looks_hide  # asT
+        control_stop STOP_OPTION='this script'  # ba-
+    control_if CONDITION=(operator_equals OPERAND1=(operator_random FROM=('1') TO=('8')) OPERAND2=('1'))  # Rl
+      SUBSTACK:
+        procedures_call Create clone %s id=('particles')  # ba.
+
+procedures_definition custom_block=(procedures_prototype Ghost %s Costume change %s)  # asZ
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:'intro over') OPERAND2=('0'))  # m2
+  SUBSTACK:
+    control_if_else CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='costume') OPERAND2=('0'))  # m3
+      SUBSTACK:
+        control_if_else CONDITION=(operator_gt OPERAND1=(argument_reporter_string_number VALUE='long') OPERAND2=('0'))  # bw
+          SUBSTACK:
+            looks_seteffectto EFFECT='GHOST' VALUE=('0')  # ba^
+          SUBSTACK2:
+            looks_seteffectto EFFECT='GHOST' VALUE=('100')  # ba_
+        control_repeat TIMES=(operator_round NUM=(operator_divide NUM1=('100') NUM2=(operator_mathop OPERATOR='abs' NUM=(argument_reporter_string_number VALUE='long'))))  # Rn
+          SUBSTACK:
+            looks_changeeffectby EFFECT='GHOST' CHANGE=(argument_reporter_string_number VALUE='long')  # as3
+      SUBSTACK2:
+        control_repeat TIMES=(operator_round NUM=(operator_divide NUM1=('100') NUM2=(argument_reporter_string_number VALUE='long')))  # m4
+          SUBSTACK:
+            looks_changeeffectby EFFECT='GHOST' CHANGE=(argument_reporter_string_number VALUE='long')  # as7
+        looks_switchcostumeto COSTUME=(operator_add NUM1=(looks_costumenumbername NUMBER_NAME='number') NUM2=(argument_reporter_string_number VALUE='costume'))  # m5
+        control_repeat TIMES=(operator_round NUM=(operator_divide NUM1=('100') NUM2=(argument_reporter_string_number VALUE='long')))  # Ro
+          SUBSTACK:
+            looks_changeeffectby EFFECT='GHOST' CHANGE=(operator_multiply NUM1=(argument_reporter_string_number VALUE='long') NUM2=('-1'))  # as!
+  SUBSTACK2:
+    looks_hide  # ba[
+
+procedures_definition custom_block=(procedures_prototype Setup)  # asV
+motion_gotoxy X=('0') Y=('0')  # asW
+motion_pointindirection DIRECTION=('90')  # asX
+looks_cleargraphiceffects  # asY
+looks_setsizeto SIZE=('100')  # ba;
+
+event_whenbroadcastreceived BROADCAST_OPTION='Info.click'  # bc4
+control_if CONDITION=(operator_gt OPERAND1=(variable:'__ID') OPERAND2=(''))  # m?
+  SUBSTACK:
+    control_delete_this_clone  # bc6
+control_stop STOP_OPTION='other scripts in sprite'  # auS
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='info-0')  # R^
+looks_show  # auT
+procedures_call Create clone %s id=('next')  # auU
+procedures_call Create clone %s id=('back')  # auV
+data_setvariableto VARIABLE='Players Spectating' VALUE=('0')  # auW
+procedures_call Ghost %s Costume change %s long=('-10') costume=('0')  # auX
+control_repeat_until CONDITION=(operator_gt OPERAND1=(variable:'Players Spectating') OPERAND2=('9'))  # R_
+  SUBSTACK:
+    looks_switchcostumeto COSTUME=(operator_join STRING1=('info-') STRING2=(variable:'Players Spectating'))  # m@
+    control_if CONDITION=(operator_equals OPERAND1=(operator_random FROM=('1') TO=('6')) OPERAND2=('1'))  # m[
+      SUBSTACK:
+        procedures_call Create clone %s id=('particles')  # bc#
+    control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # R`
+      SUBSTACK:
+        looks_hide  # auZ
+        control_stop STOP_OPTION='this script'  # bc)
+
+event_whenbroadcastreceived BROADCAST_OPTION='MENU'  # bcZ
+control_if CONDITION=(operator_contains STRING1=(variable:'__ID') STRING2=('percent'))  # m=
+  SUBSTACK:
+    control_delete_this_clone  # bc1
+control_if CONDITION=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=(''))  # R]
+  SUBSTACK:
+    looks_hide  # bc3
+
+procedures_definition custom_block=(procedures_prototype Create clone %s)  # auQ
+data_setvariableto VARIABLE='__ID' VALUE=(argument_reporter_string_number VALUE='id')  # R@
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # R[
+data_setvariableto VARIABLE='__ID' VALUE=('')  # bcX
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # bdk
+procedures_call Setup  # au#
+looks_hide  # au%
+control_stop STOP_OPTION='other scripts in sprite'  # bdl
+
+control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=('transition')))  # au9
+  SUBSTACK:
+    control_delete_this_clone  # bdi
+
+event_whenbroadcastreceived BROADCAST_OPTION='stop intro music'  # bc,
+looks_gotofrontback FRONT_BACK='back'  # bc-
+
+control_start_as_clone  # bbh
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=('skip'))  # m6
+  SUBSTACK:
+    procedures_call Setup  # as)
+    control_forever  # as*
+      SUBSTACK:
+        looks_show  # as+
+        looks_switchcostumeto COSTUME=(looks_costume COSTUME='skip')  # Rq
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Players Spectating') OPERAND2=('0'))  # bx
+          SUBSTACK:
+            motion_gotoxy X=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=(operator_add NUM1=(operator_divide NUM1=('44') NUM2=('2')) NUM2=('4'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=(operator_divide NUM1=('20') NUM2=('2')) NUM2=('4')))  # Rr
+          SUBSTACK2:
+            motion_changexby DX=(operator_divide NUM1=(operator_subtract NUM1=('0') NUM2=(motion_xposition)) NUM2=('7'))  # Rs
+            motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('-24') NUM2=(motion_yposition)) NUM2=('7'))  # as/
+        control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # by
+          SUBSTACK:
+            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # as[
+            control_if CONDITION=(sensing_mousedown)  # Rv
+              SUBSTACK:
+                procedures_call Create clone %s id=('transition')  # as]
+                sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # Rw
+                control_delete_this_clone  # bbt
+          SUBSTACK2:
+            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # bbq
+        control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # Ru
+          SUBSTACK:
+            looks_hide  # as^
+            control_delete_this_clone  # bbw
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=('transition'))  # m7
+      SUBSTACK:
+        procedures_call Setup  # as_
+        looks_cleargraphiceffects  # as`
+        looks_setsizeto SIZE=('100')  # as{
+        looks_gotofrontback FRONT_BACK='front'  # as|
+        data_setvariableto VARIABLE='intro over' VALUE=('1')  # as}
+        control_stop STOP_OPTION='other scripts in sprite'  # as~
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'prosjekt skjørt') OPERAND2=('0'))  # bz
+          SUBSTACK:
+            data_setvariableto VARIABLE='load percent' VALUE=('0')  # ata
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='4:3 Load')  # Ry
+            looks_show  # atb
+            event_broadcast BROADCAST_INPUT=('stop intro music')  # atc
+            looks_gotofrontback FRONT_BACK='front'  # atd
+            procedures_call Create clone %s id=('1percent')  # ate
+            procedures_call Create clone %s id=('2percent')  # atf
+            procedures_call Create clone %s id=('3percent')  # atg
+            procedures_call Create clone %s id=('4percent')  # ath
+            event_broadcastandwait BROADCAST_INPUT=('Load Assets')  # ati
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # Rz
+            event_broadcast BROADCAST_INPUT=('MENU')  # atj
+            looks_cleargraphiceffects  # atk
+            looks_gotofrontback FRONT_BACK='front'  # atl
+            control_repeat TIMES=('10')  # RA
+              SUBSTACK:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # RB
+                looks_show  # atm
+                looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # atn
+                looks_gotofrontback FRONT_BACK='front'  # bbE
+            control_delete_this_clone  # bbC
+          SUBSTACK2:
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # Rx
+            looks_show  # ato
+            looks_seteffectto EFFECT='GHOST' VALUE=('100')  # atp
+            event_broadcast BROADCAST_INPUT=('stop intro music')  # atq
+            control_repeat TIMES=('10')  # RC
+              SUBSTACK:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # RD
+                looks_show  # ats
+                looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # att
+                looks_gotofrontback FRONT_BACK='front'  # bbH
+            control_wait DURATION=('1')  # atr
+            event_broadcast BROADCAST_INPUT=('MENU')  # atu
+            looks_gotofrontback FRONT_BACK='front'  # atv
+            control_repeat TIMES=('10')  # RE
+              SUBSTACK:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # RF
+                looks_show  # atw
+                looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # atx
+                looks_gotofrontback FRONT_BACK='front'  # bbK
+            control_delete_this_clone  # bbI
+        control_stop STOP_OPTION='other scripts in sprite'  # bby
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=('info'))  # m8
+          SUBSTACK:
+            looks_show  # aty
+            procedures_call Setup  # atz
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='info')  # RG
+            motion_gotoxy X=('0') Y=('0')  # atA
+            looks_seteffectto EFFECT='GHOST' VALUE=('100')  # atB
+            looks_gotofrontback FRONT_BACK='front'  # atC
+            control_repeat TIMES=('10')  # RH
+              SUBSTACK:
+                looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # bbN
+            control_forever  # atD
+              SUBSTACK:
+                looks_show  # atE
+                procedures_call Setup  # atF
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='info')  # RI
+                motion_gotoxy X=('0') Y=('0')  # atG
+                control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # bA
+                  SUBSTACK:
+                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # atI
+                    control_if CONDITION=(sensing_mousedown)  # RK
+                      SUBSTACK:
+                        sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # RL
+                        event_broadcast BROADCAST_INPUT=('Info.click')  # atJ
+                        control_delete_this_clone  # bbT
+                  SUBSTACK2:
+                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # bbP
+                control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # RJ
+                  SUBSTACK:
+                    looks_hide  # atK
+                    control_delete_this_clone  # bbV
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=('fullscreen'))  # m9
+              SUBSTACK:
+                looks_show  # atL
+                procedures_call Setup  # atM
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='Fullscreen recommended')  # RM
+                motion_gotoxy X=('0') Y=('90')  # atN
+                looks_seteffectto EFFECT='GHOST' VALUE=('100')  # atO
+                looks_gotofrontback FRONT_BACK='front'  # atP
+                control_repeat TIMES=('6')  # RN
+                  SUBSTACK:
+                    looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # bbY
+                control_forever  # atQ
+                  SUBSTACK:
+                    control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # RO
+                      SUBSTACK:
+                        looks_hide  # atR
+                        control_delete_this_clone  # bb0
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=('next'))  # m!
+                  SUBSTACK:
+                    looks_show  # atS
+                    procedures_call Setup  # atT
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='next')  # RP
+                    motion_gotoxy X=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=(operator_add NUM1=(operator_divide NUM1=('44') NUM2=('2')) NUM2=('4'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=(operator_divide NUM1=('20') NUM2=('2')) NUM2=('4')))  # m%
+                    looks_seteffectto EFFECT='GHOST' VALUE=('100')  # atU
+                    looks_gotofrontback FRONT_BACK='front'  # atY
+                    control_repeat TIMES=('10')  # RR
+                      SUBSTACK:
+                        looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # bb6
+                    control_forever  # atZ
+                      SUBSTACK:
+                        looks_show  # at0
+                        motion_gotoxy X=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=(operator_add NUM1=(operator_divide NUM1=('44') NUM2=('2')) NUM2=('4'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=(operator_divide NUM1=('20') NUM2=('2')) NUM2=('4')))  # m(
+                        control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # bB
+                          SUBSTACK:
+                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # at5
+                            control_if CONDITION=(operator_and OPERAND1=(sensing_mousedown) OPERAND2=(operator_lt OPERAND1=(variable:'Players Spectating') OPERAND2=('10')))  # RT
+                              SUBSTACK:
+                                sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # RV
+                                data_changevariableby VARIABLE='Players Spectating' VALUE=('1')  # at6
+                                control_if CONDITION=(operator_gt OPERAND1=(variable:'Players Spectating') OPERAND2=('9'))  # m)
+                                  SUBSTACK:
+                                    procedures_call Create clone %s id=('transition')  # bb+
+                                control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_not OPERAND=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))))  # RW
+                                  SUBSTACK:
+                                    control_if_else CONDITION=(operator_gt OPERAND1=(variable:'Players Spectating') OPERAND2=('8'))  # m*
+                                      SUBSTACK:
+                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='start')  # RY
+                                        looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('110') NUM2=(looks_size)) NUM2=('3'))  # at!
+                                      SUBSTACK2:
+                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='next')  # RZ
+                                        looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # at(
+                          SUBSTACK2:
+                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # bb!
+                        control_if_else CONDITION=(operator_gt OPERAND1=(variable:'Players Spectating') OPERAND2=('8'))  # bC
+                          SUBSTACK:
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='start')  # R1
+                            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('110') NUM2=(looks_size)) NUM2=('3'))  # at+
+                          SUBSTACK2:
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='next')  # R2
+                            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # at.
+                        control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # R0
+                          SUBSTACK:
+                            looks_hide  # at;
+                            control_delete_this_clone  # bb`
+                  SUBSTACK2:
+                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=('back'))  # m#
+                      SUBSTACK:
+                        procedures_call Setup  # at=
+                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='back')  # R3
+                        motion_gotoxy X=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=(operator_add NUM1=(operator_add NUM1=('44') NUM2=(operator_divide NUM1=('44') NUM2=('2'))) NUM2=('4'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=(operator_divide NUM1=('20') NUM2=('2')) NUM2=('4')))  # m,
+                        control_forever  # at?
+                          SUBSTACK:
+                            looks_show  # at_
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='back')  # R5
+                            motion_gotoxy X=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=(operator_add NUM1=(operator_add NUM1=('44') NUM2=(operator_divide NUM1=('44') NUM2=('2'))) NUM2=('4'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=(operator_divide NUM1=('20') NUM2=('2')) NUM2=('4')))  # m-
+                            control_if_else CONDITION=(operator_gt OPERAND1=(variable:'Players Spectating') OPERAND2=('0'))  # bD
+                              SUBSTACK:
+                                control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # m.
+                                  SUBSTACK:
+                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # aua
+                                    control_if CONDITION=(operator_and OPERAND1=(sensing_mousedown) OPERAND2=(operator_lt OPERAND1=(variable:'Players Spectating') OPERAND2=('10')))  # R7
+                                      SUBSTACK:
+                                        data_changevariableby VARIABLE='Players Spectating' VALUE=('-1')  # aub
+                                        sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # R9
+                                        control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_not OPERAND=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))))  # R!
+                                          SUBSTACK:
+                                            control_if_else CONDITION=(operator_gt OPERAND1=(variable:'Players Spectating') OPERAND2=('0'))  # bF
+                                              SUBSTACK:
+                                                looks_show  # bcp
+                                              SUBSTACK2:
+                                                looks_hide  # bcq
+                                            control_if_else CONDITION=(operator_gt OPERAND1=(variable:'Players Spectating') OPERAND2=('8'))  # m/
+                                              SUBSTACK:
+                                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('86') NUM2=(looks_size)) NUM2=('3'))  # auf
+                                              SUBSTACK2:
+                                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # aug
+                                  SUBSTACK2:
+                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # bch
+                              SUBSTACK2:
+                                looks_hide  # bcg
+                            control_if_else CONDITION=(operator_gt OPERAND1=(variable:'Players Spectating') OPERAND2=('8'))  # bE
+                              SUBSTACK:
+                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('90') NUM2=(looks_size)) NUM2=('3'))  # aul
+                              SUBSTACK2:
+                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # aum
+                            control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # R%
+                              SUBSTACK:
+                                looks_hide  # aur
+                                control_delete_this_clone  # bcy
+                      SUBSTACK2:
+                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'__ID') OPERAND2=('particles'))  # m+
+                          SUBSTACK:
+                            procedures_call Setup  # aus
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='4:3 Transition')  # R)
+                            looks_setsizeto SIZE=(operator_random FROM=('30') TO=('50'))  # R*
+                            motion_gotoxy X=(operator_random FROM=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('20')) TO=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=('50'))) Y=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1'))  # m:
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='spark')  # R+
+                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=(operator_random FROM=('-30') TO=('20'))  # R-
+                            looks_show  # auu
+                            motion_pointindirection DIRECTION=('-45')  # auv
+                            motion_turnright DEGREES=(operator_random FROM=('-20') TO=('20'))  # R.
+                            data_setvariableto VARIABLE='_momentum' VALUE=(operator_random FROM=('10') TO=('20'))  # R/
+                            control_forever  # auw
+                              SUBSTACK:
+                                motion_movesteps STEPS=(variable:'_momentum')  # aux
+                                data_changevariableby VARIABLE='_momentum' VALUE=(operator_divide NUM1=(operator_subtract NUM1=('8') NUM2=(variable:'_momentum')) NUM2=('20'))  # R:
+                                control_if CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_edge_'))  # m;
+                                  SUBSTACK:
+                                    control_repeat TIMES=('1')  # R=
+                                      SUBSTACK:
+                                        motion_movesteps STEPS=(variable:'_momentum')  # bcM
+                                    control_delete_this_clone  # bcL
+                                control_if CONDITION=(operator_gt OPERAND1=(variable:'intro over') OPERAND2=('0'))  # R;
+                                  SUBSTACK:
+                                    looks_hide  # auA
+                                    control_delete_this_clone  # bcO
+                          SUBSTACK2:
+                            control_if_else CONDITION=(operator_contains STRING1=(variable:'__ID') STRING2=('percent'))  # R(
+                              SUBSTACK:
+                                looks_show  # auB
+                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='4:3 Transition')  # R?
+                                looks_setsizeto SIZE=('60')  # auC
+                                looks_seteffectto EFFECT='GHOST' VALUE=('40')  # auD
+                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # auE
+                                control_forever  # auF
+                                  SUBSTACK:
+                                    looks_gotofrontback FRONT_BACK='front'  # auG
+                                    procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(operator_letter_of LETTER=('1') STRING=(variable:'__ID')) value=(operator_join STRING1=(operator_round NUM=(operator_multiply NUM1=(operator_divide NUM1=(variable:'load percent') NUM2=('225')) NUM2=('100'))) STRING2=('%')) x=(operator_multiply NUM1=(operator_subtract NUM1=(operator_length STRING=(operator_join STRING1=(operator_round NUM=(operator_multiply NUM1=(operator_divide NUM1=(variable:'load percent') NUM2=('221')) NUM2=('100'))) STRING2=('%'))) NUM2=('1')) NUM2=('-6')) y=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-0.5')) distance=('12') LR=('R')  # bG
+
+data_setvariableto VARIABLE='hide asset load' VALUE=('1')  # beS
+
+procedures_definition custom_block=(procedures_prototype Number - Digit %s value %s x / y %s %s distance %s left / right direction %s)  # au0
+motion_pointindirection DIRECTION=('90')  # au1
+control_if_else CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='LR') OPERAND2=('L'))  # bH
+  SUBSTACK:
+    motion_gotoxy X=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='digit') NUM2=(operator_length STRING=(argument_reporter_string_number VALUE='value'))) NUM2=(argument_reporter_string_number VALUE='distance'))) Y=(argument_reporter_string_number VALUE='y')  # R{
+  SUBSTACK2:
+    control_if CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='LR') OPERAND2=('R'))  # R|
+      SUBSTACK:
+        motion_gotoxy X=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='digit') NUM2=('1')) NUM2=(argument_reporter_string_number VALUE='distance'))) Y=(argument_reporter_string_number VALUE='y')  # Sb
+control_if_else CONDITION=(operator_lt OPERAND1=(operator_length STRING=(argument_reporter_string_number VALUE='value')) OPERAND2=(argument_reporter_string_number VALUE='digit'))  # m]
+  SUBSTACK:
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='_0')  # Sf
+    looks_hide  # bdd
+  SUBSTACK2:
+    looks_show  # au6
+    looks_switchcostumeto COSTUME=(operator_join STRING1=('_') STRING2=(operator_letter_of LETTER=(argument_reporter_string_number VALUE='digit') STRING=(argument_reporter_string_number VALUE='value')))  # Sg

@@ -1,0 +1,163 @@
+SPRITE: [PLATFORM]
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+event_whenbroadcastreceived BROADCAST_OPTION='DELETE GAME CLONES'  # a86
+looks_hide  # [5
+control_delete_this_clone  # a87
+
+event_whenbroadcastreceived BROADCAST_OPTION='Load Assets'  # a8^
+control_if CONDITION=(operator_not)  # iF
+  SUBSTACK:
+    control_delete_this_clone  # a8`
+looks_setsizeto SIZE=('100')  # [*
+looks_show  # [+
+looks_seteffectto EFFECT='GHOST' VALUE=(operator_multiply NUM1=(variable:'hide asset load') NUM2=('100'))  # Eb
+motion_gotoxy X=('0') Y=('0')  # [,
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='1--1.-1')  # Ec
+control_repeat TIMES=('1')  # Ed
+  SUBSTACK:
+    looks_nextcostume  # a8}
+control_repeat_until CONDITION=(operator_equals OPERAND1=(looks_costumenumbername NUMBER_NAME='number') OPERAND2=('1'))  # iG
+  SUBSTACK:
+    looks_nextcostume  # a8~
+looks_cleargraphiceffects  # [-
+looks_hide  # a9b
+
+data_setvariableto VARIABLE=';KART' VALUE=('0')  # bex
+
+procedures_call Create clone %s %s %s other clone=('door') x=('1035') y=('-43')  # a9c
+procedures_call Create clone %s %s %s other clone=('door') x=('1756') y=('-43')  # [/
+procedures_call Create clone %s %s %s other clone=('door') x=('2475') y=('-43')  # [:
+procedures_call Create clone %s %s %s other clone=('door') x=('3087') y=('-43')  # [;
+procedures_call Create clone %s %s %s other clone=('door') x=('1756') y=('-183')  # [=
+procedures_call Create clone %s %s %s other clone=('door') x=('2475') y=('-183')  # a9d
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # a84
+motion_gotoxy X=('0') Y=('0')  # [1
+motion_pointindirection DIRECTION=('90')  # [2
+looks_hide  # [3
+looks_setsizeto SIZE=('100')  # [4
+looks_gotofrontback FRONT_BACK='back'  # a85
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start Project'  # a82
+control_delete_this_clone  # a83
+
+procedures_definition custom_block=(procedures_prototype Create clone %s %s %s)  # [0
+data_setvariableto VARIABLE='_:ID:' VALUE=(argument_reporter_string_number VALUE='other clone')  # D=
+data_setvariableto VARIABLE='_x' VALUE=(argument_reporter_string_number VALUE='x')  # D?
+data_setvariableto VARIABLE='_y' VALUE=(argument_reporter_string_number VALUE='y')  # D@
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D[
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a80
+
+procedures_definition custom_block=(procedures_prototype xyID %s %s)  # [Y
+data_setvariableto VARIABLE='_x' VALUE=(argument_reporter_string_number VALUE='x')  # D:
+data_setvariableto VARIABLE='_y' VALUE=(argument_reporter_string_number VALUE='y')  # [Z
+
+procedures_definition custom_block=(procedures_prototype Create 3:3 clones)  # [E
+procedures_call Size %s size=('150')  # [F
+data_setvariableto VARIABLE='(grid x *)' VALUE=(operator_multiply NUM1=('480') NUM2=(operator_multiply NUM1=(looks_size) NUM2=('0.01')))  # D9
+data_setvariableto VARIABLE='(grid y *)' VALUE=(operator_multiply NUM1=('360') NUM2=(operator_multiply NUM1=(looks_size) NUM2=('0.01')))  # D!
+data_setvariableto VARIABLE='_:ID:' VALUE=('platform')  # [I
+procedures_call xyID %s %s x=('1') y=('-1')  # [L
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D#
+procedures_call xyID %s %s x=('1') y=('0')  # [M
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D%
+procedures_call xyID %s %s x=('1') y=('1')  # [N
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D(
+procedures_call xyID %s %s x=('0') y=('-1')  # [O
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D)
+procedures_call xyID %s %s x=('0') y=('0')  # [P
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D*
+procedures_call xyID %s %s x=('0') y=('1')  # [Q
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D+
+procedures_call xyID %s %s x=('-1') y=('-1')  # [R
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D,
+procedures_call xyID %s %s x=('-1') y=('0')  # [S
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D-
+procedures_call xyID %s %s x=('-1') y=('1')  # [T
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # D.
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # [U
+looks_setsizeto SIZE=('100')  # a8M
+
+data_setvariableto VARIABLE=';KART' VALUE=('1')  # bey
+
+procedures_definition custom_block=(procedures_prototype Position %s %s Scroll %s %s)  # [r
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SCREEN')  # DX
+data_setvariableto VARIABLE='_index' VALUE=(operator_join STRING1=(operator_add NUM1=(operator_divide NUM1=(variable:'Grid y') NUM2=(variable:'(grid y *)')) NUM2=(variable:'_y')) STRING2=(operator_join STRING1=('.') STRING2=(operator_add NUM1=(operator_divide NUM1=(variable:'Grid x') NUM2=(variable:'(grid x *)')) NUM2=(variable:'_x'))))  # DY
+motion_gotoxy X=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='scroll x')) Y=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='scroll y'))  # iw
+control_if_else CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'_x') OPERAND2=('')) OPERAND2=(operator_gt OPERAND1=(variable:'_y') OPERAND2=('')))  # ix
+  SUBSTACK:
+    control_if_else CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='scroll x'))) OPERAND2=(operator_round NUM=(motion_xposition))) OPERAND2=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='scroll y'))) OPERAND2=(operator_round NUM=(motion_yposition))))  # iy
+      SUBSTACK:
+        looks_switchcostumeto COSTUME=(operator_join STRING1=(operator_join STRING1=(variable:';KART') STRING2=('-')) STRING2=(variable:'_index'))  # iA
+        looks_cleargraphiceffects  # [z
+        control_if_else CONDITION=(operator_equals OPERAND1=(operator_join STRING1=(operator_join STRING1=(variable:';KART') STRING2=('-')) STRING2=(variable:'_index')) OPERAND2=(looks_costumenumbername NUMBER_NAME='name'))  # iB
+          SUBSTACK:
+            looks_show  # a8t
+          SUBSTACK2:
+            looks_hide  # a8u
+      SUBSTACK2:
+        looks_hide  # a8k
+  SUBSTACK2:
+    looks_switchcostumeto COSTUME=(operator_join STRING1=('bitmap_') STRING2=(variable:';KART'))  # iz
+    looks_show  # [C
+    looks_cleargraphiceffects  # [D
+    looks_seteffectto EFFECT='GHOST' VALUE=('50')  # a8z
+
+event_whenbroadcastreceived BROADCAST_OPTION='update'  # a7-
+control_if CONDITION=(operator_gt OPERAND1=(variable:'_:ID:') OPERAND2=(''))  # DQ
+  SUBSTACK:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('platform'))  # iv
+      SUBSTACK:
+        procedures_call Position %s %s Scroll %s %s x=(operator_add NUM1=(variable:'Grid x') NUM2=(operator_multiply NUM1=(variable:'(grid x *)') NUM2=(variable:'_x'))) y=(operator_add NUM1=(variable:'Grid y') NUM2=(operator_multiply NUM1=(variable:'(grid y *)') NUM2=(variable:'_y'))) scroll x=(variable:';CAM X') scroll y=(variable:';CAM Y')  # DR
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('door'))  # DS
+          SUBSTACK:
+            looks_cleargraphiceffects  # [j
+            procedures_call Normal Position %s %s scroll %s %s x=(variable:'_x') y=(operator_add NUM1=(variable:'_y') NUM2=(variable:'_door.y.offset')) sx=(variable:';CAM X') sy=(variable:';CAM Y')  # DT
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Door.HITBOX')  # DU
+            control_if_else CONDITION=(operator_or OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Player]')) OPERAND2=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Opponents]')))  # aW
+              SUBSTACK:
+                data_changevariableby VARIABLE='_door.y.offset' VALUE=(operator_divide NUM1=(operator_subtract NUM1=('60') NUM2=(variable:'_door.y.offset')) NUM2=('20'))  # [l
+              SUBSTACK2:
+                data_changevariableby VARIABLE='_door.y.offset' VALUE=(operator_divide NUM1=(operator_subtract NUM1=('0') NUM2=(variable:'_door.y.offset')) NUM2=('10'))  # [m
+            looks_gotofrontback FRONT_BACK='back'  # [k
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Door')  # DW
+            procedures_call Map-clones %s your map=(variable:'_created for map.#')  # a7`
+
+procedures_definition custom_block=(procedures_prototype Normal Position %s %s scroll %s %s)  # [6
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SCREEN')  # D]
+motion_gotoxy X=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='sx')) Y=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='sy'))  # iD
+control_if_else CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='sx'))) OPERAND2=(operator_round NUM=(motion_xposition))) OPERAND2=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='sy'))) OPERAND2=(operator_round NUM=(motion_yposition))))  # iE
+  SUBSTACK:
+    looks_show  # a8,
+  SUBSTACK2:
+    looks_hide  # a8-
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # a7+
+looks_gotofrontback FRONT_BACK='front'  # @^
+looks_setsizeto SIZE=('100')  # @_
+looks_hide  # @`
+data_setvariableto VARIABLE='_door.y.offset' VALUE=('0')  # @{
+data_setvariableto VARIABLE='_move.position' VALUE=('0')  # @|
+procedures_call Create 3:3 clones  # @}
+data_setvariableto VARIABLE='_created for map.#' VALUE=('1')  # @~
+procedures_call Create clone %s %s %s other clone=('door') x=('405') y=('496')  # [a
+procedures_call Create clone %s %s %s other clone=('door') x=('1059') y=('496')  # [b
+procedures_call Create clone %s %s %s other clone=('door') x=('7582') y=('496')  # [c
+procedures_call Create clone %s %s %s other clone=('door') x=('8235') y=('496')  # [d
+procedures_call Create clone %s %s %s other clone=('door') x=('1601') y=('-1053')  # [e
+procedures_call Create clone %s %s %s other clone=('door') x=('1275') y=('-1053')  # [f
+procedures_call Create clone %s %s %s other clone=('door') x=('1601') y=('-780')  # [g
+procedures_call Create clone %s %s %s other clone=('door') x=('6824') y=('-780')  # a7,
+
+procedures_definition custom_block=(procedures_prototype Size %s)  # [V
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SIZE')  # D/
+looks_setsizeto SIZE=(argument_reporter_string_number VALUE='size')  # [X
+
+data_setvariableto VARIABLE=';Spill-Modus' VALUE=('1')  # bez
+
+procedures_definition custom_block=(procedures_prototype Map-clones %s)  # [#
+control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';KART') OPERAND2=(argument_reporter_string_number VALUE='your map')))  # Ea
+  SUBSTACK:
+    control_delete_this_clone  # a8[

@@ -1,0 +1,85 @@
+SPRITE: Stage
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+event_whenbroadcastreceived BROADCAST_OPTION='MENU'  # av9
+sound_stopallsounds  # S9
+sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('1'))  # nq
+data_setvariableto VARIABLE='music timer' VALUE=('0')  # S!
+data_setvariableto VARIABLE='soundtrack playing' VALUE=('0')  # S#
+control_repeat_until CONDITION=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('loading'))  # bL
+  SUBSTACK:
+    control_if CONDITION=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'music timer') NUM2=(operator_add NUM1=(data_itemoflist LIST='soundtrack length' INDEX=(variable:'soundtrack playing')) NUM2=('2'))))  # bM
+      SUBSTACK:
+        data_setvariableto VARIABLE='soundtrack playing' VALUE=('3')  # S%
+        sound_play SOUND_MENU=(variable:'soundtrack playing')  # nt
+        data_setvariableto VARIABLE='music timer' VALUE=(operator_round NUM=(sensing_timer))  # S*
+    control_if_else CONDITION=(data_listcontainsitem LIST=':CONTROLS:' ITEM=('reset'))  # bN
+      SUBSTACK:
+        sound_changevolumeby VOLUME=(operator_divide NUM1=(operator_subtract NUM1=(operator_divide NUM1=(data_itemoflist LIST=':SETTINGS:' INDEX=('1')) NUM2=('4')) NUM2=(sound_volume)) NUM2=('3'))  # S,
+      SUBSTACK2:
+        sound_changevolumeby VOLUME=(operator_divide NUM1=(operator_subtract NUM1=(data_itemoflist LIST=':SETTINGS:' INDEX=('1')) NUM2=(sound_volume)) NUM2=('4'))  # S-
+control_repeat TIMES=('10')  # nr
+  SUBSTACK:
+    sound_changevolumeby VOLUME=('-10')  # av;
+sound_stopallsounds  # av:
+
+event_whenflagclicked  # avA
+data_setvariableto VARIABLE='siste brukernavn' VALUE=(sensing_username)  # m~
+data_setvariableto VARIABLE='music timer' VALUE=('0')  # SG
+data_setvariableto VARIABLE='soundtrack playing' VALUE=('0')  # SH
+data_hidelist LIST='Turbowarp Link:'  # SI
+looks_switchbackdropto BACKDROP=(looks_backdrops BACKDROP='Black')  # nd
+pen_clear  # SJ
+event_broadcastandwait BROADCAST_INPUT=('Check screen ratio')  # SK
+data_setvariableto VARIABLE='DEV.MODE' VALUE=('0')  # SL
+event_broadcast BROADCAST_INPUT=('Green Flag')  # SM
+event_broadcast BROADCAST_INPUT=('Introduction')  # SN
+data_setvariableto VARIABLE='f' VALUE=('1')  # avI
+
+control_if CONDITION=(operator_equals OPERAND1=(variable:'f') OPERAND2=('0'))  # na
+  SUBSTACK:
+    data_setvariableto VARIABLE='siste brukernavn' VALUE=(sensing_username)  # SD
+control_if_else CONDITION=(operator_equals OPERAND1=(sensing_username) OPERAND2=(variable:'siste brukernavn'))  # nb
+  SUBSTACK2:
+    event_broadcast BROADCAST_INPUT=('DELETE GAME CLONES')  # SF
+    looks_switchbackdropto BACKDROP=(looks_backdrops BACKDROP='backdrop1')  # nc
+    control_stop STOP_OPTION='all'  # avE
+
+event_whenbroadcastreceived BROADCAST_OPTION='intro music'  # av=
+control_if CONDITION=(operator_equals OPERAND1=(variable:'DEV.MODE') OPERAND2=('0'))  # nw
+  SUBSTACK:
+    sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('1'))  # nx
+    sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='1')  # S;
+
+event_whenbroadcastreceived BROADCAST_OPTION='MENU'  # av_
+looks_switchbackdropto BACKDROP=(looks_backdrops BACKDROP='Black')  # S=
+
+event_whenbroadcastreceived BROADCAST_OPTION='update volume'  # avN
+sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('1'))  # SR
+
+event_whenbroadcastreceived BROADCAST_OPTION='update'  # avP
+looks_switchbackdropto BACKDROP=(variable:';KART')  # ng
+control_if_else CONDITION=(operator_lt OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('1')) OPERAND2=('1'))  # bI
+  SUBSTACK:
+    sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('1'))  # ST
+  SUBSTACK2:
+    control_if CONDITION=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'music timer') NUM2=(operator_add NUM1=(data_itemoflist LIST='soundtrack length' INDEX=(variable:'soundtrack playing')) NUM2=('5'))))  # bJ
+      SUBSTACK:
+        data_setvariableto VARIABLE='soundtrack playing' VALUE=(operator_random FROM=('1') TO=('2'))  # ni
+        sound_play SOUND_MENU=(variable:'soundtrack playing')  # nj
+        data_setvariableto VARIABLE='music timer' VALUE=(operator_round NUM=(sensing_timer))  # SW
+    control_if_else CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')) OPERAND2=(operator_lt OPERAND1=(variable:'::Spiller-liv') OPERAND2=('1')))  # bK
+      SUBSTACK:
+        sound_changevolumeby VOLUME=(operator_round NUM=(operator_divide NUM1=(operator_subtract NUM1=(operator_divide NUM1=(data_itemoflist LIST=':SETTINGS:' INDEX=('1')) NUM2=('3')) NUM2=(sound_volume)) NUM2=('4')))  # SY
+      SUBSTACK2:
+        sound_changevolumeby VOLUME=(operator_round NUM=(operator_divide NUM1=(operator_subtract NUM1=(data_itemoflist LIST=':SETTINGS:' INDEX=('1')) NUM2=(sound_volume)) NUM2=('4')))  # SZ
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # av4
+data_setvariableto VARIABLE='music timer' VALUE=(operator_round NUM=(sensing_timer))  # nn
+sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('1'))  # no
+data_setvariableto VARIABLE='soundtrack playing' VALUE=('2')  # S6
+sound_play SOUND_MENU=(variable:'soundtrack playing')  # np
+data_setvariableto VARIABLE='music timer' VALUE=(operator_round NUM=(sensing_timer))  # S7
+
+event_whenbroadcastreceived BROADCAST_OPTION='stop intro music'  # av]
+sound_stopallsounds  # av^

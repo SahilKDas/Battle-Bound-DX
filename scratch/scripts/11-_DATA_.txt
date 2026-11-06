@@ -1,0 +1,136 @@
+SPRITE: [DATA]
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+procedures_definition custom_block=(procedures_prototype Add controls to 1 variable %s)  # aqy
+data_setvariableto VARIABLE='_i' VALUE=('0')  # aqz
+data_setvariableto VARIABLE='_controls with (:)' VALUE=('')  # aqB
+control_repeat TIMES=(operator_length STRING=(argument_reporter_string_number VALUE='controls'))  # Qw
+  SUBSTACK:
+    data_changevariableby VARIABLE='_i' VALUE=('1')  # aqD
+    control_if CONDITION=(operator_equals OPERAND1=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='controls')) OPERAND2=(' '))  # mF
+      SUBSTACK:
+        data_setvariableto VARIABLE='__memory' VALUE=(operator_join STRING1=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('-5')) STRING=(argument_reporter_string_number VALUE='controls')) STRING2=(operator_join STRING1=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('-4')) STRING=(argument_reporter_string_number VALUE='controls')) STRING2=(operator_join STRING1=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('-3')) STRING=(argument_reporter_string_number VALUE='controls')) STRING2=(operator_join STRING1=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('-2')) STRING=(argument_reporter_string_number VALUE='controls')) STRING2=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('-1')) STRING=(argument_reporter_string_number VALUE='controls'))))))  # Qx
+        data_setvariableto VARIABLE='__memory2' VALUE=(operator_join STRING1=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('1')) STRING=(argument_reporter_string_number VALUE='controls')) STRING2=(operator_join STRING1=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('2')) STRING=(argument_reporter_string_number VALUE='controls')) STRING2=(operator_join STRING1=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('3')) STRING=(argument_reporter_string_number VALUE='controls')) STRING2=(operator_join STRING1=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('4')) STRING=(argument_reporter_string_number VALUE='controls')) STRING2=(operator_letter_of LETTER=(operator_add NUM1=(variable:'_i') NUM2=('5')) STRING=(argument_reporter_string_number VALUE='controls'))))))  # QD
+        control_if_else CONDITION=(operator_or OPERAND1=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'__memory') OPERAND2=('wheel')) OPERAND2=(operator_equals OPERAND1=(variable:'__memory') OPERAND2=('croll'))) OPERAND2=(operator_equals OPERAND1=(variable:'__memory2') OPERAND2=('arrow')))  # bt
+          SUBSTACK:
+            data_setvariableto VARIABLE='_controls with (:)' VALUE=(operator_join STRING1=(variable:'_controls with (:)') STRING2=('%'))  # aqU
+          SUBSTACK2:
+            data_setvariableto VARIABLE='_controls with (:)' VALUE=(operator_join STRING1=(variable:'_controls with (:)') STRING2=(':'))  # aqH
+        data_changevariableby VARIABLE='_i' VALUE=('1')  # a~e
+    data_setvariableto VARIABLE='_controls with (:)' VALUE=(operator_join STRING1=(variable:'_controls with (:)') STRING2=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='controls')))  # aqE
+
+procedures_definition custom_block=(procedures_prototype liste-sorterer %s)  # aqh
+data_setvariableto VARIABLE='temp' VALUE=('')  # aqi
+data_setvariableto VARIABLE='_i' VALUE=('0')  # aqk
+data_deletealloflist LIST='Liste-sorterer'  # aql
+control_forever  # aqm
+  SUBSTACK:
+    data_changevariableby VARIABLE='_i' VALUE=('1')  # aqn
+    control_if CONDITION=(operator_equals OPERAND1=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='informasjon')) OPERAND2=(':'))  # mE
+      SUBSTACK:
+        data_addtolist LIST='Liste-sorterer' ITEM=(variable:'temp')  # aqp
+        data_setvariableto VARIABLE='temp' VALUE=('')  # aqr
+        data_changevariableby VARIABLE='_i' VALUE=('1')  # a}{
+    control_if_else CONDITION=(operator_equals OPERAND1=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='informasjon')) OPERAND2=('%'))  # bs
+      SUBSTACK2:
+        data_setvariableto VARIABLE='temp' VALUE=(operator_join STRING1=(variable:'temp') STRING2=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='informasjon')))  # aqs
+      SUBSTACK:
+        data_setvariableto VARIABLE='temp' VALUE=(operator_join STRING1=(variable:'temp') STRING2=(' '))  # aqW
+    control_if CONDITION=(operator_equals OPERAND1=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='informasjon')) OPERAND2=(''))  # Qv
+      SUBSTACK:
+        data_addtolist LIST='Liste-sorterer' ITEM=(variable:'temp')  # aqw
+        control_stop STOP_OPTION='this script'  # a}~
+
+procedures_definition custom_block=(procedures_prototype set dekodert til spill)  # aqZ
+control_if CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST='Liste-sorterer' INDEX=(data_lengthoflist LIST='Liste-sorterer')) OPERAND2=('validkey'))  # QY
+  SUBSTACK:
+    data_setvariableto VARIABLE='_i' VALUE=('0')  # aq1
+    control_repeat TIMES=(data_lengthoflist LIST=':CONTROLS:')  # mH
+      SUBSTACK:
+        data_changevariableby VARIABLE='_i' VALUE=('1')  # aq4
+        data_replaceitemoflist LIST=':CONTROLS:' INDEX=(variable:'_i') ITEM=(data_itemoflist LIST='Liste-sorterer' INDEX=(variable:'_i'))  # aq5
+    data_setvariableto VARIABLE='__memory' VALUE=(variable:'_i')  # aq3
+    data_setvariableto VARIABLE='_i' VALUE=('0')  # aq6
+    control_repeat TIMES=(data_lengthoflist LIST='-INVENTORY')  # mI
+      SUBSTACK:
+        data_changevariableby VARIABLE='_i' VALUE=('1')  # aq8
+        data_replaceitemoflist LIST='-INVENTORY' INDEX=(variable:'_i') ITEM=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i')))  # aq9
+    data_changevariableby VARIABLE='_i' VALUE=('1')  # aq7
+    control_if CONDITION=(operator_and OPERAND2=(operator_lt OPERAND1=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))) OPERAND2=('13')) OPERAND1=(operator_gt OPERAND1=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))) OPERAND2=('0')))  # mJ
+      SUBSTACK:
+        data_setvariableto VARIABLE='::Cosmetics on head' VALUE=(operator_round NUM=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))))  # aq#
+    data_changevariableby VARIABLE='_i' VALUE=('1')  # aq)
+    control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))) OPERAND2=('-1')) OPERAND2=(operator_lt OPERAND1=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))) OPERAND2=('201')))  # mK
+      SUBSTACK:
+        data_setvariableto VARIABLE='::Farge' VALUE=(operator_round NUM=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))))  # QZ
+        data_setvariableto VARIABLE='CUSTOMIZED COLOR' VALUE=(variable:'::Farge')  # a~W
+    data_changevariableby VARIABLE='_i' VALUE=('1')  # aq:
+    control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))) OPERAND2=('-81')) OPERAND2=(operator_lt OPERAND1=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))) OPERAND2=('81')))  # Q2
+      SUBSTACK:
+        data_setvariableto VARIABLE='::Farge.lysstyrke' VALUE=(operator_round NUM=(data_itemoflist LIST='Liste-sorterer' INDEX=(operator_add NUM1=(variable:'__memory') NUM2=(variable:'_i'))))  # aq{
+
+event_whenbroadcastreceived BROADCAST_OPTION='RESET'  # a~3
+data_setvariableto VARIABLE='__memory' VALUE=('0')  # aq[
+data_setvariableto VARIABLE='__memory2' VALUE=('0')  # aq]
+data_setvariableto VARIABLE='_controls with (:)' VALUE=('0')  # aq^
+data_setvariableto VARIABLE='_i' VALUE=('0')  # aq_
+data_setvariableto VARIABLE='dekryptert' VALUE=('0')  # aq`
+data_setvariableto VARIABLE='kryptert' VALUE=('0')  # a~4
+
+event_whenbroadcastreceived BROADCAST_OPTION='lagre informasjon'  # a}]
+procedures_call Add controls to 1 variable %s controls=(list:':CONTROLS:')  # aqe
+procedures_call encrypt %s %s this=(operator_join STRING1=(variable:'_controls with (:)') STRING2=(operator_join STRING1=(':') STRING2=(operator_join STRING1=(data_itemoflist LIST='-INVENTORY' INDEX=('1')) STRING2=(operator_join STRING1=(':') STRING2=(operator_join STRING1=(data_itemoflist LIST='-INVENTORY' INDEX=('2')) STRING2=(operator_join STRING1=(':') STRING2=(operator_join STRING1=(data_itemoflist LIST='-INVENTORY' INDEX=('3')) STRING2=(operator_join STRING1=(':') STRING2=(operator_join STRING1=(variable:'::Cosmetics on head') STRING2=(operator_join STRING1=(':') STRING2=(operator_join STRING1=(variable:'::Farge') STRING2=(operator_join STRING1=(':') STRING2=(operator_join STRING1=(variable:'::Farge.lysstyrke') STRING2=(operator_join STRING1=(':') STRING2=('validkey'))))))))))))))) key=('universalcryptokey')  # Qt
+data_replaceitemoflist LIST='Triple click the code to mark it:' INDEX=('1') ITEM=(variable:'kryptert')  # a}^
+
+event_whenflagclicked  # a~9
+control_if CONDITION=(operator_equals OPERAND1=(sensing_username) OPERAND2=('KIKOKO_'))  # Q4
+  SUBSTACK:
+    control_if_else CONDITION=(operator_and OPERAND2=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='d')) OPERAND1=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='a')))  # Q5
+      SUBSTACK2:
+        control_stop STOP_OPTION='all'  # a~%
+
+event_whenbroadcastreceived BROADCAST_OPTION='dekoder informasjon'  # a~g
+data_setvariableto VARIABLE='Bytt side' VALUE=('0')  # aqK
+sensing_askandwait QUESTION=('')  # aqL
+control_if CONDITION=(operator_gt OPERAND1=(sensing_answer) OPERAND2=(''))  # mG
+  SUBSTACK:
+    sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('3'))  # Qy
+    sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Machine')  # QA
+    procedures_call decrypt %s %s thisrighthere=(sensing_answer) keyofencryption=('universalcryptokey')  # Qz
+    procedures_call liste-sorterer %s informasjon=(variable:'dekryptert')  # aqN
+    procedures_call set dekodert til spill  # a~k
+data_setvariableto VARIABLE='Bytt side' VALUE=('1')  # a~h
+
+procedures_definition custom_block=(procedures_prototype decrypt %s %s)  # ap)
+data_setvariableto VARIABLE='Nøkkel.ord' VALUE=('')  # ap*
+control_repeat TIMES=(operator_length STRING=(argument_reporter_string_number VALUE='thisrighthere'))  # mB
+  SUBSTACK:
+    data_setvariableto VARIABLE='Nøkkel.ord' VALUE=(operator_join STRING1=(variable:'Nøkkel.ord') STRING2=(argument_reporter_string_number VALUE='keyofencryption'))  # ap-
+data_setvariableto VARIABLE='_i' VALUE=('0')  # ap+
+data_setvariableto VARIABLE='dekryptert' VALUE=('')  # ap/
+control_repeat TIMES=(operator_length STRING=(argument_reporter_string_number VALUE='thisrighthere'))  # mC
+  SUBSTACK:
+    data_changevariableby VARIABLE='_i' VALUE=('1')  # ap;
+    control_if_else CONDITION=(operator_lt OPERAND1=(operator_subtract NUM1=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='thisrighthere'))) NUM2=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(variable:'Nøkkel.ord')))) OPERAND2=('1'))  # mD
+      SUBSTACK:
+        data_setvariableto VARIABLE='dekryptert' VALUE=(operator_join STRING1=(variable:'dekryptert') STRING2=(data_itemoflist LIST='Alfabet' INDEX=(operator_add NUM1=(operator_subtract NUM1=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='thisrighthere'))) NUM2=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(variable:'Nøkkel.ord')))) NUM2=(data_lengthoflist LIST='Alfabet'))))  # ap?
+      SUBSTACK2:
+        data_setvariableto VARIABLE='dekryptert' VALUE=(operator_join STRING1=(variable:'dekryptert') STRING2=(data_itemoflist LIST='Alfabet' INDEX=(operator_subtract NUM1=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='thisrighthere'))) NUM2=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(variable:'Nøkkel.ord'))))))  # ap@
+data_setvariableto VARIABLE='Nøkkel.ord' VALUE=('')  # a}-
+
+procedures_definition custom_block=(procedures_prototype encrypt %s %s)  # apQ
+data_setvariableto VARIABLE='Nøkkel.ord' VALUE=('')  # apR
+control_repeat TIMES=(operator_length STRING=(argument_reporter_string_number VALUE='this'))  # my
+  SUBSTACK:
+    data_setvariableto VARIABLE='Nøkkel.ord' VALUE=(operator_join STRING1=(variable:'Nøkkel.ord') STRING2=(argument_reporter_string_number VALUE='key'))  # apU
+data_setvariableto VARIABLE='_i' VALUE=('0')  # apS
+data_setvariableto VARIABLE='kryptert' VALUE=('')  # apW
+control_repeat TIMES=(operator_length STRING=(argument_reporter_string_number VALUE='this'))  # mz
+  SUBSTACK:
+    data_changevariableby VARIABLE='_i' VALUE=('1')  # apY
+    control_if_else CONDITION=(operator_gt OPERAND1=(operator_add NUM1=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='this'))) NUM2=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(variable:'Nøkkel.ord')))) OPERAND2=(data_lengthoflist LIST='Alfabet'))  # mA
+      SUBSTACK:
+        data_setvariableto VARIABLE='kryptert' VALUE=(operator_join STRING1=(variable:'kryptert') STRING2=(data_itemoflist LIST='Alfabet' INDEX=(operator_subtract NUM1=(operator_add NUM1=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='this'))) NUM2=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(variable:'Nøkkel.ord')))) NUM2=(data_lengthoflist LIST='Alfabet'))))  # apZ
+      SUBSTACK2:
+        data_setvariableto VARIABLE='kryptert' VALUE=(operator_join STRING1=(variable:'kryptert') STRING2=(data_itemoflist LIST='Alfabet' INDEX=(operator_add NUM1=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(argument_reporter_string_number VALUE='this'))) NUM2=(data_itemnumoflist LIST='Alfabet' ITEM=(operator_letter_of LETTER=(variable:'_i') STRING=(variable:'Nøkkel.ord'))))))  # ap0
+data_setvariableto VARIABLE='Nøkkel.ord' VALUE=('')  # a}4

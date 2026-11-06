@@ -1,0 +1,4 @@
+SPRITE: Blank
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+data_setvariableto VARIABLE='&Max Player Capacity' VALUE=('50')  # bd6

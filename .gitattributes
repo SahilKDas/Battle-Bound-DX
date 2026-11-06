@@ -1,0 +1,4 @@
+# Preserve imported assets and upstream license notices byte-for-byte.
+scratch/original/** -text
+licenses/** -text
+LICENSE -text

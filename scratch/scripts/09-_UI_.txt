@@ -1,0 +1,1506 @@
+SPRITE: [UI]
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='button_settings3')  # a]o
+
+data_setvariableto VARIABLE=';KART' VALUE=(operator_add NUM1=(operator_mod NUM1=(operator_mathop OPERATOR='floor' NUM=(operator_divide NUM1=(sensing_current CURRENTMENU='MINUTE') NUM2=(variable:'&Spill-lengde'))) NUM2=('2')) NUM2=('1'))  # afm
+control_if CONDITION=(operator_not OPERAND=(operator_or OPERAND1=(operator_contains STRING1=(operator_divide NUM1=(sensing_current CURRENTMENU='MINUTE') NUM2=(variable:'&Spill-lengde')) STRING2=('.')) OPERAND2=(operator_gt OPERAND1=(sensing_current CURRENTMENU='SECOND') OPERAND2=('29'))))  # L4
+  SUBSTACK:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:';KART') OPERAND2=('1'))  # k%
+      SUBSTACK:
+        data_setvariableto VARIABLE=';KART' VALUE=('2')  # a=Z
+      SUBSTACK2:
+        data_setvariableto VARIABLE=';KART' VALUE=('1')  # a=0
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # a]3
+control_if CONDITION=(operator_equals OPERAND1=(variable:'DEV.MODE') OPERAND2=('1'))  # N2
+  SUBSTACK:
+    data_replaceitemoflist LIST=':SETTINGS:' INDEX=('1') ITEM=('0')  # a]5
+
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('spectate'))  # akv
+  SUBSTACK:
+    looks_show  # akw
+    procedures_call Basic Setup  # akx
+    looks_gotofrontback FRONT_BACK='front'  # aky
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='spectate')  # NQ
+    motion_gotoxy X=('0') Y=('20')  # akz
+    looks_setsizeto SIZE=('140')  # akA
+    looks_seteffectto EFFECT='GHOST' VALUE=('100')  # akB
+    control_repeat TIMES=('10')  # NR
+      SUBSTACK:
+        looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('4'))  # NS
+        looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # akD
+        looks_gotofrontback FRONT_BACK='front'  # a]N
+    control_forever  # akC
+      SUBSTACK:
+        looks_switchcostumeto COSTUME=(looks_costume COSTUME='spectate')  # NT
+        motion_gotoxy X=('0') Y=('20')  # akG
+        looks_gotofrontback FRONT_BACK='front'  # akH
+        control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # a{
+          SUBSTACK:
+            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # akJ
+            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('110') NUM2=(looks_size)) NUM2=('3'))  # NV
+            control_if CONDITION=(sensing_mousedown)  # NW
+              SUBSTACK:
+                control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_not OPERAND=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))))  # ls
+                  SUBSTACK:
+                    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('90') NUM2=(looks_size)) NUM2=('3'))  # akN
+                control_if CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # NX
+                  SUBSTACK:
+                    data_setvariableto VARIABLE='::[Spiller-action]' VALUE=('sp')  # akU
+                    data_setvariableto VARIABLE=';SCENE' VALUE=('game')  # akV
+                    control_repeat TIMES=('5')  # NZ
+                      SUBSTACK:
+                        looks_changeeffectby EFFECT='GHOST' CHANGE=('20')  # a]X
+                    control_delete_this_clone  # a]W
+          SUBSTACK2:
+            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # akK
+            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # akW
+        control_if CONDITION=(operator_and OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('died'))) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('1play'))))  # NU
+          SUBSTACK:
+            control_repeat TIMES=('5')  # N1
+              SUBSTACK:
+                looks_changeeffectby EFFECT='GHOST' CHANGE=('20')  # a]2
+            control_delete_this_clone  # a]1
+
+procedures_definition custom_block=(procedures_prototype size %s)  # aks
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='hat_1')  # NP
+looks_setsizeto SIZE=(argument_reporter_string_number VALUE='size')  # aku
+
+procedures_definition custom_block=(procedures_prototype Draw Gear numbers)  # akd
+data_setvariableto VARIABLE='_control ID' VALUE=('0')  # ake
+control_repeat TIMES=('4')  # akf
+  SUBSTACK:
+    data_changevariableby VARIABLE='_control ID' VALUE=('1')  # akg
+    control_if CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))  # lr
+      SUBSTACK:
+        procedures_call Create clone %s Own ID %s ID=('numbers') o id=('shop')  # akh
+        procedures_call Create clone %s Own ID %s ID=('max') o id=('shop')  # a]B
+    control_if CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2'))  # NN
+      SUBSTACK:
+        data_setvariableto VARIABLE='_Brightness/color numbers ID' VALUE=('c')  # aki
+        procedures_call Create clone %s Own ID %s ID=('numbers') o id=('shop')  # akj
+        data_setvariableto VARIABLE='_Brightness/color numbers ID' VALUE=('b')  # akk
+        procedures_call Create clone %s Own ID %s ID=('numbers') o id=('shop')  # a]D
+
+procedures_definition custom_block=(procedures_prototype Draw gearpoint numbers)  # akl
+data_setvariableto VARIABLE='_control ID' VALUE=('0')  # akm
+control_repeat TIMES=(operator_length STRING=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(operator_letter_of LETTER=('1') STRING=(looks_costumenumbername NUMBER_NAME='name')))))  # NO
+  SUBSTACK:
+    data_changevariableby VARIABLE='_control ID' VALUE=('1')  # ako
+    procedures_call Create clone %s Own ID %s ID=('gearpointnumbers') o id=('iteminfo')  # a]G
+
+event_whenbroadcastreceived BROADCAST_OPTION='Front UI'  # a]q
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('gear'))  # NM
+  SUBSTACK:
+    looks_gotofrontback FRONT_BACK='front'  # akb
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'arm to front?') OPERAND2=('1'))  # lo
+      SUBSTACK:
+        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # a]t
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_lt OPERAND1=(variable:':Kart Åpent') OPERAND2=('1'))  # lp
+          SUBSTACK:
+            control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Particles]'))  # lq
+              SUBSTACK:
+                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('-100')  # a]w
+              SUBSTACK2:
+                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # a]x
+          SUBSTACK2:
+            looks_hide  # a]v
+
+event_whenbroadcastreceived BROADCAST_OPTION='update'  # a[0
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('gear'))  # No
+  SUBSTACK:
+    control_if_else CONDITION=(operator_or OPERAND1=(operator_gt OPERAND1=(variable:'#PlayersOnline') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:'DEV.MODE') OPERAND2=('1')))  # a`
+      SUBSTACK:
+        motion_gotoxy X=('0') Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=('20') NUM2=('20')))  # ajF
+      SUBSTACK2:
+        motion_gotoxy X=('0') Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=('58') NUM2=('20')))  # ajG
+    looks_cleargraphiceffects  # ajE
+    looks_switchcostumeto COSTUME=(operator_join STRING1=(variable:'::Våpen holdt') STRING2=('_item'))  # lk
+    motion_pointindirection DIRECTION=('90')  # ajH
+    looks_setsizeto SIZE=('80')  # ajI
+    looks_seteffectto EFFECT='GHOST' VALUE=('50')  # ajJ
+    control_if_else CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('sp'))) OPERAND2=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('di')))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('game')))  # ll
+      SUBSTACK:
+        looks_show  # a[!
+      SUBSTACK2:
+        looks_hide  # a[#
+
+procedures_definition custom_block=(procedures_prototype Write %s)  # ajW
+data_setvariableto VARIABLE='i' VALUE=('0')  # ajX
+control_repeat TIMES=(operator_length STRING=(argument_reporter_string_number VALUE='username'))  # Ny
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # aj0
+    data_setvariableto VARIABLE='_control ID' VALUE=(operator_letter_of LETTER=(variable:'i') STRING=(argument_reporter_string_number VALUE='username'))  # Nz
+    procedures_call Create clone %s Own ID %s ID=('username') o id=('shop')  # a[]
+
+sound_setvolumeto VOLUME=('100')  # beK
+
+motion_gotoxy X=(operator_add NUM1=('0') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'_control ID') NUM2=('2')) NUM2=('20'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=('44'))  # Nu
+motion_gotoxy X=(operator_add NUM1=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('0')) NUM2=(operator_multiply NUM1=(variable:'_control ID') NUM2=('28'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=('25'))  # Nv
+
+procedures_definition custom_block=(procedures_prototype Draw loadout)  # ajx
+data_setvariableto VARIABLE='i' VALUE=('0')  # ajy
+control_repeat TIMES=('3')  # ajz
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # ajA
+    procedures_call Create clone %s Own ID %s ID=(operator_join STRING1=(data_itemoflist LIST='-INVENTORY' INDEX=(variable:'i')) STRING2=('itemprint')) o id=('shop')  # Nn
+    procedures_call Create clone %s Own ID %s ID=(operator_join STRING1=(data_itemoflist LIST='-INVENTORY' INDEX=(variable:'i')) STRING2=('itemname')) o id=('shop')  # ajB
+
+procedures_definition custom_block=(procedures_prototype Gear - detect mousepointer rows)  # ajj
+data_setvariableto VARIABLE='i' VALUE=('0')  # ajk
+control_repeat TIMES=('3')  # Nk
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # ajm
+    data_replaceitemoflist LIST='Controls Mousepointer' INDEX=(variable:'i') ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=('0'))) OPERAND2=('210')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(operator_add NUM1=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'i') NUM2=('1')) NUM2=('-67')) NUM2=('89')))) OPERAND2=('26'))) NUM2=('1'))  # ajn
+data_changevariableby VARIABLE='item animation' VALUE=(operator_divide NUM1=(operator_subtract NUM1=('0') NUM2=(variable:'item animation')) NUM2=('4'))  # ajl
+
+data_setvariableto VARIABLE=';Game-mode INFO' VALUE=('2')  # a[Q
+data_setvariableto VARIABLE=';SCENE' VALUE=('game')  # a[R
+
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('1play'))  # L6
+  SUBSTACK:
+    data_setvariableto VARIABLE=';SCENE' VALUE=('game')  # afv
+    data_setvariableto VARIABLE=';Game-mode INFO' VALUE=('1')  # afx
+    event_broadcastandwait BROADCAST_INPUT=('init')  # afy
+    event_broadcast BROADCAST_INPUT=('Start')  # a=2
+  SUBSTACK2:
+    data_setvariableto VARIABLE=';SCENE' VALUE=('game')  # afw
+    data_setvariableto VARIABLE=';Game-mode INFO' VALUE=('1')  # afz
+    event_broadcast BROADCAST_INPUT=('revive player')  # a=3
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # a?t
+control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('transition'))) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('gear'))))  # k*
+  SUBSTACK:
+    control_delete_this_clone  # a?u
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=(''))  # Mf
+  SUBSTACK:
+    data_setvariableto VARIABLE='_control ID' VALUE=('1')  # af{
+    procedures_call Create clone %s Own ID %s ID=('gear') o id=('')  # a?y
+
+procedures_definition custom_block=(procedures_prototype Draw screen ratio)  # aiM
+data_setvariableto VARIABLE='i' VALUE=('0')  # aiN
+control_repeat TIMES=(operator_length STRING=(variable:'Screen ratio'))  # M}
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # aiO
+    data_setvariableto VARIABLE='_control ID' VALUE=(operator_letter_of LETTER=(variable:'i') STRING=(variable:'Screen ratio'))  # M~
+    procedures_call Create clone %s Own ID %s ID=(operator_join STRING1=(variable:'i') STRING2=('screen_ratio_numbers')) o id=('settings')  # aiP
+
+event_whenbroadcastreceived BROADCAST_OPTION='RESET'  # a@Z
+data_replaceitemoflist LIST=':SETTINGS:' INDEX=('1') ITEM=('100')  # ahZ
+data_replaceitemoflist LIST=':SETTINGS:' INDEX=('2') ITEM=('100')  # ah0
+data_replaceitemoflist LIST=':SETTINGS:' INDEX=('3') ITEM=('100')  # ah1
+data_replaceitemoflist LIST=':SETTINGS:' INDEX=('4') ITEM=('1')  # ah2
+data_replaceitemoflist LIST=':SETTINGS:' INDEX=('5') ITEM=('1')  # ah3
+data_replaceitemoflist LIST=':SETTINGS:' INDEX=('6') ITEM=('1')  # ah4
+data_replaceitemoflist LIST=':SETTINGS:' INDEX=('7') ITEM=('1')  # ah5
+data_replaceitemoflist LIST=':SETTINGS:' INDEX=('8') ITEM=('1')  # ah6
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('1') ITEM=('w')  # ah7
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('2') ITEM=('a')  # ah8
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('3') ITEM=('d')  # ah9
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('4') ITEM=('s')  # ah!
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('5') ITEM=('mouse')  # ah#
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('6') ITEM=('space')  # ah%
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('7') ITEM=('r')  # ah(
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('8') ITEM=('t')  # ah)
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('9') ITEM=('m')  # ah*
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('10') ITEM=('scroll wheel up')  # ah+
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('11') ITEM=('scroll wheel down')  # ah,
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('12') ITEM=('1')  # ah-
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('13') ITEM=('2')  # ah.
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('14') ITEM=('3')  # ah/
+data_replaceitemoflist LIST=':CONTROLS:' INDEX=('15') ITEM=('q')  # ah:
+data_replaceitemoflist LIST='Statistics' INDEX=('1') ITEM=('0')  # ah;
+data_replaceitemoflist LIST='Statistics' INDEX=('2') ITEM=('0')  # ah=
+data_replaceitemoflist LIST='Statistics' INDEX=('3') ITEM=('0')  # ah?
+data_replaceitemoflist LIST='Statistics' INDEX=('4') ITEM=('0')  # ah@
+data_replaceitemoflist LIST='Statistics' INDEX=('5') ITEM=('0')  # ah[
+data_replaceitemoflist LIST='Statistics' INDEX=('6') ITEM=('0')  # ah]
+data_replaceitemoflist LIST='Statistics' INDEX=('7') ITEM=('0')  # ah^
+data_replaceitemoflist LIST='Statistics' INDEX=('8') ITEM=('0')  # ah_
+data_replaceitemoflist LIST='Statistics' INDEX=('9') ITEM=('0')  # ah`
+data_replaceitemoflist LIST='# item in lists' INDEX=('1') ITEM=('1')  # ah{
+data_replaceitemoflist LIST='# item in lists' INDEX=('2') ITEM=('4')  # ah|
+data_replaceitemoflist LIST='# item in lists' INDEX=('3') ITEM=('2')  # ah}
+data_replaceitemoflist LIST='-INVENTORY' INDEX=('1') ITEM=(data_itemoflist LIST='.Primary weapons' INDEX=('1'))  # M%
+data_replaceitemoflist LIST='-INVENTORY' INDEX=('2') ITEM=(data_itemoflist LIST='.Secondary weapons' INDEX=('4'))  # M(
+data_replaceitemoflist LIST='-INVENTORY' INDEX=('3') ITEM=(data_itemoflist LIST='.Gadgets' INDEX=('2'))  # M)
+data_setvariableto VARIABLE='in.air' VALUE=('0')  # ah~
+data_setvariableto VARIABLE='::Cosmetics on head' VALUE=('1')  # aia
+data_setvariableto VARIABLE='::Farge' VALUE=('30')  # aib
+data_setvariableto VARIABLE='::Farge.lysstyrke' VALUE=('0')  # aic
+data_setvariableto VARIABLE='CUSTOMIZED COLOR' VALUE=('30')  # aid
+data_setvariableto VARIABLE=';Spill-Modus' VALUE=('0')  # aie
+data_setvariableto VARIABLE='::VALG' VALUE=('0')  # aif
+data_setvariableto VARIABLE='e' VALUE=('0')  # aig
+data_setvariableto VARIABLE='f' VALUE=('0')  # a]*
+
+procedures_definition custom_block=(procedures_prototype Checkbox code %s %s %s %s)  # aij
+motion_gotoxy X=(argument_reporter_string_number VALUE='x') Y=(operator_add NUM1=(operator_multiply NUM1=(operator_subtract NUM1=(operator_letter_of LETTER=('1') STRING=(argument_reporter_string_number VALUE='ID')) NUM2=('1')) NUM2=(argument_reporter_string_number VALUE='*y')) NUM2=(argument_reporter_string_number VALUE='y'))  # k}
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_checkbox_off')  # M,
+looks_switchcostumeto COSTUME=(operator_add NUM1=(looks_costumenumbername NUMBER_NAME='number') NUM2=(data_itemoflist LIST=':SETTINGS:' INDEX=(operator_add NUM1=(operator_letter_of LETTER=('1') STRING=(argument_reporter_string_number VALUE='ID')) NUM2=('3'))))  # k~
+looks_seteffectto EFFECT='GHOST' VALUE=('10')  # aim
+control_if_else CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(argument_reporter_string_number VALUE='x'))) OPERAND2=('34')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(motion_yposition))) OPERAND2=('16')))  # a_
+  SUBSTACK:
+    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('80') NUM2=(looks_size)) NUM2=('3'))  # M=
+    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # aiv
+    control_if CONDITION=(operator_and OPERAND1=(sensing_mousedown) OPERAND2=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'_timer') NUM2=('0.2'))))  # M[
+      SUBSTACK:
+        sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('3'))  # M^
+        sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # M`
+        data_setvariableto VARIABLE='_timer' VALUE=(sensing_timer)  # M{
+        control_if_else CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=(operator_add NUM1=(operator_letter_of LETTER=('1') STRING=(argument_reporter_string_number VALUE='ID')) NUM2=('3'))) OPERAND2=('1'))  # la
+          SUBSTACK:
+            data_replaceitemoflist LIST=':SETTINGS:' INDEX=(operator_add NUM1=(operator_letter_of LETTER=('1') STRING=(argument_reporter_string_number VALUE='ID')) NUM2=('3')) ITEM=('0')  # aiz
+          SUBSTACK2:
+            data_replaceitemoflist LIST=':SETTINGS:' INDEX=(operator_add NUM1=(operator_letter_of LETTER=('1') STRING=(argument_reporter_string_number VALUE='ID')) NUM2=('3')) ITEM=('1')  # aiA
+  SUBSTACK2:
+    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # aiq
+    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('90') NUM2=(looks_size)) NUM2=('4'))  # aiI
+control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('3'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # M:
+  SUBSTACK:
+    control_delete_this_clone  # a[b
+
+event_whenbroadcastreceived BROADCAST_OPTION='literally just died'  # a[N
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=(''))  # Nj
+  SUBSTACK:
+    data_hidelist LIST='Triple click the code to mark it:'  # ajf
+    data_setvariableto VARIABLE=';SCENE' VALUE=('died')  # ajg
+    data_setvariableto VARIABLE='Bytt side' VALUE=('1')  # ajh
+    procedures_call Create clone %s Own ID %s ID=('spectate') o id=('')  # aji
+    procedures_call Create clone %s Own ID %s ID=('main_menu') o id=('')  # a[P
+
+event_whenflagclicked  # a=9
+data_setvariableto VARIABLE='_;ID' VALUE=('')  # afM
+motion_gotoxy X=('0') Y=('0')  # afN
+looks_cleargraphiceffects  # afO
+looks_setsizeto SIZE=('100')  # afP
+looks_hide  # a=!
+
+procedures_call Create clone %s Own ID %s ID=('button_play1') o id=('')  # beH
+
+procedures_definition custom_block=(procedures_prototype Mark - Mouse down)  # af|
+control_if CONDITION=(sensing_mousedown)  # Mh
+  SUBSTACK:
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='button_mark_click')  # Mi
+    control_repeat_until CONDITION=(operator_not OPERAND=(sensing_mousedown))  # k+
+      SUBSTACK:
+        procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('1') NUM2=('3')) NUM2=('-42')) ID=('1')  # k,
+        procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('2') NUM2=('3')) NUM2=('-42')) ID=('2')  # k-
+        procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('3') NUM2=('3')) NUM2=('-42')) ID=('3')  # k.
+        procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('4') NUM2=('3')) NUM2=('-42')) ID=('4')  # k/
+        procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('5') NUM2=('3')) NUM2=('-42')) ID=('5')  # k:
+        control_if_else CONDITION=(operator_gt OPERAND1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) OPERAND2=('0'))  # k;
+          SUBSTACK:
+            looks_hide  # agl
+            motion_sety Y=(operator_multiply NUM1=(operator_subtract NUM1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) NUM2=('3')) NUM2=('-46'))  # agm
+          SUBSTACK2:
+            looks_hide  # a?N
+    data_setvariableto VARIABLE='Menu Page' VALUE=('1')  # af}
+    looks_hide  # agp
+    control_if CONDITION=(operator_gt OPERAND1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) OPERAND2=('0'))  # Mj
+      SUBSTACK:
+        sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('3'))  # Mk
+        sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # Ml
+        control_if_else CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) OPERAND2=('1'))  # a[
+          SUBSTACK:
+            control_if_else CONDITION=(operator_gt OPERAND1=(variable:'&Screen Length x') OPERAND2=('300'))  # a]
+              SUBSTACK:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Loading1')  # agu
+              SUBSTACK2:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='3:4 Loading1')  # agv
+            motion_pointindirection DIRECTION=('90')  # agt
+            motion_gotoxy X=('0') Y=('0')  # agw
+            looks_setsizeto SIZE=('100')  # agx
+            looks_show  # agy
+            data_setvariableto VARIABLE=';SCENE' VALUE=('loading')  # agz
+            looks_seteffectto EFFECT='GHOST' VALUE=('100')  # agA
+            control_repeat TIMES=('10')  # Mm
+              SUBSTACK:
+                looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # agB
+                looks_gotofrontback FRONT_BACK='front'  # a?X
+            control_repeat TIMES=('1')  # Mn
+              SUBSTACK:
+                control_repeat TIMES=('6')  # Mp
+                  SUBSTACK:
+                    control_wait DURATION=('0.2')  # agC
+                    looks_nextcostume  # a?Y
+                control_if_else CONDITION=(operator_gt OPERAND1=(variable:'&Screen Length x') OPERAND2=('300'))  # k?
+                  SUBSTACK:
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Loading1')  # agD
+                  SUBSTACK2:
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='3:4 Loading1')  # agE
+            sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Connect')  # Mo
+            sensing_resettimer  # agF
+            event_broadcastandwait BROADCAST_INPUT=('init')  # agG
+            event_broadcast BROADCAST_INPUT=('Start')  # a?3
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) OPERAND2=('2'))  # k=
+              SUBSTACK:
+                data_setvariableto VARIABLE=';SCENE' VALUE=('2shop')  # agI
+                procedures_call Create clone %s Own ID %s ID=('shop') o id=('mark')  # agJ
+                procedures_call Create clone %s Own ID %s ID=('0arrow') o id=('mark')  # agK
+                procedures_call Create clone %s Own ID %s ID=('2arrow') o id=('mark')  # agL
+                procedures_call Create clone %s Own ID %s ID=('x') o id=('mark')  # a?5
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) OPERAND2=('3'))  # k@
+                  SUBSTACK:
+                    data_setvariableto VARIABLE=';SCENE' VALUE=('3settings')  # agN
+                    procedures_call Create clone %s Own ID %s ID=('settings') o id=('mark')  # agO
+                    procedures_call Create clone %s Own ID %s ID=('0arrow') o id=('mark')  # agP
+                    procedures_call Create clone %s Own ID %s ID=('2arrow') o id=('mark')  # agQ
+                    procedures_call Create clone %s Own ID %s ID=('x') o id=('mark')  # a?7
+                  SUBSTACK2:
+                    control_if_else CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) OPERAND2=('4'))  # k[
+                      SUBSTACK:
+                        data_setvariableto VARIABLE=';SCENE' VALUE=('4data')  # agS
+                        procedures_call Create clone %s Own ID %s ID=('data') o id=('mark')  # agT
+                        procedures_call Create clone %s Own ID %s ID=('0arrow') o id=('mark')  # agU
+                        procedures_call Create clone %s Own ID %s ID=('2arrow') o id=('mark')  # agV
+                        procedures_call Create clone %s Own ID %s ID=('x') o id=('mark')  # a?9
+                      SUBSTACK2:
+                        control_if_else CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) OPERAND2=('5'))  # Mq
+                          SUBSTACK:
+                            data_setvariableto VARIABLE=';SCENE' VALUE=('5about')  # agX
+                            procedures_call Create clone %s Own ID %s ID=('about') o id=('mark')  # agY
+                            procedures_call Create clone %s Own ID %s ID=('0arrow') o id=('mark')  # agZ
+                            procedures_call Create clone %s Own ID %s ID=('2arrow') o id=('mark')  # ag0
+                            procedures_call Create clone %s Own ID %s ID=('x') o id=('mark')  # a?#
+        data_replaceitemoflist LIST='Button_mark' INDEX=('1') ITEM=('0')  # agr
+        data_replaceitemoflist LIST='Button_mark' INDEX=('2') ITEM=('0')  # ag1
+        data_replaceitemoflist LIST='Button_mark' INDEX=('3') ITEM=('0')  # ag2
+        data_replaceitemoflist LIST='Button_mark' INDEX=('4') ITEM=('0')  # ag3
+        data_replaceitemoflist LIST='Button_mark' INDEX=('5') ITEM=('0')  # a?%
+
+procedures_definition custom_block=(procedures_prototype New keys)  # ahy
+control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_and OPERAND1=(sensing_mousedown) OPERAND2=(operator_gt OPERAND1=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) OPERAND2=('0'))) OPERAND2=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) OPERAND2=('0'))) OPERAND2=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'_timer') NUM2=('0.2'))))  # k]
+  SUBSTACK:
+    data_replaceitemoflist LIST=':CONTROLS:' INDEX=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) ITEM=('reset')  # MT
+    data_setvariableto VARIABLE='_timer' VALUE=(sensing_timer)  # ahB
+control_if CONDITION=(operator_gt OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) OPERAND2=('0'))  # MR
+  SUBSTACK:
+    data_setvariableto VARIABLE='i' VALUE=('0')  # ahD
+    control_repeat TIMES=('36')  # MX
+      SUBSTACK:
+        data_changevariableby VARIABLE='i' VALUE=('1')  # ahE
+        control_if CONDITION=(operator_and OPERAND1=(sensing_keypressed KEY_OPTION=(operator_join STRING1=('') STRING2=(operator_letter_of LETTER=(variable:'i') STRING=('abcdefghijklmnopqrstuvwxyz0123456789')))) OPERAND2=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=(operator_letter_of LETTER=(variable:'i') STRING=('abcdefghijklmnopqrstuvwxyz0123456789'))) OPERAND2=('0')))  # MY
+          SUBSTACK:
+            data_replaceitemoflist LIST=':CONTROLS:' INDEX=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) ITEM=(operator_letter_of LETTER=(variable:'i') STRING=('abcdefghijklmnopqrstuvwxyz0123456789'))  # M0
+    control_if CONDITION=(operator_and OPERAND1=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='up arrow')) OPERAND2=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('up arrow')) OPERAND2=('0')))  # k^
+      SUBSTACK:
+        data_replaceitemoflist LIST=':CONTROLS:' INDEX=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) ITEM=('up arrow')  # ahI
+    control_if CONDITION=(operator_and OPERAND1=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='down arrow')) OPERAND2=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('down arrow')) OPERAND2=('0')))  # k_
+      SUBSTACK:
+        data_replaceitemoflist LIST=':CONTROLS:' INDEX=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) ITEM=('down arrow')  # ahL
+    control_if CONDITION=(operator_and OPERAND1=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='right arrow')) OPERAND2=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('right arrow')) OPERAND2=('0')))  # k`
+      SUBSTACK:
+        data_replaceitemoflist LIST=':CONTROLS:' INDEX=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) ITEM=('right arrow')  # ahO
+    control_if CONDITION=(operator_and OPERAND1=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='left arrow')) OPERAND2=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('left arrow')) OPERAND2=('0')))  # k{
+      SUBSTACK:
+        data_replaceitemoflist LIST=':CONTROLS:' INDEX=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) ITEM=('left arrow')  # ahR
+    control_if CONDITION=(operator_and OPERAND1=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='space')) OPERAND2=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('space')) OPERAND2=('0')))  # k|
+      SUBSTACK:
+        data_replaceitemoflist LIST=':CONTROLS:' INDEX=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) ITEM=('space')  # ahU
+    control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(sensing_mousedown) OPERAND2=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'_timer') NUM2=('0.2')))) OPERAND2=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('mouse')) OPERAND2=('0')))  # M6
+      SUBSTACK:
+        data_replaceitemoflist LIST=':CONTROLS:' INDEX=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) ITEM=('mouse')  # M9
+        data_setvariableto VARIABLE='_timer' VALUE=(sensing_timer)  # ahY
+
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:'PLAYING') OPERAND2=('1'))  # ag!
+  SUBSTACK:
+    data_setvariableto VARIABLE=';SCENE' VALUE=('game')  # a?,
+
+procedures_definition custom_block=(procedures_prototype Button position %s %s)  # afW
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='off-screen')  # L%
+control_if_else CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')))  # a@
+  SUBSTACK:
+    motion_changexby DX=(operator_divide NUM1=(operator_subtract NUM1=(operator_add NUM1=(operator_multiply NUM1=(argument_reporter_string_number VALUE='length') NUM2=('-1')) NUM2=(operator_add NUM1=('80') NUM2=(operator_multiply NUM1=(operator_equals OPERAND1=(operator_letter_of LETTER=(operator_length STRING=(argument_reporter_string_number VALUE='id')) STRING=(argument_reporter_string_number VALUE='id')) OPERAND2=(data_itemnumoflist LIST='Button_mark' ITEM=('1'))) NUM2=('10')))) NUM2=(motion_xposition)) NUM2=(operator_add NUM1=(operator_multiply NUM1=(operator_not OPERAND=(operator_equals OPERAND1=(operator_letter_of LETTER=(operator_length STRING=(argument_reporter_string_number VALUE='id')) STRING=(argument_reporter_string_number VALUE='id')) OPERAND2=(data_itemnumoflist LIST='Button_mark' ITEM=('1')))) NUM2=(operator_add NUM1=(operator_divide NUM1=(operator_letter_of LETTER=(operator_length STRING=(argument_reporter_string_number VALUE='id')) STRING=(argument_reporter_string_number VALUE='id')) NUM2=('2')) NUM2=('2'))) NUM2=(operator_multiply NUM1=(operator_equals OPERAND1=(operator_letter_of LETTER=(operator_length STRING=(argument_reporter_string_number VALUE='id')) STRING=(argument_reporter_string_number VALUE='id')) OPERAND2=(data_itemnumoflist LIST='Button_mark' ITEM=('1'))) NUM2=('3'))))  # afX
+  SUBSTACK2:
+    motion_changexby DX=(operator_divide NUM1=(operator_subtract NUM1=(operator_add NUM1=(operator_multiply NUM1=(argument_reporter_string_number VALUE='length') NUM2=('-1')) NUM2=('-80')) NUM2=(motion_xposition)) NUM2=(operator_add NUM1=(operator_divide NUM1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(operator_letter_of LETTER=('1') STRING=(variable:';SCENE')) NUM2=(operator_letter_of LETTER=(operator_length STRING=(argument_reporter_string_number VALUE='id')) STRING=(argument_reporter_string_number VALUE='id')))) NUM2=('2')) NUM2=('3')))  # afY
+motion_sety Y=(operator_multiply NUM1=(operator_subtract NUM1=(operator_letter_of LETTER=(operator_length STRING=(argument_reporter_string_number VALUE='id')) STRING=(argument_reporter_string_number VALUE='id')) NUM2=('3')) NUM2=('-42'))  # L)
+looks_seteffectto EFFECT='BRIGHTNESS' VALUE=(operator_multiply NUM1=(operator_equals OPERAND1=(operator_letter_of LETTER=(operator_length STRING=(argument_reporter_string_number VALUE='id')) STRING=(argument_reporter_string_number VALUE='id')) OPERAND2=(data_itemnumoflist LIST='Button_mark' ITEM=('1'))) NUM2=('100'))  # L|
+looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=(operator_subtract NUM1=('90') NUM2=(operator_multiply NUM1=(operator_and OPERAND1=(sensing_mousedown) OPERAND2=(operator_equals OPERAND1=(operator_letter_of LETTER=(operator_length STRING=(argument_reporter_string_number VALUE='id')) STRING=(argument_reporter_string_number VALUE='id')) OPERAND2=(data_itemnumoflist LIST='Button_mark' ITEM=('1')))) NUM2=('15'))) NUM2=(looks_size)) NUM2=('4'))  # af.
+
+procedures_definition custom_block=(procedures_prototype Menu buttons - Mouse hitbox %s %s %s)  # afQ
+data_replaceitemoflist LIST='Button_mark' INDEX=(argument_reporter_string_number VALUE='ID') ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(argument_reporter_string_number VALUE='x'))) OPERAND2=('82')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(argument_reporter_string_number VALUE='y'))) OPERAND2=('24'))) NUM2=('1'))  # L8
+
+data_replaceitemoflist LIST='Button_mark' INDEX=('1') ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=('-193'))) OPERAND2=('40')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=('152'))) OPERAND2=('20'))) NUM2=('1'))  # ag#
+data_replaceitemoflist LIST='Button_mark' INDEX=('2') ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=('-89'))) OPERAND2=('65')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=('152'))) OPERAND2=('20'))) NUM2=('1'))  # Ms
+data_replaceitemoflist LIST='Button_mark' INDEX=('3') ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=('40'))) OPERAND2=('65')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=('152'))) OPERAND2=('20'))) NUM2=('1'))  # Mu
+data_replaceitemoflist LIST='Button_mark' INDEX=('4') ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=('169'))) OPERAND2=('65')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=('152'))) OPERAND2=('20'))) NUM2=('1'))  # ag[
+
+procedures_definition custom_block=(procedures_prototype Basic Setup)  # af[
+looks_setsizeto SIZE=('100')  # af]
+looks_cleargraphiceffects  # af^
+motion_pointindirection DIRECTION=('90')  # a?s
+
+procedures_definition custom_block=(procedures_prototype Create clone %s Own ID %s)  # }Q
+data_setvariableto VARIABLE='_;ID' VALUE=(argument_reporter_string_number VALUE='ID')  # Jc
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Je
+data_setvariableto VARIABLE='_;ID' VALUE=(argument_reporter_string_number VALUE='o id')  # }R
+
+event_whenbroadcastreceived BROADCAST_OPTION='MENU'  # a=4
+control_if CONDITION=(operator_not)  # k(
+  SUBSTACK:
+    control_delete_this_clone  # a=6
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=(''))  # L7
+  SUBSTACK:
+    event_broadcast BROADCAST_INPUT=('DELETE GAME CLONES')  # afA
+    data_hidelist LIST='Triple click the code to mark it:'  # afB
+    data_setvariableto VARIABLE=';SCENE' VALUE=('menu')  # afC
+    data_setvariableto VARIABLE='Bytt side' VALUE=('1')  # afD
+    data_setvariableto VARIABLE='PLAYING' VALUE=('0')  # afE
+    data_setvariableto VARIABLE='prosjekt skjørt' VALUE=('1')  # afF
+    procedures_call Create clone %s Own ID %s ID=('button_play1') o id=('')  # afG
+    procedures_call Create clone %s Own ID %s ID=('button_perks2') o id=('')  # afH
+    procedures_call Create clone %s Own ID %s ID=('button_settings3') o id=('')  # afI
+    procedures_call Create clone %s Own ID %s ID=('button_data4') o id=('')  # afJ
+    procedures_call Create clone %s Own ID %s ID=('button_about5') o id=('')  # afK
+    procedures_call Create clone %s Own ID %s ID=('mark') o id=('')  # afL
+    procedures_call Create clone %s Own ID %s ID=('background') o id=('')  # a=8
+
+motion_gotoxy X=(operator_subtract NUM1=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=('85')) NUM2=(operator_multiply NUM1=(operator_subtract NUM1=('3') NUM2=(variable:'_control ID')) NUM2=('26'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=('25'))  # ajR
+
+event_whenbroadcastreceived BROADCAST_OPTION='Load Assets'  # a]6
+control_if CONDITION=(operator_not)  # lt
+  SUBSTACK:
+    control_delete_this_clone  # a]8
+looks_setsizeto SIZE=('100')  # ak1
+looks_show  # ak2
+looks_seteffectto EFFECT='GHOST' VALUE=(operator_multiply NUM1=(variable:'hide asset load') NUM2=('100'))  # N3
+motion_gotoxy X=('0') Y=('0')  # ak3
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='blank')  # N4
+control_repeat TIMES=('1')  # N5
+  SUBSTACK:
+    looks_nextcostume  # ak4
+    data_setvariableto VARIABLE='load percent' VALUE=('1')  # a]#
+control_repeat_until CONDITION=(operator_equals OPERAND1=(looks_costumenumbername NUMBER_NAME='number') OPERAND2=('1'))  # lu
+  SUBSTACK:
+    looks_nextcostume  # ak7
+    data_changevariableby VARIABLE='load percent' VALUE=('1')  # a](
+looks_cleargraphiceffects  # ak5
+looks_hide  # a])
+
+procedures_definition custom_block=(procedures_prototype Hats - detect mousepointer on buttons)  # aj!
+data_setvariableto VARIABLE='i' VALUE=('0')  # aj#
+control_repeat TIMES=('6')  # NA
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # aj(
+    data_replaceitemoflist LIST='Controls Mousepointer' INDEX=(variable:'i') ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(operator_add NUM1=('-94') NUM2=(operator_multiply NUM1=(variable:'i') NUM2=('47'))))) OPERAND2=('20')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=('-17'))) OPERAND2=('20'))) NUM2=('1'))  # NB
+    control_if CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(data_itemoflist LIST='Controls Mousepointer' INDEX=(variable:'i')) OPERAND2=('1')) OPERAND2=(sensing_mousedown))  # NC
+      SUBSTACK:
+        data_setvariableto VARIABLE='::Cosmetics on head' VALUE=(variable:'i')  # a]a
+data_setvariableto VARIABLE='i' VALUE=('0')  # aj%
+control_repeat TIMES=('6')  # NG
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # aj;
+    data_replaceitemoflist LIST='Controls Mousepointer' INDEX=(operator_add NUM1=(variable:'i') NUM2=('6')) ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(operator_add NUM1=('-98') NUM2=(operator_multiply NUM1=(variable:'i') NUM2=('47'))))) OPERAND2=('20')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=('-64'))) OPERAND2=('20'))) NUM2=('1'))  # ln
+    control_if CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(data_itemoflist LIST='Controls Mousepointer' INDEX=(operator_add NUM1=(variable:'i') NUM2=('6'))) OPERAND2=('1')) OPERAND2=(sensing_mousedown))  # NH
+      SUBSTACK:
+        data_setvariableto VARIABLE='::Cosmetics on head' VALUE=(operator_add NUM1=(variable:'i') NUM2=('6'))  # aj`
+control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_last hat') OPERAND2=(variable:'::Cosmetics on head')))  # lm
+  SUBSTACK:
+    control_if CONDITION=(operator_gt OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('3')) OPERAND2=('0'))  # NL
+      SUBSTACK:
+        sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Pick')  # aka
+data_setvariableto VARIABLE='_last hat' VALUE=(variable:'::Cosmetics on head')  # a]k
+
+control_start_as_clone  # a,=
+control_if_else CONDITION=(operator_contains STRING1=(variable:'_;ID') STRING2=('button'))  # jO
+  SUBSTACK:
+    looks_show  # }S
+    procedures_call Basic Setup  # }T
+    motion_setx X=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('-200'))  # Jf
+    looks_gotofrontback FRONT_BACK='front'  # }U
+    control_forever  # }W
+      SUBSTACK:
+        procedures_call Button position %s %s id=(variable:'_;ID') length=(variable:'&Screen Length x')  # }X
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('button_play1'))  # jQ
+          SUBSTACK:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'PLAYING') OPERAND2=('1'))  # jR
+              SUBSTACK:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='button_resume1')  # }Z
+              SUBSTACK2:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='button_play1')  # }0
+          SUBSTACK2:
+            looks_switchcostumeto COSTUME=(variable:'_;ID')  # }Y
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('mark'))  # jP
+      SUBSTACK:
+        event_broadcast BROADCAST_INPUT=('DELETE GAME CLONES')  # }1
+        looks_show  # }2
+        procedures_call Basic Setup  # }3
+        looks_gotofrontback FRONT_BACK='front'  # }4
+        control_forever  # }5
+          SUBSTACK:
+            motion_setx X=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90'))  # Jg
+            control_if_else CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')))  # Jh
+              SUBSTACK:
+                procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('1') NUM2=('3')) NUM2=('-42')) ID=('1')  # jT
+                procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('2') NUM2=('3')) NUM2=('-42')) ID=('2')  # jU
+                procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('3') NUM2=('3')) NUM2=('-42')) ID=('3')  # jV
+                procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('4') NUM2=('3')) NUM2=('-42')) ID=('4')  # jW
+                procedures_call Menu buttons - Mouse hitbox %s %s %s x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('90')) y=(operator_multiply NUM1=(operator_subtract NUM1=('5') NUM2=('3')) NUM2=('-42')) ID=('5')  # jX
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='Button_mark')  # Jj
+                looks_hide  # },
+                control_if_else CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) OPERAND2=('0')) OPERAND2=(operator_equals OPERAND1=(variable:'Buttons clickable') OPERAND2=('1')))  # jY
+                  SUBSTACK:
+                    motion_sety Y=(operator_multiply NUM1=(operator_subtract NUM1=(data_itemnumoflist LIST='Button_mark' ITEM=('1')) NUM2=('3')) NUM2=('-46'))  # Jl
+                    procedures_call Mark - Mouse down  # a-o
+                  SUBSTACK2:
+                    looks_hide  # a-l
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_contains STRING1=(variable:'_;ID') STRING2=('arrow'))  # jS
+          SUBSTACK:
+            looks_show  # }:
+            procedures_call Basic Setup  # };
+            looks_switchcostumeto COSTUME=(operator_join STRING1=('arrow') STRING2=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')))  # j0
+            looks_gotofrontback FRONT_BACK='front'  # }=
+            looks_seteffectto EFFECT='GHOST' VALUE=('100')  # }@
+            motion_gotoxy X=(operator_multiply NUM1=('70') NUM2=(operator_subtract NUM1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) NUM2=('1'))) Y=(operator_subtract NUM1=('158') NUM2=('50'))  # j1
+            control_repeat TIMES=('10')  # Jm
+              SUBSTACK:
+                motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('158') NUM2=(motion_yposition)) NUM2=('3'))  # Jn
+                looks_changeeffectby EFFECT='GHOST' CHANGE=('-5')  # a-v
+            control_forever  # }^
+              SUBSTACK:
+                looks_gotofrontback FRONT_BACK='front'  # }{
+                motion_gotoxy X=(operator_multiply NUM1=('70') NUM2=(operator_subtract NUM1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) NUM2=('1'))) Y=('158')  # Jo
+                looks_switchcostumeto COSTUME=(operator_join STRING1=('arrow') STRING2=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')))  # j2
+                control_if_else CONDITION=(operator_lt OPERAND1=(sensing_distanceto DISTANCETOMENU=(sensing_distancetomenu DISTANCETOMENU='_mouse_')) OPERAND2=('11'))  # a!
+                  SUBSTACK:
+                    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('110') NUM2=(looks_size)) NUM2=('3'))  # Jq
+                    looks_seteffectto EFFECT='GHOST' VALUE=('0')  # ~c
+                    control_if CONDITION=(sensing_mousedown)  # Js
+                      SUBSTACK:
+                        control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_gt OPERAND1=(sensing_distanceto DISTANCETOMENU=(sensing_distancetomenu DISTANCETOMENU='_mouse_')) OPERAND2=('10')))  # j3
+                          SUBSTACK:
+                            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('90') NUM2=(looks_size)) NUM2=('3'))  # ~f
+                        control_if CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(sensing_distanceto DISTANCETOMENU=(sensing_distancetomenu DISTANCETOMENU='_mouse_')) OPERAND2=('11')) OPERAND2=(operator_and OPERAND1=(operator_or OPERAND1=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) OPERAND2=('0')) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('3settings')))) OPERAND2=(operator_equals OPERAND1=(variable:'Bytt side') OPERAND2=('1'))))  # Jt
+                          SUBSTACK:
+                            data_changevariableby VARIABLE='Menu Page' VALUE=(operator_subtract NUM1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) NUM2=('1'))  # Jw
+                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('2shop'))  # a#
+                              SUBSTACK:
+                                control_if CONDITION=(operator_gt OPERAND1=(variable:'Menu Page') OPERAND2=('2'))  # j4
+                                  SUBSTACK:
+                                    data_setvariableto VARIABLE='Menu Page' VALUE=('1')  # a-N
+                                control_if CONDITION=(operator_lt OPERAND1=(variable:'Menu Page') OPERAND2=('1'))  # JA
+                                  SUBSTACK:
+                                    data_setvariableto VARIABLE='Menu Page' VALUE=('2')  # a-P
+                              SUBSTACK2:
+                                control_if CONDITION=(operator_gt OPERAND1=(variable:'Menu Page') OPERAND2=('3'))  # j5
+                                  SUBSTACK:
+                                    data_setvariableto VARIABLE='Menu Page' VALUE=('1')  # a-R
+                                control_if CONDITION=(operator_lt OPERAND1=(variable:'Menu Page') OPERAND2=('1'))  # JB
+                                  SUBSTACK:
+                                    data_setvariableto VARIABLE='Menu Page' VALUE=('3')  # a-T
+                            sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('3'))  # Jz
+                            sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # ~q
+                  SUBSTACK2:
+                    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # Jr
+                    looks_seteffectto EFFECT='GHOST' VALUE=('50')  # a-W
+                control_if CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('0')) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # Jp
+                  SUBSTACK:
+                    control_repeat TIMES=('10')  # JD
+                      SUBSTACK:
+                        motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=(operator_subtract NUM1=('158') NUM2=('50')) NUM2=(motion_yposition)) NUM2=('6'))  # JE
+                        looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # a-1
+                    control_delete_this_clone  # a-0
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('x'))  # jZ
+              SUBSTACK:
+                looks_show  # ~u
+                procedures_call Basic Setup  # ~v
+                looks_gotofrontback FRONT_BACK='front'  # ~w
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='back')  # JG
+                looks_seteffectto EFFECT='GHOST' VALUE=('100')  # ~x
+                motion_pointindirection DIRECTION=('90')  # ~y
+                motion_gotoxy X=('-215') Y=(operator_subtract NUM1=('158') NUM2=('50'))  # JH
+                control_repeat TIMES=('10')  # JI
+                  SUBSTACK:
+                    motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('158') NUM2=(motion_yposition)) NUM2=('3'))  # JJ
+                    looks_changeeffectby EFFECT='GHOST' CHANGE=('-5')  # a-7
+                control_forever  # ~z
+                  SUBSTACK:
+                    looks_gotofrontback FRONT_BACK='front'  # ~C
+                    control_if CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('0')) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # j7
+                      SUBSTACK:
+                        control_repeat TIMES=('10')  # JL
+                          SUBSTACK:
+                            motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=(operator_subtract NUM1=('158') NUM2=('50')) NUM2=(motion_yposition)) NUM2=('6'))  # JM
+                            looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # a-%
+                        control_delete_this_clone  # a-#
+                    motion_gotoxy X=('-215') Y=('158')  # ~D
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='back')  # JO
+                    control_if_else CONDITION=(operator_lt OPERAND1=(sensing_distanceto DISTANCETOMENU=(sensing_distancetomenu DISTANCETOMENU='_mouse_')) OPERAND2=('11'))  # j8
+                      SUBSTACK:
+                        looks_seteffectto EFFECT='GHOST' VALUE=('0')  # ~G
+                        looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('110') NUM2=(looks_size)) NUM2=('3'))  # JQ
+                        control_if CONDITION=(sensing_mousedown)  # JR
+                          SUBSTACK:
+                            control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_gt OPERAND1=(sensing_distanceto DISTANCETOMENU=(sensing_distancetomenu DISTANCETOMENU='_mouse_')) OPERAND2=('10')))  # j9
+                              SUBSTACK:
+                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('90') NUM2=(looks_size)) NUM2=('3'))  # ~K
+                            control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_lt OPERAND1=(sensing_distanceto DISTANCETOMENU=(sensing_distancetomenu DISTANCETOMENU='_mouse_')) OPERAND2=('11')) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) OPERAND2=('0')) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('3settings'))))) OPERAND2=(operator_equals OPERAND1=(variable:'Bytt side') OPERAND2=('1')))  # JS
+                              SUBSTACK:
+                                sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('3'))  # JV
+                                sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Click')  # JY
+                                data_setvariableto VARIABLE=';SCENE' VALUE=('menu')  # a-]
+                      SUBSTACK2:
+                        looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # JP
+                        looks_seteffectto EFFECT='GHOST' VALUE=('50')  # a-_
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('shop'))  # j6
+                  SUBSTACK:
+                    data_setvariableto VARIABLE='_last hat' VALUE=(variable:'::Cosmetics on head')  # ~W
+                    looks_show  # ~X
+                    procedures_call Basic Setup  # ~Y
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='perks_gear')  # JZ
+                    looks_seteffectto EFFECT='GHOST' VALUE=('100')  # ~Z
+                    motion_gotoxy X=('0') Y=('-50')  # ~0
+                    looks_gotofrontback FRONT_BACK='front'  # ~1
+                    data_replaceitemoflist LIST='# item in lists' INDEX=('1') ITEM=(data_itemnumoflist LIST='.Primary weapons' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('1')))  # J0
+                    data_replaceitemoflist LIST='# item in lists' INDEX=('2') ITEM=(data_itemnumoflist LIST='.Secondary weapons' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('2')))  # J1
+                    data_replaceitemoflist LIST='# item in lists' INDEX=('3') ITEM=(data_itemnumoflist LIST='.Gadgets' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('3')))  # J2
+                    data_setvariableto VARIABLE=':Gearpoints' VALUE=(operator_add NUM1=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('1')))) NUM2=(operator_add NUM1=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('2')))) NUM2=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('3'))))))  # J3
+                    control_repeat TIMES=('10')  # J4
+                      SUBSTACK:
+                        motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('0') NUM2=(motion_yposition)) NUM2=('3'))  # J7
+                        looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # ~%
+                        event_broadcast BROADCAST_INPUT=('Reset Controls stamps')  # ~*
+                        procedures_call Draw loadout  # ~+
+                        procedures_call Draw Gear numbers  # a.f
+                    control_forever  # ~#
+                      SUBSTACK:
+                        motion_gotoxy X=('0') Y=('0')  # ~,
+                        event_broadcast BROADCAST_INPUT=('Reset Controls stamps')  # ~-
+                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))  # a%
+                          SUBSTACK:
+                            procedures_call Draw loadout  # ~.
+                            procedures_call Draw Gear numbers  # ~/
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='perks_gear')  # J9
+                            control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=(variable:'_last page')))  # J!
+                              SUBSTACK:
+                                procedures_call Create clone %s Own ID %s ID=('iteminfo') o id=('shop')  # ~;
+                                data_setvariableto VARIABLE='_item change' VALUE=('1')  # ~=
+                                procedures_call Create clone %s Own ID %s ID=('itemchange') o id=('shop')  # ~?
+                                data_setvariableto VARIABLE='_item change' VALUE=('-1')  # ~@
+                                procedures_call Create clone %s Own ID %s ID=('itemchange') o id=('shop')  # a.j
+                          SUBSTACK2:
+                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2'))  # J8
+                              SUBSTACK:
+                                procedures_call Hats - detect mousepointer on buttons  # ~[
+                                procedures_call Draw customized stickman  # ~]
+                                procedures_call Draw Gear numbers  # ~^
+                                procedures_call Create clone %s Own ID %s ID=('colorslide') o id=('shop')  # ~_
+                                procedures_call Create clone %s Own ID %s ID=('brightnesslide') o id=('shop')  # ~`
+                                control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=(variable:'_last page')))  # j%
+                                  SUBSTACK:
+                                    procedures_call Create clone %s Own ID %s ID=('color') o id=('shop')  # ~}
+                                    procedures_call Create clone %s Own ID %s ID=('brightness') o id=('shop')  # a.m
+                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='perks_looks')  # ~{
+                        control_if CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('0')) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # j#
+                          SUBSTACK:
+                            event_broadcast BROADCAST_INPUT=('Reset Controls stamps')  # ~~
+                            control_repeat TIMES=('10')  # J%
+                              SUBSTACK:
+                                motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('-50') NUM2=(motion_yposition)) NUM2=('6'))  # J(
+                                looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # a.s
+                            control_delete_this_clone  # a.r
+                        data_setvariableto VARIABLE='_last page' VALUE=(variable:'Menu Page')  # a.o
+                  SUBSTACK2:
+                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('itemchange'))  # j!
+                      SUBSTACK:
+                        procedures_call Basic Setup  # aac
+                        looks_switchcostumeto COSTUME=(operator_join STRING1=('arrow') STRING2=(operator_add NUM1=(variable:'_item change') NUM2=('1')))  # j)
+                        looks_gotofrontback FRONT_BACK='front'  # aad
+                        motion_gotoxy X=(operator_multiply NUM1=('68') NUM2=(variable:'_item change')) Y=(operator_subtract NUM1=('89') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) NUM2=('1')) NUM2=('67')))  # j*
+                        data_replaceitemoflist LIST='# item in lists' INDEX=('1') ITEM=(data_itemnumoflist LIST='.Primary weapons' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('1')))  # J)
+                        data_replaceitemoflist LIST='# item in lists' INDEX=('2') ITEM=(data_itemnumoflist LIST='.Secondary weapons' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('2')))  # J*
+                        data_replaceitemoflist LIST='# item in lists' INDEX=('3') ITEM=(data_itemnumoflist LIST='.Gadgets' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('3')))  # J+
+                        data_setvariableto VARIABLE=':Gearpoints' VALUE=(operator_add NUM1=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('1')))) NUM2=(operator_add NUM1=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('2')))) NUM2=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('3'))))))  # J,
+                        control_forever  # aal
+                          SUBSTACK:
+                            procedures_call Gear - detect mousepointer rows  # aas
+                            looks_gotofrontback FRONT_BACK='front'  # aat
+                            motion_sety Y=(operator_subtract NUM1=('89') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) NUM2=('1')) NUM2=('67')))  # J/
+                            control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_last mouselevel') OPERAND2=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1'))))  # j+
+                              SUBSTACK:
+                                motion_setx X=(operator_multiply NUM1=('68') NUM2=(variable:'_item change'))  # J:
+                                looks_setsizeto SIZE=('60')  # a.H
+                            control_if_else CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) OPERAND2=('0'))  # a(
+                              SUBSTACK:
+                                looks_hide  # a.J
+                              SUBSTACK2:
+                                motion_changexby DX=(operator_divide NUM1=(operator_subtract NUM1=(operator_multiply NUM1=('68') NUM2=(variable:'_item change')) NUM2=(motion_xposition)) NUM2=('3'))  # J;
+                                looks_show  # aaA
+                                looks_switchcostumeto COSTUME=(operator_join STRING1=('arrow') STRING2=(operator_add NUM1=(variable:'_item change') NUM2=('1')))  # j-
+                                control_if_else CONDITION=(operator_equals OPERAND1=(operator_divide NUM1=(operator_mathop OPERATOR='abs' NUM=(sensing_mousex)) NUM2=(sensing_mousex)) OPERAND2=(operator_divide NUM1=(operator_mathop OPERATOR='abs' NUM=(variable:'_item change')) NUM2=(variable:'_item change')))  # j.
+                                  SUBSTACK:
+                                    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('125') NUM2=(looks_size)) NUM2=('3'))  # J@
+                                    looks_seteffectto EFFECT='GHOST' VALUE=('25')  # aaF
+                                    control_if CONDITION=(operator_and OPERAND1=(sensing_mousedown) OPERAND2=(operator_equals OPERAND1=(operator_round NUM=(motion_xposition)) OPERAND2=(operator_multiply NUM1=('68') NUM2=(variable:'_item change'))))  # J^
+                                      SUBSTACK:
+                                        sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('3'))  # J`
+                                        sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Pick')  # J|
+                                        motion_changexby DX=(operator_multiply NUM1=(variable:'_item change') NUM2=('10'))  # J}
+                                        data_setvariableto VARIABLE='item animation' VALUE=('100')  # aaJ
+                                        data_replaceitemoflist LIST='# item in lists' INDEX=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) ITEM=(operator_add NUM1=(data_itemoflist LIST='# item in lists' INDEX=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1'))) NUM2=(variable:'_item change'))  # J~
+                                  SUBSTACK2:
+                                    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # J[
+                                    looks_seteffectto EFFECT='GHOST' VALUE=('75')  # a.1
+                            control_if CONDITION=(operator_gt OPERAND1=(data_itemoflist LIST='# item in lists' INDEX=('1')) OPERAND2=(data_lengthoflist LIST='.Primary weapons'))  # j,
+                              SUBSTACK:
+                                data_replaceitemoflist LIST='# item in lists' INDEX=('1') ITEM=('1')  # a.3
+                            control_if CONDITION=(operator_gt OPERAND1=(data_itemoflist LIST='# item in lists' INDEX=('2')) OPERAND2=(data_lengthoflist LIST='.Secondary weapons'))  # j/
+                              SUBSTACK:
+                                data_replaceitemoflist LIST='# item in lists' INDEX=('2') ITEM=('1')  # a.6
+                            control_if CONDITION=(operator_gt OPERAND1=(data_itemoflist LIST='# item in lists' INDEX=('3')) OPERAND2=(data_lengthoflist LIST='.Gadgets'))  # j:
+                              SUBSTACK:
+                                data_replaceitemoflist LIST='# item in lists' INDEX=('3') ITEM=('1')  # a.9
+                            control_if CONDITION=(operator_gt OPERAND1=('1') OPERAND2=(data_itemoflist LIST='# item in lists' INDEX=('1')))  # j;
+                              SUBSTACK:
+                                data_replaceitemoflist LIST='# item in lists' INDEX=('1') ITEM=(data_lengthoflist LIST='.Primary weapons')  # aaP
+                            control_if CONDITION=(operator_gt OPERAND1=('1') OPERAND2=(data_itemoflist LIST='# item in lists' INDEX=('2')))  # j=
+                              SUBSTACK:
+                                data_replaceitemoflist LIST='# item in lists' INDEX=('2') ITEM=(data_lengthoflist LIST='.Secondary weapons')  # aaR
+                            control_if CONDITION=(operator_gt OPERAND1=('1') OPERAND2=(data_itemoflist LIST='# item in lists' INDEX=('3')))  # j?
+                              SUBSTACK:
+                                data_replaceitemoflist LIST='# item in lists' INDEX=('3') ITEM=(data_lengthoflist LIST='.Gadgets')  # aaT
+                            data_replaceitemoflist LIST='-INVENTORY' INDEX=('1') ITEM=(data_itemoflist LIST='.Primary weapons' INDEX=(data_itemoflist LIST='# item in lists' INDEX=('1')))  # Kd
+                            data_replaceitemoflist LIST='-INVENTORY' INDEX=('2') ITEM=(data_itemoflist LIST='.Secondary weapons' INDEX=(data_itemoflist LIST='# item in lists' INDEX=('2')))  # Ke
+                            data_replaceitemoflist LIST='-INVENTORY' INDEX=('3') ITEM=(data_itemoflist LIST='.Gadgets' INDEX=(data_itemoflist LIST='# item in lists' INDEX=('3')))  # Kf
+                            data_setvariableto VARIABLE=':Gearpoints' VALUE=(operator_add NUM1=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('1')))) NUM2=(operator_add NUM1=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('2')))) NUM2=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(data_itemoflist LIST='-INVENTORY' INDEX=('3'))))))  # Kg
+                            control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # j@
+                              SUBSTACK:
+                                control_delete_this_clone  # a.?
+                            data_setvariableto VARIABLE='_last mouselevel' VALUE=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1'))  # aa3
+                      SUBSTACK2:
+                        control_if_else CONDITION=(operator_contains STRING1=(variable:'_;ID') STRING2=('itemprint'))  # j(
+                          SUBSTACK:
+                            looks_cleargraphiceffects  # aa5
+                            looks_switchcostumeto COSTUME=(operator_join STRING1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) STRING2=('_item'))  # j]
+                            motion_setx X=('0')  # aa6
+                            motion_changeyby DY=(operator_subtract NUM1=('89') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'i') NUM2=('1')) NUM2=('67')))  # Kk
+                            looks_gotofrontback FRONT_BACK='front'  # aa8
+                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'i') OPERAND2=('1'))  # a)
+                              SUBSTACK:
+                                looks_setsizeto SIZE=('94')  # a.}
+                              SUBSTACK2:
+                                looks_setsizeto SIZE=('120')  # a.~
+                            control_if CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) OPERAND2=(variable:'i'))  # Kl
+                              SUBSTACK:
+                                looks_seteffectto EFFECT='GHOST' VALUE=(variable:'item animation')  # aa%
+                                motion_changeyby DY=(operator_divide NUM1=(variable:'item animation') NUM2=('10'))  # aa(
+                          SUBSTACK2:
+                            control_if_else CONDITION=(operator_contains STRING1=(variable:'_;ID') STRING2=('itemname'))  # j[
+                              SUBSTACK:
+                                looks_cleargraphiceffects  # aa)
+                                looks_switchcostumeto COSTUME=(operator_join STRING1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) STRING2=('_name'))  # j_
+                                motion_setx X=('132')  # aa*
+                                motion_changeyby DY=(operator_subtract NUM1=('89') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'i') NUM2=('1')) NUM2=('67')))  # Km
+                                looks_gotofrontback FRONT_BACK='front'  # aa,
+                                looks_setsizeto SIZE=('70')  # aa/
+                                looks_seteffectto EFFECT='GHOST' VALUE=('75')  # aa:
+                                control_if CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) OPERAND2=(variable:'i'))  # Kn
+                                  SUBSTACK:
+                                    looks_seteffectto EFFECT='GHOST' VALUE=(operator_add NUM1=(variable:'item animation') NUM2=('25'))  # Ko
+                                    motion_changeyby DY=(operator_divide NUM1=(variable:'item animation') NUM2=('10'))  # aa=
+                              SUBSTACK2:
+                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('iteminfo'))  # j^
+                                  SUBSTACK:
+                                    procedures_call Basic Setup  # aa?
+                                    looks_cleargraphiceffects  # aa@
+                                    looks_show  # aa[
+                                    data_setvariableto VARIABLE='_item change' VALUE=('100')  # aa]
+                                    motion_pointindirection DIRECTION=('90')  # aa^
+                                    control_forever  # aa_
+                                      SUBSTACK:
+                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # aa`
+                                        looks_gotofrontback FRONT_BACK='front'  # aa{
+                                        looks_setsizeto SIZE=('70')  # aa|
+                                        motion_gotoxy X=('-35') Y=('-80')  # aa}
+                                        control_if_else CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) OPERAND2=('0'))  # a*
+                                          SUBSTACK:
+                                            data_changevariableby VARIABLE='_item change' VALUE=(operator_divide NUM1=(operator_subtract NUM1=('60') NUM2=(variable:'_item change')) NUM2=('2'))  # Kq
+                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='info')  # aba
+                                          SUBSTACK2:
+                                            data_changevariableby VARIABLE='_item change' VALUE=(operator_divide NUM1=(operator_subtract NUM1=('10') NUM2=(variable:'_item change')) NUM2=('2'))  # Kr
+                                            looks_switchcostumeto COSTUME=(operator_join STRING1=(data_itemoflist LIST='-INVENTORY' INDEX=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1'))) STRING2=('_info'))  # j{
+                                            procedures_call Draw gearpoint numbers  # a/o
+                                        looks_seteffectto EFFECT='GHOST' VALUE=(operator_round NUM=(variable:'_item change'))  # Kp
+                                        control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # Ks
+                                          SUBSTACK:
+                                            control_delete_this_clone  # a/s
+                                  SUBSTACK2:
+                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('gearpointnumbers'))  # j`
+                                      SUBSTACK:
+                                        procedures_call Basic Setup  # abg
+                                        looks_show  # abh
+                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('10')  # abi
+                                        looks_seteffectto EFFECT='GHOST' VALUE=(operator_round NUM=(variable:'_item change'))  # Ku
+                                        control_if CONDITION=(operator_gt OPERAND1=(variable:'_control ID') OPERAND2=(operator_length STRING=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(operator_letter_of LETTER=('1') STRING=(looks_costumenumbername NUMBER_NAME='name'))))))  # j}
+                                          SUBSTACK:
+                                            looks_hide  # a/x
+                                        control_if_else CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:':Gearpoints') OPERAND2=(variable:'Max Gearpoints')) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('2'))))  # a+
+                                          SUBSTACK:
+                                            looks_seteffectto EFFECT='COLOR' VALUE=('30')  # a/z
+                                          SUBSTACK2:
+                                            looks_seteffectto EFFECT='COLOR' VALUE=('76')  # a/A
+                                        looks_switchcostumeto COSTUME=(operator_join STRING1=('') STRING2=(operator_letter_of LETTER=(variable:'_control ID') STRING=(data_itemoflist LIST='Gear points' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(operator_letter_of LETTER=('1') STRING=(looks_costumenumbername NUMBER_NAME='name'))))))  # j~
+                                        motion_gotoxy X=(operator_add NUM1=('-204') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'_control ID') NUM2=('1')) NUM2=('12'))) Y=('-145')  # Kw
+                                        looks_gotofrontback FRONT_BACK='front'  # abu
+                                        looks_setsizeto SIZE=('160')  # a/G
+                                      SUBSTACK2:
+                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('username'))  # j|
+                                          SUBSTACK:
+                                            procedures_call Basic Setup  # abx
+                                            looks_gotofrontback FRONT_BACK='front'  # aby
+                                            looks_setsizeto SIZE=('200')  # abz
+                                            motion_gotoxy X=(operator_add NUM1=('-80') NUM2=(operator_add NUM1=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'i') NUM2=('1')) NUM2=('13')) NUM2=(operator_multiply NUM1=(operator_contains STRING1=('ijl') STRING2=(data_itemoflist LIST='Alfabet' INDEX=(data_itemnumoflist LIST='Alfabet' ITEM=(variable:'_control ID')))) NUM2=('2.5')))) Y=('103')  # Kx
+                                            looks_cleargraphiceffects  # abA
+                                            looks_show  # abG
+                                            looks_seteffectto EFFECT='GHOST' VALUE=('20')  # abH
+                                            looks_switchcostumeto COSTUME=(data_itemoflist LIST='Alfabet' INDEX=(data_itemnumoflist LIST='Alfabet' ITEM=(variable:'_control ID')))  # kb
+                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # a/K
+                                          SUBSTACK2:
+                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('stickman'))  # ka
+                                              SUBSTACK:
+                                                procedures_call Basic Setup  # abJ
+                                                looks_show  # abK
+                                                looks_gotofrontback FRONT_BACK='front'  # abL
+                                                motion_gotoxy X=('-158') Y=('-72')  # abM
+                                                looks_seteffectto EFFECT='COLOR' VALUE=(variable:'::Farge')  # abN
+                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=(variable:'::Farge.lysstyrke')  # abO
+                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_volume')  # Kz
+                                                looks_setsizeto SIZE=('210')  # abP
+                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'i') OPERAND2=('0'))  # kd
+                                                  SUBSTACK:
+                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='Stickman')  # abQ
+                                                  SUBSTACK2:
+                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'i') OPERAND2=('1'))  # KA
+                                                      SUBSTACK:
+                                                        control_if CONDITION=(operator_not OPERAND=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'::Cosmetics on head') OPERAND2=('6')) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'::Cosmetics on head') OPERAND2=('2')) OPERAND2=(operator_equals OPERAND1=(variable:'::Cosmetics on head') OPERAND2=('11')))))  # ke
+                                                          SUBSTACK:
+                                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # a/S
+                                                        looks_switchcostumeto COSTUME=(operator_join STRING1=('Stickman_hat_') STRING2=(variable:'::Cosmetics on head'))  # kf
+                                                        control_if CONDITION=(operator_or OPERAND1=(operator_contains STRING1=('145789') STRING2=(variable:'::Cosmetics on head')) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'::Cosmetics on head') OPERAND2=('10')) OPERAND2=(operator_equals OPERAND1=(variable:'::Cosmetics on head') OPERAND2=('12'))))  # KD
+                                                          SUBSTACK:
+                                                            looks_cleargraphiceffects  # a/Y
+                                              SUBSTACK2:
+                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('color'))  # kc
+                                                  SUBSTACK:
+                                                    looks_show  # abS
+                                                    procedures_call Basic Setup  # abT
+                                                    looks_gotofrontback FRONT_BACK='front'  # abU
+                                                    data_setvariableto VARIABLE='_control ID' VALUE=('-15')  # abV
+                                                    data_setvariableto VARIABLE='::Farge' VALUE=(variable:'CUSTOMIZED COLOR')  # abW
+                                                    control_forever  # abX
+                                                      SUBSTACK:
+                                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_volume')  # KG
+                                                        motion_gotoxy X=(operator_add NUM1=(variable:'_control ID') NUM2=(variable:'::Farge')) Y=('76')  # KH
+                                                        control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # a,
+                                                          SUBSTACK:
+                                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # ab0
+                                                            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('120') NUM2=(looks_size)) NUM2=('4'))  # KI
+                                                            control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('2shop'))) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2')))))  # KJ
+                                                              SUBSTACK:
+                                                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('120') NUM2=(looks_size)) NUM2=('4'))  # KL
+                                                                data_setvariableto VARIABLE='::Farge' VALUE=(operator_subtract NUM1=(sensing_mousex) NUM2=(variable:'_control ID'))  # KN
+                                                                control_if CONDITION=(operator_gt OPERAND1=(variable:'::Farge') OPERAND2=('200'))  # kh
+                                                                  SUBSTACK:
+                                                                    data_setvariableto VARIABLE='::Farge' VALUE=('200')  # a/(
+                                                                control_if CONDITION=(operator_lt OPERAND1=(variable:'::Farge') OPERAND2=('0'))  # ki
+                                                                  SUBSTACK:
+                                                                    data_setvariableto VARIABLE='::Farge' VALUE=('0')  # a/*
+                                                                motion_gotoxy X=(operator_add NUM1=(variable:'_control ID') NUM2=(variable:'::Farge')) Y=('76')  # ab!
+                                                          SUBSTACK2:
+                                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # ab1
+                                                            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('4'))  # ab#
+                                                        data_setvariableto VARIABLE='CUSTOMIZED COLOR' VALUE=(variable:'::Farge')  # abY
+                                                        control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # KO
+                                                          SUBSTACK:
+                                                            control_delete_this_clone  # a/-
+                                                  SUBSTACK2:
+                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('brightness'))  # kg
+                                                      SUBSTACK:
+                                                        looks_show  # ab*
+                                                        procedures_call Basic Setup  # ab+
+                                                        looks_gotofrontback FRONT_BACK='front'  # ab,
+                                                        data_setvariableto VARIABLE='_control ID' VALUE=('-15')  # ab-
+                                                        control_forever  # ab.
+                                                          SUBSTACK:
+                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_volume')  # KQ
+                                                            motion_gotoxy X=(operator_add NUM1=(variable:'_control ID') NUM2=(operator_multiply NUM1=(operator_add NUM1=(variable:'::Farge.lysstyrke') NUM2=('80')) NUM2=(operator_divide NUM1=('100') NUM2=('80')))) Y=('48')  # KR
+                                                            control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # a-
+                                                              SUBSTACK:
+                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # ab;
+                                                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('120') NUM2=(looks_size)) NUM2=('4'))  # KU
+                                                                control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('2shop'))) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2')))))  # KV
+                                                                  SUBSTACK:
+                                                                    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('120') NUM2=(looks_size)) NUM2=('4'))  # KX
+                                                                    data_setvariableto VARIABLE='::Farge.lysstyrke' VALUE=(operator_round NUM=(operator_subtract NUM1=(operator_divide NUM1=(operator_subtract NUM1=(sensing_mousex) NUM2=(variable:'_control ID')) NUM2=(operator_divide NUM1=('100') NUM2=('80'))) NUM2=('80')))  # KZ
+                                                                    control_if CONDITION=(operator_gt OPERAND1=(variable:'::Farge.lysstyrke') OPERAND2=('80'))  # kk
+                                                                      SUBSTACK:
+                                                                        data_setvariableto VARIABLE='::Farge.lysstyrke' VALUE=('80')  # a/~
+                                                                    control_if CONDITION=(operator_lt OPERAND1=(variable:'::Farge.lysstyrke') OPERAND2=('-80'))  # kl
+                                                                      SUBSTACK:
+                                                                        data_setvariableto VARIABLE='::Farge.lysstyrke' VALUE=('-80')  # a:b
+                                                                    motion_gotoxy X=(operator_add NUM1=(variable:'_control ID') NUM2=(operator_multiply NUM1=(operator_add NUM1=(variable:'::Farge.lysstyrke') NUM2=('80')) NUM2=(operator_divide NUM1=('100') NUM2=('80')))) Y=('48')  # ab~
+                                                              SUBSTACK2:
+                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # ab=
+                                                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('4'))  # acb
+                                                            control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # KT
+                                                              SUBSTACK:
+                                                                control_delete_this_clone  # a:f
+                                                      SUBSTACK2:
+                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('colorslide'))  # kj
+                                                          SUBSTACK:
+                                                            looks_show  # acf
+                                                            procedures_call Basic Setup  # acg
+                                                            looks_cleargraphiceffects  # ach
+                                                            motion_gotoxy X=('85') Y=(operator_add NUM1=('89') NUM2=('-13'))  # K3
+                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='perks_colorslide')  # K4
+                                                            looks_seteffectto EFFECT='COLOR' VALUE=(variable:'::Farge')  # aci
+                                                            looks_goforwardbackwardlayers FORWARD_BACKWARD='forward' NUM=('2')  # a:l
+                                                          SUBSTACK2:
+                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('brightnesslide'))  # km
+                                                              SUBSTACK:
+                                                                looks_show  # acj
+                                                                procedures_call Basic Setup  # ack
+                                                                looks_cleargraphiceffects  # acl
+                                                                motion_gotoxy X=('85') Y=(operator_add NUM1=('35') NUM2=('13'))  # K5
+                                                                looks_seteffectto EFFECT='COLOR' VALUE=(variable:'::Farge')  # acm
+                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=(variable:'::Farge.lysstyrke')  # acn
+                                                                looks_goforwardbackwardlayers FORWARD_BACKWARD='forward' NUM=('3')  # aco
+                                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='perks_colorslide')  # acp
+                                                              SUBSTACK2:
+                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('hats'))  # kn
+                                                                  SUBSTACK:
+                                                                    procedures_call Basic Setup  # acq
+                                                                    looks_show  # acr
+                                                                    looks_cleargraphiceffects  # acs
+                                                                    looks_seteffectto EFFECT='GHOST' VALUE=('30')  # act
+                                                                    motion_gotoxy X=(operator_add NUM1=('-98') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'i') NUM2=(operator_multiply NUM1=(operator_gt OPERAND1=(variable:'i') OPERAND2=('6')) NUM2=('6'))) NUM2=('47'))) Y=(operator_add NUM1=('-17') NUM2=(operator_multiply NUM1=(operator_gt OPERAND1=(variable:'i') OPERAND2=('6')) NUM2=('-47')))  # kp
+                                                                    looks_switchcostumeto COSTUME=(operator_join STRING1=('hat_') STRING2=(variable:'i'))  # kq
+                                                                    control_if CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')) OPERAND2=(variable:'i'))  # kr
+                                                                      SUBSTACK:
+                                                                        looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a:u
+                                                                    control_if CONDITION=(operator_equals OPERAND1=(variable:'::Cosmetics on head') OPERAND2=(variable:'i'))  # ks
+                                                                      SUBSTACK:
+                                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # a:y
+                                                                    looks_gotofrontback FRONT_BACK='front'  # a:w
+                                                                  SUBSTACK2:
+                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('numbers'))  # ko
+                                                                      SUBSTACK:
+                                                                        procedures_call Basic Setup  # acB
+                                                                        looks_setsizeto SIZE=('140')  # acC
+                                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))  # ku
+                                                                          SUBSTACK:
+                                                                            looks_show  # acD
+                                                                            looks_switchcostumeto COSTUME=(operator_join STRING1=('') STRING2=(operator_letter_of LETTER=(operator_subtract NUM1=(operator_add NUM1=(operator_length STRING=(variable:':Gearpoints')) NUM2=('1')) NUM2=(variable:'_control ID')) STRING=(variable:':Gearpoints')))  # kv
+                                                                            control_if CONDITION=(operator_gt OPERAND1=(variable:'_control ID') OPERAND2=(operator_length STRING=(variable:':Gearpoints')))  # kw
+                                                                              SUBSTACK:
+                                                                                looks_hide  # a:D
+                                                                            motion_setx X=(operator_add NUM1=('146') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'_control ID') NUM2=('1')) NUM2=('-12')))  # K6
+                                                                            motion_changeyby DY=('157')  # acK
+                                                                            looks_gotofrontback FRONT_BACK='front'  # acN
+                                                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # acO
+                                                                            looks_seteffectto EFFECT='GHOST' VALUE=('25')  # acP
+                                                                            control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:':Gearpoints') OPERAND2=(variable:'Max Gearpoints')) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('2'))))  # K7
+                                                                              SUBSTACK:
+                                                                                looks_seteffectto EFFECT='COLOR' VALUE=('30')  # acQ
+                                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('10')  # a:I
+                                                                          SUBSTACK2:
+                                                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # acE
+                                                                            looks_seteffectto EFFECT='GHOST' VALUE=('25')  # acS
+                                                                            looks_show  # acT
+                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_Brightness/color numbers ID') OPERAND2=('c'))  # kx
+                                                                              SUBSTACK:
+                                                                                looks_switchcostumeto COSTUME=(operator_join STRING1=('') STRING2=(operator_letter_of LETTER=(operator_subtract NUM1=(operator_add NUM1=(operator_length STRING=(variable:'::Farge')) NUM2=('1')) NUM2=(variable:'_control ID')) STRING=(variable:'::Farge')))  # ky
+                                                                                control_if CONDITION=(operator_gt OPERAND1=(variable:'_control ID') OPERAND2=(operator_length STRING=(variable:'::Farge')))  # kA
+                                                                                  SUBSTACK:
+                                                                                    looks_hide  # a:M
+                                                                                motion_gotoxy X=(operator_add NUM1=(operator_add NUM1=('-54') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(operator_length STRING=(variable:'::Farge')) NUM2=('1')) NUM2=('6'))) NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'_control ID') NUM2=('1')) NUM2=('-12'))) Y=('76')  # K9
+                                                                                looks_gotofrontback FRONT_BACK='front'  # a:O
+                                                                              SUBSTACK2:
+                                                                                looks_switchcostumeto COSTUME=(operator_join STRING1=('') STRING2=(operator_letter_of LETTER=(operator_subtract NUM1=(operator_add NUM1=(operator_length STRING=(variable:'::Farge.lysstyrke')) NUM2=('1')) NUM2=(variable:'_control ID')) STRING=(variable:'::Farge.lysstyrke')))  # kz
+                                                                                control_if CONDITION=(operator_equals OPERAND1=(looks_costumenumbername NUMBER_NAME='name') OPERAND2=('-'))  # kB
+                                                                                  SUBSTACK:
+                                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='brightness "-"')  # ac8
+                                                                                control_if CONDITION=(operator_gt OPERAND1=(variable:'_control ID') OPERAND2=(operator_length STRING=(variable:'::Farge.lysstyrke')))  # kC
+                                                                                  SUBSTACK:
+                                                                                    looks_hide  # a:V
+                                                                                motion_gotoxy X=(operator_add NUM1=(operator_add NUM1=('-54') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(operator_length STRING=(variable:'::Farge.lysstyrke')) NUM2=('1')) NUM2=('6'))) NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'_control ID') NUM2=('1')) NUM2=('-12'))) Y=('48')  # K#
+                                                                                looks_gotofrontback FRONT_BACK='front'  # a:X
+                                                                      SUBSTACK2:
+                                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('max'))  # kt
+                                                                          SUBSTACK:
+                                                                            procedures_call Basic Setup  # ac)
+                                                                            looks_setsizeto SIZE=('140')  # ac*
+                                                                            looks_show  # ac+
+                                                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # ac,
+                                                                            looks_seteffectto EFFECT='GHOST' VALUE=('25')  # ac-
+                                                                            looks_switchcostumeto COSTUME=(operator_join STRING1=('') STRING2=(operator_letter_of LETTER=(variable:'_control ID') STRING=(operator_join STRING1=('/') STRING2=(variable:'Max Gearpoints'))))  # kE
+                                                                            control_if CONDITION=(operator_gt OPERAND1=(variable:'_control ID') OPERAND2=(operator_length STRING=(operator_join STRING1=('/') STRING2=(variable:'Max Gearpoints'))))  # kF
+                                                                              SUBSTACK:
+                                                                                looks_hide  # a:3
+                                                                            motion_setx X=(operator_add NUM1=('162') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'_control ID') NUM2=('1')) NUM2=('12')))  # K(
+                                                                            motion_changeyby DY=('157')  # ac=
+                                                                            looks_gotofrontback FRONT_BACK='front'  # a:6
+                                                                          SUBSTACK2:
+                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('settings'))  # kD
+                                                                              SUBSTACK:
+                                                                                looks_show  # ac[
+                                                                                procedures_call Basic Setup  # ac]
+                                                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_controls')  # K)
+                                                                                looks_seteffectto EFFECT='GHOST' VALUE=('100')  # ac^
+                                                                                motion_gotoxy X=('0') Y=('-50')  # ac_
+                                                                                data_setvariableto VARIABLE='_timer' VALUE=('0')  # ac`
+                                                                                looks_gotofrontback FRONT_BACK='front'  # ac{
+                                                                                control_repeat TIMES=('10')  # K*
+                                                                                  SUBSTACK:
+                                                                                    motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('0') NUM2=(motion_yposition)) NUM2=('3'))  # K+
+                                                                                    looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # ac}
+                                                                                    event_broadcast BROADCAST_INPUT=('Reset Controls stamps')  # adb
+                                                                                    procedures_call Draw all Controls  # adc
+                                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_controls')  # add
+                                                                                control_forever  # ac|
+                                                                                  SUBSTACK:
+                                                                                    motion_gotoxy X=('0') Y=('0')  # ade
+                                                                                    event_broadcast BROADCAST_INPUT=('Reset Controls stamps')  # adf
+                                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))  # a.
+                                                                                      SUBSTACK:
+                                                                                        procedures_call Controls - Detect Mousepointer rows  # adg
+                                                                                        procedures_call New keys  # adh
+                                                                                        procedures_call Draw all Controls  # adi
+                                                                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_controls')  # adj
+                                                                                      SUBSTACK2:
+                                                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2'))  # kI
+                                                                                          SUBSTACK:
+                                                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_sound')  # K,
+                                                                                            control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=(variable:'_last page')))  # K.
+                                                                                              SUBSTACK:
+                                                                                                procedures_call Create clone %s Own ID %s ID=('1sound_volume') o id=('settings')  # adl
+                                                                                                procedures_call Create clone %s Own ID %s ID=('2sound_volume') o id=('settings')  # adm
+                                                                                                procedures_call Create clone %s Own ID %s ID=('3sound_volume') o id=('settings')  # a:+
+                                                                                          SUBSTACK2:
+                                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('3'))  # K-
+                                                                                              SUBSTACK:
+                                                                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_graphics')  # K/
+                                                                                                control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=(variable:'_last page')))  # kJ
+                                                                                                  SUBSTACK:
+                                                                                                    procedures_call Create clone %s Own ID %s ID=('1checkbox') o id=('settings')  # ado
+                                                                                                    procedures_call Create clone %s Own ID %s ID=('2checkbox') o id=('settings')  # adp
+                                                                                                    procedures_call Create clone %s Own ID %s ID=('3checkbox') o id=('settings')  # adq
+                                                                                                    procedures_call Create clone %s Own ID %s ID=('4checkbox') o id=('settings')  # adr
+                                                                                                    procedures_call Create clone %s Own ID %s ID=('5checkbox') o id=('settings')  # a::
+                                                                                                procedures_call Draw screen ratio  # a:.
+                                                                                    control_if CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('0')) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # kH
+                                                                                      SUBSTACK:
+                                                                                        control_repeat TIMES=('10')  # K;
+                                                                                          SUBSTACK:
+                                                                                            motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('-50') NUM2=(motion_yposition)) NUM2=('6'))  # K=
+                                                                                            looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # ads
+                                                                                            event_broadcast BROADCAST_INPUT=('Reset Controls stamps')  # a:]
+                                                                                        control_delete_this_clone  # a:@
+                                                                                    data_setvariableto VARIABLE='_last page' VALUE=(variable:'Menu Page')  # a:;
+                                                                              SUBSTACK2:
+                                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('controls'))  # kG
+                                                                                  SUBSTACK:
+                                                                                    procedures_call Basic Setup  # adv
+                                                                                    data_setvariableto VARIABLE='_control ID' VALUE=(operator_join STRING1=(operator_letter_of LETTER=(operator_subtract NUM1=(operator_length STRING=(looks_costumenumbername NUMBER_NAME='name')) NUM2=('1')) STRING=(looks_costumenumbername NUMBER_NAME='name')) STRING2=(operator_letter_of LETTER=(operator_length STRING=(looks_costumenumbername NUMBER_NAME='name')) STRING=(looks_costumenumbername NUMBER_NAME='name')))  # K?
+                                                                                    motion_setx X=('-200')  # adw
+                                                                                    motion_changeyby DY=(operator_add NUM1=(operator_multiply NUM1=(variable:'_control ID') NUM2=('-17')) NUM2=('135'))  # K^
+                                                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # adA
+                                                                                    looks_seteffectto EFFECT='GHOST' VALUE=('30')  # adC
+                                                                                    looks_gotofrontback FRONT_BACK='front'  # adD
+                                                                                    control_if CONDITION=(operator_equals OPERAND1=(variable:'_control ID') OPERAND2=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')))  # K_
+                                                                                      SUBSTACK:
+                                                                                        looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a:~
+                                                                                  SUBSTACK2:
+                                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('characters_controls'))  # kK
+                                                                                      SUBSTACK:
+                                                                                        procedures_call Basic Setup  # adF
+                                                                                        looks_switchcostumeto COSTUME=(operator_join STRING1=('') STRING2=(variable:'_control ID'))  # kM
+                                                                                        motion_setx X=('110')  # adG
+                                                                                        motion_changeyby DY=(operator_add NUM1=(operator_multiply NUM1=(variable:'i') NUM2=('-17')) NUM2=('135'))  # K`
+                                                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # adH
+                                                                                        control_if CONDITION=(operator_equals OPERAND1=(variable:'_control ID') OPERAND2=('reset'))  # kN
+                                                                                          SUBSTACK:
+                                                                                            looks_cleargraphiceffects  # a;g
+                                                                                        looks_seteffectto EFFECT='GHOST' VALUE=('30')  # adJ
+                                                                                        looks_gotofrontback FRONT_BACK='front'  # adK
+                                                                                        control_if CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=(variable:'_control ID')) OPERAND2=(data_itemnumoflist LIST='Controls Mousepointer' ITEM=('1')))  # kO
+                                                                                          SUBSTACK:
+                                                                                            looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a;h
+                                                                                        control_if CONDITION=(operator_gt OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) OPERAND2=('0'))  # K{
+                                                                                          SUBSTACK:
+                                                                                            control_if_else CONDITION=(operator_gt OPERAND1=(operator_length STRING=(variable:'_control ID')) OPERAND2=('1'))  # kP
+                                                                                              SUBSTACK:
+                                                                                                control_if CONDITION=(operator_equals OPERAND1=(variable:'_control ID') OPERAND2=('mouse'))  # kQ
+                                                                                                  SUBSTACK:
+                                                                                                    control_if CONDITION=(sensing_mousedown)  # K~
+                                                                                                      SUBSTACK:
+                                                                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('40')  # adN
+                                                                                                        looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a;o
+                                                                                                control_if CONDITION=(operator_equals OPERAND1=(variable:'_control ID') OPERAND2=('space'))  # kR
+                                                                                                  SUBSTACK:
+                                                                                                    control_if CONDITION=(sensing_keypressed KEY_OPTION=(sensing_keyoptions KEY_OPTION='space'))  # Lb
+                                                                                                      SUBSTACK:
+                                                                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('40')  # adP
+                                                                                                        looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a;r
+                                                                                                control_if CONDITION=(operator_contains STRING1=(variable:'_control ID') STRING2=('arrow'))  # La
+                                                                                                  SUBSTACK:
+                                                                                                    control_if CONDITION=(sensing_keypressed KEY_OPTION=(variable:'_control ID'))  # Lc
+                                                                                                      SUBSTACK:
+                                                                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('40')  # adR
+                                                                                                        looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a;u
+                                                                                              SUBSTACK2:
+                                                                                                control_if CONDITION=(sensing_keypressed KEY_OPTION=(variable:'_control ID'))  # K}
+                                                                                                  SUBSTACK:
+                                                                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('40')  # adT
+                                                                                                    looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a;w
+                                                                                      SUBSTACK2:
+                                                                                        control_if_else CONDITION=(operator_contains STRING1=(variable:'_;ID') STRING2=('sound_volume'))  # kL
+                                                                                          SUBSTACK:
+                                                                                            looks_show  # adU
+                                                                                            procedures_call Basic Setup  # adV
+                                                                                            looks_gotofrontback FRONT_BACK='front'  # adW
+                                                                                            control_forever  # adX
+                                                                                              SUBSTACK:
+                                                                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_volume')  # Ld
+                                                                                                motion_gotoxy X=(operator_subtract NUM1=(operator_multiply NUM1=(data_itemoflist LIST=':SETTINGS:' INDEX=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID'))) NUM2=('2')) NUM2=('3')) Y=(operator_add NUM1=(operator_multiply NUM1=(operator_subtract NUM1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) NUM2=('1')) NUM2=('-47')) NUM2=('99'))  # kT
+                                                                                                control_if_else CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # a/
+                                                                                                  SUBSTACK:
+                                                                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # ad5
+                                                                                                    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('120') NUM2=(looks_size)) NUM2=('4'))  # Lf
+                                                                                                    control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('3settings'))) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2')))))  # Lg
+                                                                                                      SUBSTACK:
+                                                                                                        looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('120') NUM2=(looks_size)) NUM2=('4'))  # Li
+                                                                                                        data_replaceitemoflist LIST=':SETTINGS:' INDEX=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) ITEM=(operator_round NUM=(operator_add NUM1=(operator_divide NUM1=(sensing_mousex) NUM2=('2')) NUM2=('3')))  # kU
+                                                                                                        control_if CONDITION=(operator_gt OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID'))) OPERAND2=('100'))  # kV
+                                                                                                          SUBSTACK:
+                                                                                                            data_replaceitemoflist LIST=':SETTINGS:' INDEX=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) ITEM=('100')  # ad-
+                                                                                                        control_if CONDITION=(operator_lt OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID'))) OPERAND2=('0'))  # kW
+                                                                                                          SUBSTACK:
+                                                                                                            data_replaceitemoflist LIST=':SETTINGS:' INDEX=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) ITEM=('0')  # ad:
+                                                                                                        motion_gotoxy X=(operator_subtract NUM1=(operator_multiply NUM1=(data_itemoflist LIST=':SETTINGS:' INDEX=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID'))) NUM2=('2')) NUM2=('3')) Y=(operator_add NUM1=(operator_multiply NUM1=(operator_subtract NUM1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) NUM2=('1')) NUM2=('-47')) NUM2=('99'))  # kX
+                                                                                                        control_if CONDITION=(operator_equals OPERAND1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) OPERAND2=('1'))  # Lk
+                                                                                                          SUBSTACK:
+                                                                                                            event_broadcast BROADCAST_INPUT=('update volume')  # a;P
+                                                                                                  SUBSTACK2:
+                                                                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # ad6
+                                                                                                    looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('4'))  # ad`
+                                                                                                control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # Le
+                                                                                                  SUBSTACK:
+                                                                                                    control_delete_this_clone  # a;S
+                                                                                          SUBSTACK2:
+                                                                                            control_if_else CONDITION=(operator_contains STRING1=(variable:'_;ID') STRING2=('checkbox'))  # kS
+                                                                                              SUBSTACK:
+                                                                                                looks_show  # ad~
+                                                                                                procedures_call Basic Setup  # aea
+                                                                                                looks_gotofrontback FRONT_BACK='front'  # aeb
+                                                                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_checkbox_off')  # Lm
+                                                                                                looks_switchcostumeto COSTUME=(operator_add NUM1=(looks_costumenumbername NUMBER_NAME='number') NUM2=(data_itemoflist LIST=':SETTINGS:' INDEX=(operator_add NUM1=(operator_letter_of LETTER=('1') STRING=(argument_reporter_string_number VALUE='ID')) NUM2=('3'))))  # kZ
+                                                                                                looks_setsizeto SIZE=('120')  # aec
+                                                                                                data_setvariableto VARIABLE='_timer' VALUE=('0')  # aeg
+                                                                                                control_forever  # aeh
+                                                                                                  SUBSTACK:
+                                                                                                    procedures_call Checkbox code %s %s %s %s x=('176') y=('98') *y=('-41.8') ID=(variable:'_;ID')  # a;0
+                                                                                              SUBSTACK2:
+                                                                                                control_if_else CONDITION=(operator_contains STRING1=(variable:'_;ID') STRING2=('screen_ratio_numbers'))  # kY
+                                                                                                  SUBSTACK:
+                                                                                                    looks_show  # aei
+                                                                                                    procedures_call Basic Setup  # aej
+                                                                                                    motion_gotoxy X=(operator_add NUM1=(operator_subtract NUM1=('176') NUM2=(operator_divide NUM1=(operator_multiply NUM1=(operator_length STRING=(variable:'Screen ratio')) NUM2=('10')) NUM2=('1.2'))) NUM2=(operator_multiply NUM1=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) NUM2=(operator_add NUM1=('10') NUM2=(operator_multiply NUM1=(operator_equals OPERAND1=(variable:'_control ID') OPERAND2=(':')) NUM2=('1'))))) Y=('-112')  # Lo
+                                                                                                    looks_switchcostumeto COSTUME=(variable:'_control ID')  # Lp
+                                                                                                    looks_gotofrontback FRONT_BACK='front'  # aep
+                                                                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # aeq
+                                                                                                    looks_setsizeto SIZE=('150')  # aer
+                                                                                                    looks_seteffectto EFFECT='GHOST' VALUE=('10')  # a;6
+                                                                                                  SUBSTACK2:
+                                                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('data'))  # k0
+                                                                                                      SUBSTACK:
+                                                                                                        looks_show  # aes
+                                                                                                        procedures_call Basic Setup  # aet
+                                                                                                        looks_gotofrontback FRONT_BACK='front'  # aeu
+                                                                                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='data_statistics')  # Ls
+                                                                                                        looks_seteffectto EFFECT='GHOST' VALUE=('100')  # aev
+                                                                                                        motion_gotoxy X=('0') Y=('-50')  # aew
+                                                                                                        data_setvariableto VARIABLE='_control ID' VALUE=('1')  # aex
+                                                                                                        procedures_call Create statistics numbers  # aey
+                                                                                                        data_setvariableto VARIABLE='_last page' VALUE=(variable:'Menu Page')  # aez
+                                                                                                        control_repeat TIMES=('10')  # Lt
+                                                                                                          SUBSTACK:
+                                                                                                            motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('0') NUM2=(motion_yposition)) NUM2=('3'))  # Lu
+                                                                                                            looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # a;9
+                                                                                                        control_forever  # aeA
+                                                                                                          SUBSTACK:
+                                                                                                            motion_gotoxy X=('0') Y=('0')  # aeD
+                                                                                                            data_hidelist LIST='Triple click the code to mark it:'  # aeE
+                                                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))  # a:
+                                                                                                              SUBSTACK:
+                                                                                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='data_statistics')  # Lv
+                                                                                                                control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_last page') OPERAND2=(variable:'Menu Page')))  # Lw
+                                                                                                                  SUBSTACK:
+                                                                                                                    procedures_call Create statistics numbers  # a;(
+                                                                                                              SUBSTACK2:
+                                                                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2'))  # k3
+                                                                                                                  SUBSTACK:
+                                                                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='data_save')  # Lx
+                                                                                                                    data_showlist LIST='Triple click the code to mark it:'  # aeG
+                                                                                                                    control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_last page') OPERAND2=(variable:'Menu Page')))  # Lz
+                                                                                                                      SUBSTACK:
+                                                                                                                        event_broadcast BROADCAST_INPUT=('lagre informasjon')  # a;,
+                                                                                                                  SUBSTACK2:
+                                                                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('3'))  # Ly
+                                                                                                                      SUBSTACK:
+                                                                                                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='data_load')  # LA
+                                                                                                                        control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_last page') OPERAND2=(variable:'Menu Page')))  # LB
+                                                                                                                          SUBSTACK:
+                                                                                                                            procedures_call Create clone %s Own ID %s ID=('load') o id=('data')  # a;:
+                                                                                                            control_if CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('0')) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # k2
+                                                                                                              SUBSTACK:
+                                                                                                                control_repeat TIMES=('10')  # LD
+                                                                                                                  SUBSTACK:
+                                                                                                                    motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('-50') NUM2=(motion_yposition)) NUM2=('6'))  # LE
+                                                                                                                    looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # aeK
+                                                                                                                    data_hidelist LIST='Triple click the code to mark it:'  # a;]
+                                                                                                                control_delete_this_clone  # a;@
+                                                                                                            data_setvariableto VARIABLE='_last page' VALUE=(variable:'Menu Page')  # aeJ
+                                                                                                            data_setvariableto VARIABLE='_control ID' VALUE=('0')  # a;^
+                                                                                                      SUBSTACK2:
+                                                                                                        control_if_else CONDITION=(operator_contains STRING1=(variable:'_;ID') STRING2=('statistics'))  # k1
+                                                                                                          SUBSTACK:
+                                                                                                            looks_show  # aeN
+                                                                                                            procedures_call Basic Setup  # aeO
+                                                                                                            looks_gotofrontback FRONT_BACK='front'  # aeP
+                                                                                                            looks_setsizeto SIZE=('160')  # aeQ
+                                                                                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # aeR
+                                                                                                            looks_switchcostumeto COSTUME=(operator_letter_of LETTER=(variable:'i') STRING=(data_itemoflist LIST='Statistics' INDEX=(variable:'_read from list')))  # k5
+                                                                                                            procedures_call Position statistics %s %s space %s id=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) i=(variable:'i') space=('11')  # LF
+                                                                                                            data_setvariableto VARIABLE='_timer' VALUE=(motion_yposition)  # LG
+                                                                                                            control_if CONDITION=(operator_equals OPERAND1=(variable:'_control ID') OPERAND2=('1'))  # k6
+                                                                                                              SUBSTACK:
+                                                                                                                motion_changeyby DY=('-50')  # aeU
+                                                                                                                looks_seteffectto EFFECT='GHOST' VALUE=('100')  # aeV
+                                                                                                                control_repeat TIMES=('10')  # aeW
+                                                                                                                  SUBSTACK:
+                                                                                                                    motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=(variable:'_timer') NUM2=(motion_yposition)) NUM2=('3'))  # LH
+                                                                                                                    looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # a=a
+                                                                                                            control_forever  # aeT
+                                                                                                              SUBSTACK:
+                                                                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # aeZ
+                                                                                                                looks_switchcostumeto COSTUME=(operator_letter_of LETTER=(variable:'i') STRING=(data_itemoflist LIST='Statistics' INDEX=(variable:'_read from list')))  # k7
+                                                                                                                procedures_call Position statistics %s %s space %s id=(operator_letter_of LETTER=('1') STRING=(variable:'_;ID')) i=(variable:'i') space=('11')  # LI
+                                                                                                                control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # LJ
+                                                                                                                  SUBSTACK:
+                                                                                                                    control_delete_this_clone  # a=f
+                                                                                                          SUBSTACK2:
+                                                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('load'))  # k4
+                                                                                                              SUBSTACK:
+                                                                                                                looks_show  # ae2
+                                                                                                                procedures_call Basic Setup  # ae3
+                                                                                                                looks_gotofrontback FRONT_BACK='front'  # ae4
+                                                                                                                data_setvariableto VARIABLE='Bytt side' VALUE=('1')  # ae5
+                                                                                                                control_forever  # ae6
+                                                                                                                  SUBSTACK:
+                                                                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='load button yay')  # LL
+                                                                                                                    motion_gotoxy X=('0') Y=('-36')  # ae7
+                                                                                                                    control_if_else CONDITION=(operator_and OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_')) OPERAND2=(operator_equals OPERAND1=(variable:'Bytt side') OPERAND2=('1')))  # a;
+                                                                                                                      SUBSTACK:
+                                                                                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # ae8
+                                                                                                                        looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('110') NUM2=(looks_size)) NUM2=('3'))  # LO
+                                                                                                                        control_if CONDITION=(sensing_mousedown)  # LP
+                                                                                                                          SUBSTACK:
+                                                                                                                            control_repeat_until CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(sensing_mousedown)) OPERAND2=(operator_not OPERAND=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))))  # k9
+                                                                                                                              SUBSTACK:
+                                                                                                                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('90') NUM2=(looks_size)) NUM2=('3'))  # ae(
+                                                                                                                            control_if CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_'))  # LQ
+                                                                                                                              SUBSTACK:
+                                                                                                                                event_broadcast BROADCAST_INPUT=('dekoder informasjon')  # a=r
+                                                                                                                      SUBSTACK2:
+                                                                                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # ae9
+                                                                                                                        looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('3'))  # ae/
+                                                                                                                    control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('3'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # LM
+                                                                                                                      SUBSTACK:
+                                                                                                                        control_delete_this_clone  # a=u
+                                                                                                              SUBSTACK2:
+                                                                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('about'))  # k8
+                                                                                                                  SUBSTACK:
+                                                                                                                    looks_show  # ae?
+                                                                                                                    procedures_call Basic Setup  # ae@
+                                                                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='about_about')  # LU
+                                                                                                                    looks_seteffectto EFFECT='GHOST' VALUE=('100')  # ae[
+                                                                                                                    looks_gotofrontback FRONT_BACK='front'  # ae]
+                                                                                                                    motion_gotoxy X=('0') Y=('-50')  # ae^
+                                                                                                                    control_repeat TIMES=('10')  # LV
+                                                                                                                      SUBSTACK:
+                                                                                                                        motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('0') NUM2=(motion_yposition)) NUM2=('3'))  # LW
+                                                                                                                        looks_changeeffectby EFFECT='GHOST' CHANGE=('-10')  # a=z
+                                                                                                                    control_forever  # ae_
+                                                                                                                      SUBSTACK:
+                                                                                                                        motion_gotoxy X=('0') Y=('0')  # ae|
+                                                                                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('1'))  # a=
+                                                                                                                          SUBSTACK:
+                                                                                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='about_about')  # ae}
+                                                                                                                          SUBSTACK2:
+                                                                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('2'))  # k!
+                                                                                                                              SUBSTACK:
+                                                                                                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='about_help')  # ae~
+                                                                                                                              SUBSTACK2:
+                                                                                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('3'))  # LY
+                                                                                                                                  SUBSTACK:
+                                                                                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='about_credits')  # afa
+                                                                                                                        control_if CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'Menu Page') OPERAND2=('0')) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('menu')))  # LX
+                                                                                                                          SUBSTACK:
+                                                                                                                            control_repeat TIMES=('10')  # L0
+                                                                                                                              SUBSTACK:
+                                                                                                                                motion_changeyby DY=(operator_divide NUM1=(operator_subtract NUM1=('-50') NUM2=(motion_yposition)) NUM2=('6'))  # L1
+                                                                                                                                looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # a=K
+                                                                                                                            control_delete_this_clone  # a=J
+                                                                                                                  SUBSTACK2:
+                                                                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('background'))  # LT
+                                                                                                                      SUBSTACK:
+                                                                                                                        procedures_call Basic Setup  # afd
+                                                                                                                        looks_cleargraphiceffects  # afe
+                                                                                                                        control_if_else CONDITION=(operator_gt OPERAND1=(variable:'&Screen Length x') OPERAND2=('240'))  # a?
+                                                                                                                          SUBSTACK:
+                                                                                                                            procedures_call size %s size=('150')  # a=O
+                                                                                                                          SUBSTACK2:
+                                                                                                                            procedures_call size %s size=('110')  # a=P
+                                                                                                                        control_forever  # aff
+                                                                                                                          SUBSTACK:
+                                                                                                                            looks_show  # afg
+                                                                                                                            looks_switchcostumeto COSTUME=(operator_join STRING1=(variable:';KART') STRING2=(operator_join STRING1=('-background-') STRING2=(operator_random FROM=('1') TO=('3'))))  # k#
+                                                                                                                            control_repeat TIMES=(operator_multiply NUM1=('14') NUM2=('30'))  # L2
+                                                                                                                              SUBSTACK:
+                                                                                                                                looks_gotofrontback FRONT_BACK='back'  # afj
+                                                                                                                                motion_gotoxy X=(operator_divide NUM1=(sensing_mousex) NUM2=('-12')) Y=(operator_divide NUM1=(sensing_mousey) NUM2=('-12'))  # L3
+
+procedures_definition custom_block=(procedures_prototype Draw customized stickman)  # aj2
+data_setvariableto VARIABLE='i' VALUE=('0')  # aj3
+procedures_call Create clone %s Own ID %s ID=('stickman') o id=('shop')  # aj4
+data_setvariableto VARIABLE='i' VALUE=('1')  # aj5
+procedures_call Create clone %s Own ID %s ID=('stickman') o id=('shop')  # aj6
+data_setvariableto VARIABLE='i' VALUE=('0')  # aj7
+control_repeat TIMES=('12')  # aj8
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # aj9
+    procedures_call Create clone %s Own ID %s ID=('hats') o id=('shop')  # a[`
+
+event_whenbroadcastreceived BROADCAST_OPTION='scroll down'  # a@3
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_control ID') OPERAND2=('scroll wheel down'))  # M*
+  SUBSTACK:
+    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('40')  # aih
+    looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a@5
+
+procedures_call Create clone %s Own ID %s ID=('waiting_arena') o id=('')  # beI
+
+data_setvariableto VARIABLE='_control ID' VALUE=('2')  # a[=
+procedures_call Create clone %s Own ID %s ID=('gear') o id=('')  # ajU
+data_setvariableto VARIABLE='_control ID' VALUE=('3')  # ajV
+procedures_call Create clone %s Own ID %s ID=('gear') o id=('')  # a[?
+
+procedures_definition custom_block=(procedures_prototype Create statistics numbers)  # aiQ
+data_setvariableto VARIABLE='i' VALUE=('0')  # aiR
+data_setvariableto VARIABLE='_read from list' VALUE=('1')  # aiS
+control_repeat TIMES=(operator_length STRING=(data_itemoflist LIST='Statistics' INDEX=('1')))  # lb
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # aiV
+    procedures_call Create clone %s Own ID %s ID=(operator_join STRING1=('1') STRING2=('statistics')) o id=('data')  # aiW
+data_setvariableto VARIABLE='i' VALUE=('0')  # aiT
+data_setvariableto VARIABLE='_read from list' VALUE=('3')  # aiX
+control_repeat TIMES=(operator_length STRING=(data_itemoflist LIST='Statistics' INDEX=('3')))  # lc
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # ai0
+    procedures_call Create clone %s Own ID %s ID=(operator_join STRING1=('3') STRING2=('statistics')) o id=('data')  # ai1
+data_setvariableto VARIABLE='i' VALUE=('0')  # aiY
+data_setvariableto VARIABLE='_read from list' VALUE=('4')  # ai2
+control_repeat TIMES=(operator_length STRING=(data_itemoflist LIST='Statistics' INDEX=('4')))  # ld
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # ai5
+    procedures_call Create clone %s Own ID %s ID=(operator_join STRING1=('4') STRING2=('statistics')) o id=('data')  # ai6
+data_setvariableto VARIABLE='i' VALUE=('0')  # ai3
+data_setvariableto VARIABLE='_read from list' VALUE=('5')  # ai7
+control_repeat TIMES=(operator_length STRING=(data_itemoflist LIST='Statistics' INDEX=('5')))  # le
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # ai!
+    procedures_call Create clone %s Own ID %s ID=(operator_join STRING1=('5') STRING2=('statistics')) o id=('data')  # ai#
+data_setvariableto VARIABLE='i' VALUE=('0')  # ai8
+data_replaceitemoflist LIST='Statistics' INDEX=('6') ITEM=(operator_join STRING1=(operator_round NUM=(operator_multiply NUM1=(operator_divide NUM1=(data_itemoflist LIST='Statistics' INDEX=('7')) NUM2=(data_itemoflist LIST='Statistics' INDEX=('8'))) NUM2=('100'))) STRING2=('%'))  # Na
+data_setvariableto VARIABLE='_read from list' VALUE=('6')  # ai%
+control_repeat TIMES=(operator_length STRING=(data_itemoflist LIST='Statistics' INDEX=('6')))  # Nc
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # ai,
+    procedures_call Create clone %s Own ID %s ID=(operator_join STRING1=('6') STRING2=('statistics')) o id=('data')  # ai-
+
+data_setvariableto VARIABLE='Max Gearpoints' VALUE=('950')  # beJ
+
+data_setvariableto VARIABLE='Buttons clickable' VALUE=('1')  # beG
+
+control_if_else CONDITION=(operator_contains STRING1=(operator_divide NUM1=(sensing_current CURRENTMENU='MINUTE') NUM2=('5')) STRING2=('.'))  # Mr
+  SUBSTACK:
+    data_setvariableto VARIABLE=';SCENE' VALUE=('1play')  # ag5
+    data_setvariableto VARIABLE=';Game-mode INFO' VALUE=('1')  # ag7
+    procedures_call Create clone %s Own ID %s ID=('spectate') o id=('mark')  # ag8
+    procedures_call Create clone %s Own ID %s ID=('main_menu') o id=('mark')  # ag9
+    procedures_call Create clone %s Own ID %s ID=('game_information') o id=('mark')  # a?*
+  SUBSTACK2:
+    data_setvariableto VARIABLE=';SCENE' VALUE=('vote')  # a?(
+
+procedures_definition custom_block=(procedures_prototype Draw all Controls)  # ahg
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='settings_controls_01')  # My
+control_repeat TIMES=('17')  # Mz
+  SUBSTACK:
+    procedures_call Create clone %s Own ID %s ID=('controls') o id=('settings')  # ahi
+    looks_nextcostume  # a?^
+data_setvariableto VARIABLE='i' VALUE=('0')  # ahh
+control_repeat TIMES=('15')  # ahj
+  SUBSTACK:
+    data_changevariableby VARIABLE='i' VALUE=('1')  # ahk
+    data_setvariableto VARIABLE='_control ID' VALUE=(data_itemoflist LIST=':CONTROLS:' INDEX=(variable:'i'))  # MA
+    procedures_call Create clone %s Own ID %s ID=('characters_controls') o id=('settings')  # a?_
+
+procedures_definition custom_block=(procedures_prototype Controls - Detect Mousepointer rows)  # ahl
+data_setvariableto VARIABLE='i' VALUE=('0')  # ahm
+control_if CONDITION=(operator_equals OPERAND1=(data_itemnumoflist LIST=':CONTROLS:' ITEM=('reset')) OPERAND2=('0'))  # MO
+  SUBSTACK:
+    control_repeat TIMES=('15')  # aho
+      SUBSTACK:
+        data_changevariableby VARIABLE='i' VALUE=('1')  # ahp
+        data_replaceitemoflist LIST='Controls Mousepointer' INDEX=(variable:'i') ITEM=(operator_multiply NUM1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=('0'))) OPERAND2=('210')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(operator_add NUM1=(operator_multiply NUM1=(variable:'i') NUM2=('-17')) NUM2=('135')))) OPERAND2=('8'))) NUM2=('1'))  # ahq
+
+event_whenbroadcastreceived BROADCAST_OPTION='Reset Controls stamps'  # a?{
+control_if CONDITION=(operator_or OPERAND1=(operator_or OPERAND1=(operator_or OPERAND1=(operator_or OPERAND1=(operator_or OPERAND1=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('controls')) OPERAND2=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('gearpointnumbers'))) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('hats')) OPERAND2=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('max')))) OPERAND2=(operator_or OPERAND1=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('colorslide')) OPERAND2=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('brightnesslide'))) OPERAND2=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('numbers')))) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('username')) OPERAND2=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('stickman')))) OPERAND2=(operator_equals OPERAND1=(variable:'_;ID') OPERAND2=('characters_controls'))) OPERAND2=(operator_or OPERAND1=(operator_or OPERAND1=(operator_contains STRING1=(variable:'_;ID') STRING2=('screen_ratio_numbers')) OPERAND2=(operator_contains STRING1=(variable:'_;ID') STRING2=('itemprint'))) OPERAND2=(operator_contains STRING1=(variable:'_;ID') STRING2=('itemname'))))  # MB
+  SUBSTACK:
+    control_delete_this_clone  # a?|
+
+event_whenbroadcastreceived BROADCAST_OPTION='scroll up'  # a@6
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_control ID') OPERAND2=('scroll wheel up'))  # M+
+  SUBSTACK:
+    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('40')  # aii
+    looks_seteffectto EFFECT='GHOST' VALUE=('0')  # a@8
+
+procedures_definition custom_block=(procedures_prototype Position statistics %s %s space %s)  # ai.
+control_if_else CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='id') OPERAND2=('1'))  # lf
+  SUBSTACK:
+    motion_gotoxy X=(operator_add NUM1=('17') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='i') NUM2=('1')) NUM2=(argument_reporter_string_number VALUE='space'))) Y=('85')  # ai:
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='id') OPERAND2=('3'))  # lh
+      SUBSTACK:
+        motion_gotoxy X=(operator_add NUM1=('-33') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='i') NUM2=('1')) NUM2=(argument_reporter_string_number VALUE='space'))) Y=('24')  # ai@
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='id') OPERAND2=('4'))  # li
+          SUBSTACK:
+            motion_gotoxy X=(operator_add NUM1=('-46') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='i') NUM2=('1')) NUM2=(argument_reporter_string_number VALUE='space'))) Y=('-53')  # ai_
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='id') OPERAND2=('5'))  # lj
+              SUBSTACK:
+                motion_gotoxy X=(operator_add NUM1=('-116') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='i') NUM2=('1')) NUM2=(argument_reporter_string_number VALUE='space'))) Y=('-92')  # ai}
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='id') OPERAND2=('6'))  # Ng
+                  SUBSTACK:
+                    motion_gotoxy X=(operator_add NUM1=('-119') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='i') NUM2=('1')) NUM2=(argument_reporter_string_number VALUE='space'))) Y=('-133')  # ajc

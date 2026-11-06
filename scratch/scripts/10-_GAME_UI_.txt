@@ -1,0 +1,808 @@
+SPRITE: [GAME UI]
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+operator_and OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3')))  # a}M
+
+event_whenbroadcastreceived BROADCAST_OPTION='Load Assets'  # a}z
+control_if CONDITION=(operator_not)  # mw
+  SUBSTACK:
+    control_delete_this_clone  # a}B
+looks_setsizeto SIZE=('100')  # apv
+looks_show  # apw
+looks_seteffectto EFFECT='GHOST' VALUE=(operator_multiply NUM1=(variable:'hide asset load') NUM2=('100'))  # Qa
+motion_gotoxy X=('0') Y=('0')  # apx
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='-0123456789')  # Qb
+control_repeat TIMES=('1')  # Qc
+  SUBSTACK:
+    looks_nextcostume  # a}E
+control_repeat_until CONDITION=(operator_equals OPERAND1=(looks_costumenumbername NUMBER_NAME='number') OPERAND2=('1'))  # mx
+  SUBSTACK:
+    looks_nextcostume  # a}F
+looks_cleargraphiceffects  # apy
+looks_hide  # a}H
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # a|a
+looks_setsizeto SIZE=('100')  # aos
+looks_hide  # a|b
+
+event_whenbroadcastreceived BROADCAST_OPTION='update'  # a^m
+control_if CONDITION=(operator_gt OPERAND1=(variable:'_ID') OPERAND2=(''))  # N:
+  SUBSTACK:
+    control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('leave.transition')))  # lx
+      SUBSTACK:
+        looks_switchcostumeto COSTUME=(looks_costume COSTUME='Screen')  # N;
+        looks_seteffectto EFFECT='GHOST' VALUE=('40')  # ak/
+        motion_pointindirection DIRECTION=('90')  # ak:
+        looks_gotofrontback FRONT_BACK='front'  # ak;
+        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # a^q
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('players'))  # ly
+      SUBSTACK:
+        looks_setsizeto SIZE=('100')  # ak=
+        procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'#PlayersOnline') x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('13')) y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=('15')) distance=('15') LR=('R')  # N=
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('killcount'))  # lz
+          SUBSTACK:
+            control_if_else CONDITION=(operator_gt OPERAND1=(variable:'_digit') OPERAND2=('3'))  # lA
+              SUBSTACK:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='Skull')  # N?
+                motion_gotoxy X=(operator_add NUM1=(variable:'&Screen Length x') NUM2=('-13')) Y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=('14'))  # lC
+                looks_show  # a^x
+              SUBSTACK2:
+                procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'::draphehe') x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('1')) NUM2=('-32')) y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=('15')) distance=('15') LR=('L')  # N@
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('report'))  # lB
+              SUBSTACK:
+                control_if_else CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'death countdown') OPERAND2=('0')) OPERAND2=(operator_gt OPERAND1=(variable:'&Screen Length x') OPERAND2=('300')))  # lD
+                  SUBSTACK:
+                    looks_cleargraphiceffects  # ak[
+                    looks_show  # ak]
+                    control_if_else CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'death countdown') OPERAND2=('0')) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))))  # a}
+                      SUBSTACK:
+                        motion_gotoxy X=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('44')) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=('11') NUM2=('20')))  # N]
+                      SUBSTACK2:
+                        motion_gotoxy X=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('44')) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=('11'))  # N^
+                    control_if_else CONDITION=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'rapportør Knapp') NUM2=('20')))  # a~
+                      SUBSTACK:
+                        control_if_else CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(motion_xposition))) OPERAND2=('22')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(motion_yposition))) OPERAND2=('9')))  # lF
+                          SUBSTACK:
+                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # ak|
+                            control_if CONDITION=(sensing_mousedown)  # Ob
+                              SUBSTACK:
+                                event_broadcast BROADCAST_INPUT=('report button')  # alc
+                                data_setvariableto VARIABLE='rapportør Knapp' VALUE=(sensing_timer)  # ald
+                          SUBSTACK2:
+                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # a^N
+                      SUBSTACK2:
+                        looks_seteffectto EFFECT='GHOST' VALUE=('80')  # ak{
+                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # a^U
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='report')  # N{
+                    looks_setsizeto SIZE=('100')  # a^V
+                  SUBSTACK2:
+                    looks_hide  # a}X
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('heli-text'))  # lE
+                  SUBSTACK:
+                    looks_setsizeto SIZE=('100')  # ale
+                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # alf
+                    motion_gotoxy X=('0') Y=(operator_add NUM1=('-120') NUM2=(operator_multiply NUM1=(operator_not OPERAND=(operator_or OPERAND1=(operator_gt OPERAND1=(variable:'#PlayersOnline') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:'DEV.MODE') OPERAND2=('1')))) NUM2=('38')))  # Oc
+                    control_if_else CONDITION=(operator_or OPERAND1=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('sp')) OPERAND2=(operator_gt OPERAND1=(variable:'::Animation') OPERAND2=('12')))  # lH
+                      SUBSTACK:
+                        looks_hide  # a^0
+                      SUBSTACK2:
+                        control_if_else CONDITION=(operator_or OPERAND1=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('heli')) OPERAND2=(operator_equals OPERAND1=(variable:'::Helicopter passenger') OPERAND2=('1')))  # lI
+                          SUBSTACK:
+                            looks_show  # alj
+                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'::Helicopter passenger') OPERAND2=('1'))  # lK
+                              SUBSTACK:
+                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='exit')  # alk
+                              SUBSTACK2:
+                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'::Animation') OPERAND2=('1'))  # lL
+                                  SUBSTACK:
+                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='land to exit')  # all
+                                  SUBSTACK2:
+                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='chopperlimits')  # alm
+                          SUBSTACK2:
+                            control_if_else CONDITION=(operator_or OPERAND1=(operator_and OPERAND1=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'::Player Y') OPERAND2=('810')) OPERAND2=(operator_lt OPERAND1=(variable:'::Player Y') OPERAND2=('900'))) OPERAND2=(operator_lt OPERAND1=(variable:'::Player X') OPERAND2=('200'))) OPERAND2=(operator_and OPERAND1=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'::Player Y') OPERAND2=('810')) OPERAND2=(operator_lt OPERAND1=(variable:'::Player Y') OPERAND2=('900'))) OPERAND2=(operator_gt OPERAND1=(variable:'::Player X') OPERAND2=('8400'))))  # lJ
+                              SUBSTACK:
+                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='mount')  # Oh
+                                looks_show  # aln
+                                control_if CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:'::Helicopter passenger') OPERAND2=('0')) OPERAND2=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('heli'))))  # Om
+                                  SUBSTACK:
+                                    control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(sensing_keypressed KEY_OPTION=(data_itemoflist LIST=':CONTROLS:' INDEX=('6'))) OPERAND2=(operator_lt OPERAND1=(variable:'::Animation') OPERAND2=('13'))) OPERAND2=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('sp'))))  # Oo
+                                      SUBSTACK:
+                                        data_setvariableto VARIABLE='::[Spiller-action]' VALUE=('heli')  # alp
+                                        data_setvariableto VARIABLE='::Helicopter HP' VALUE=('500')  # alr
+                                        data_setvariableto VARIABLE='::Helicopter passenger' VALUE=('0')  # als
+                                        control_if_else CONDITION=(operator_lt OPERAND1=(variable:'::Player X') OPERAND2=('400'))  # ba
+                                          SUBSTACK:
+                                            data_setvariableto VARIABLE='::Player X' VALUE=('60')  # alt
+                                            data_setvariableto VARIABLE='::Høyre/Venstre' VALUE=('1')  # a^[
+                                          SUBSTACK2:
+                                            data_setvariableto VARIABLE='::Player X' VALUE=('8590')  # alu
+                                            data_setvariableto VARIABLE='::Høyre/Venstre' VALUE=('-1')  # a^]
+                                        data_setvariableto VARIABLE='::Player Y' VALUE=('880')  # a^?
+                              SUBSTACK2:
+                                looks_hide  # a^!
+                  SUBSTACK2:
+                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('gamemode'))  # lG
+                      SUBSTACK:
+                        looks_setsizeto SIZE=('100')  # alv
+                        looks_show  # alw
+                        motion_gotoxy X=('0') Y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=('12'))  # Os
+                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote'))  # bb
+                          SUBSTACK:
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='voting')  # alx
+                          SUBSTACK2:
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Team Death Match')  # Ot
+                            looks_switchcostumeto COSTUME=(operator_add NUM1=(looks_costumenumbername NUMBER_NAME='number') NUM2=(operator_subtract NUM1=(variable:';Spill-Modus') NUM2=('1')))  # Ou
+                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # a^`
+                      SUBSTACK2:
+                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('connection_driver_lost'))  # lM
+                          SUBSTACK:
+                            motion_gotoxy X=('0') Y=('0')  # aly
+                            data_changevariableby VARIABLE='_timer' VALUE=('1')  # alz
+                            looks_show  # alA
+                            looks_switchcostumeto COSTUME=(variable:'_info')  # Ow
+                            looks_gotofrontback FRONT_BACK='front'  # alB
+                            control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('1'))  # Ox
+                              SUBSTACK:
+                                control_delete_this_clone  # a_f
+                          SUBSTACK2:
+                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('flag update'))  # lN
+                              SUBSTACK:
+                                looks_setsizeto SIZE=('100')  # alC
+                                control_if CONDITION=(operator_equals OPERAND1=(variable:'_timer') OPERAND2=('0'))  # lP
+                                  SUBSTACK:
+                                    motion_gotoxy X=('0') Y=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'flag msg y offset') NUM2=('1')) NUM2=('30'))  # alE
+                                data_changevariableby VARIABLE='_timer' VALUE=('1')  # alD
+                                looks_show  # alG
+                                looks_switchcostumeto COSTUME=(variable:'_info')  # Oy
+                                control_if_else CONDITION=(operator_lt OPERAND1=(variable:'_timer') OPERAND2=('11'))  # bc
+                                  SUBSTACK:
+                                    data_changevariableby VARIABLE='_digit' VALUE=('-10')  # a_l
+                                  SUBSTACK2:
+                                    control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('60'))  # Oz
+                                      SUBSTACK:
+                                        data_changevariableby VARIABLE='_digit' VALUE=('5')  # alI
+                                        control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('80'))  # OA
+                                          SUBSTACK:
+                                            data_changevariableby VARIABLE='flag msg y offset' VALUE=('-1')  # alJ
+                                            data_setvariableto VARIABLE='flag msg y offset' VALUE=('0')  # alK
+                                            control_delete_this_clone  # a_o
+                                looks_seteffectto EFFECT='GHOST' VALUE=(variable:'_digit')  # alH
+                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # alL
+                                control_if_else CONDITION=(operator_and OPERAND1=(operator_contains STRING1=(variable:'_info') STRING2=('ENEMY')) OPERAND2=(operator_equals OPERAND1=(operator_letter_of LETTER=('1') STRING=(variable:'_info')) OPERAND2=('E')))  # lQ
+                                  SUBSTACK:
+                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('20')  # a_p
+                                control_if CONDITION=(operator_gt OPERAND1=(operator_length STRING=(variable:'_info')) OPERAND2=('4'))  # OB
+                                  SUBSTACK:
+                                    looks_cleargraphiceffects  # a_s
+                              SUBSTACK2:
+                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('leave'))  # lO
+                                  SUBSTACK:
+                                    control_if_else CONDITION=(operator_or OPERAND1=(operator_gt OPERAND1=(variable:'death countdown') OPERAND2=('0')) OPERAND2=(operator_equals OPERAND1=(variable:'::[Spiller-action]') OPERAND2=('spectator')))  # lR
+                                      SUBSTACK:
+                                        looks_show  # alO
+                                        motion_gotoxy X=('0') Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=('80') NUM2=(operator_multiply NUM1=(operator_not OPERAND=(operator_or OPERAND1=(operator_gt OPERAND1=(variable:'#PlayersOnline') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:'DEV.MODE') OPERAND2=('1')))) NUM2=('38'))))  # OE
+                                        control_if_else CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(motion_xposition))) OPERAND2=('22')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(motion_yposition))) OPERAND2=('9')))  # bd
+                                          SUBSTACK:
+                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # alU
+                                            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('130') NUM2=(looks_size)) NUM2=('3'))  # OK
+                                            control_if CONDITION=(sensing_mousedown)  # OL
+                                              SUBSTACK:
+                                                data_setvariableto VARIABLE='_ID' VALUE=('leave.transition')  # al2
+                                                control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # OM
+                                                data_setvariableto VARIABLE='_ID' VALUE=('leave')  # al3
+                                                control_delete_this_clone  # a_H
+                                          SUBSTACK2:
+                                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # alV
+                                            looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('120') NUM2=(looks_size)) NUM2=('3'))  # al4
+                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='leave')  # alT
+                                      SUBSTACK2:
+                                        looks_setsizeto SIZE=('150')  # alP
+                                        looks_hide  # a_K
+                                  SUBSTACK2:
+                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('switch team'))  # lS
+                                      SUBSTACK:
+                                        control_if_else CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'death countdown') OPERAND2=('0')) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))))  # be
+                                          SUBSTACK:
+                                            looks_show  # al7
+                                            motion_gotoxy X=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('44')) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=('11'))  # lU
+                                            control_if_else CONDITION=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'switch team timer') NUM2=('30')))  # lV
+                                              SUBSTACK:
+                                                control_if_else CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(motion_xposition))) OPERAND2=('22')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(motion_yposition))) OPERAND2=('9')))  # lW
+                                                  SUBSTACK:
+                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # al!
+                                                    control_if CONDITION=(sensing_mousedown)  # OU
+                                                      SUBSTACK:
+                                                        data_setvariableto VARIABLE=';Ditt Lag' VALUE=('0')  # al*
+                                                        data_setvariableto VARIABLE='switch team timer' VALUE=(sensing_timer)  # al+
+                                                  SUBSTACK2:
+                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # a_V
+                                              SUBSTACK2:
+                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('-50')  # a_S
+                                          SUBSTACK2:
+                                            looks_hide  # a_M
+                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='switch team')  # ON
+                                        looks_setsizeto SIZE=('100')  # a_2
+                                      SUBSTACK2:
+                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('game result'))  # lT
+                                          SUBSTACK:
+                                            looks_setsizeto SIZE=('100')  # al,
+                                            data_changevariableby VARIABLE='_timer' VALUE=('1')  # al-
+                                            looks_cleargraphiceffects  # al.
+                                            looks_show  # al/
+                                            looks_switchcostumeto COSTUME=(variable:'_info')  # OV
+                                            control_if_else CONDITION=(operator_lt OPERAND1=(variable:'_timer') OPERAND2=('21'))  # bf
+                                              SUBSTACK:
+                                                data_changevariableby VARIABLE='_digit' VALUE=('-5')  # a_8
+                                              SUBSTACK2:
+                                                control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('180'))  # OW
+                                                  SUBSTACK:
+                                                    data_changevariableby VARIABLE='_digit' VALUE=('5')  # al:
+                                                    control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('200'))  # OX
+                                                      SUBSTACK:
+                                                        control_delete_this_clone  # a_#
+                                            looks_seteffectto EFFECT='GHOST' VALUE=(variable:'_digit')  # a_6
+                                          SUBSTACK2:
+                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('vote'))  # lX
+                                              SUBSTACK:
+                                                looks_show  # al;
+                                                looks_switchcostumeto COSTUME=(operator_join STRING1=('vote-') STRING2=(variable:'_digit'))  # lZ
+                                                motion_gotoxy X=(operator_add NUM1=('-170') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(variable:'_digit') NUM2=('1')) NUM2=('113'))) Y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=('70'))  # l0
+                                                control_if_else CONDITION=(operator_lt OPERAND1=(variable:':Kart Åpent') OPERAND2=('1'))  # bg
+                                                  SUBSTACK:
+                                                    looks_show  # al@
+                                                    control_if_else CONDITION=(operator_and OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='_mouse_')) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'::[Spiller-action]') OPERAND2=('spectator'))))  # l2
+                                                      SUBSTACK:
+                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('50')  # al]
+                                                        control_if CONDITION=(sensing_mousedown)  # OZ
+                                                          SUBSTACK:
+                                                            data_setvariableto VARIABLE='::VALG' VALUE=(variable:'_digit')  # a_;
+                                                      SUBSTACK2:
+                                                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # a_-
+                                                  SUBSTACK2:
+                                                    looks_hide  # al[
+                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # a_=
+                                                control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')))  # l1
+                                                  SUBSTACK:
+                                                    control_delete_this_clone  # a_?
+                                                control_if CONDITION=(operator_equals OPERAND1=(variable:'::VALG') OPERAND2=(variable:'_digit'))  # O0
+                                                  SUBSTACK:
+                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # a_]
+                                              SUBSTACK2:
+                                                control_if_else CONDITION=(operator_contains STRING1=(variable:'_ID') STRING2=('votemubers'))  # lY
+                                                  SUBSTACK:
+                                                    looks_setsizeto SIZE=('100')  # al{
+                                                    control_if_else CONDITION=(operator_lt OPERAND1=(variable:':Kart Åpent') OPERAND2=('1'))  # bh
+                                                      SUBSTACK:
+                                                        procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(data_itemoflist LIST='-Total votes' INDEX=(operator_letter_of LETTER=('1') STRING=(variable:'_ID'))) x=(operator_add NUM1=('-135') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(operator_letter_of LETTER=('1') STRING=(variable:'_ID')) NUM2=('1')) NUM2=('113'))) y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=('65')) distance=('15') LR=('L')  # l4
+                                                      SUBSTACK2:
+                                                        looks_hide  # a_`
+                                                    control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')))  # O1
+                                                      SUBSTACK:
+                                                        control_delete_this_clone  # a_~
+                                                  SUBSTACK2:
+                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('transition'))  # l3
+                                                      SUBSTACK:
+                                                        looks_setsizeto SIZE=('100')  # amc
+                                                        data_setvariableto VARIABLE='arm to front?' VALUE=('0')  # amd
+                                                        motion_pointindirection DIRECTION=('90')  # ame
+                                                        data_changevariableby VARIABLE='_timer' VALUE=('1')  # amf
+                                                        looks_cleargraphiceffects  # amg
+                                                        looks_show  # amh
+                                                        control_if_else CONDITION=(operator_gt OPERAND1=(variable:'&Screen Length x') OPERAND2=('240'))  # bi
+                                                          SUBSTACK:
+                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # amj
+                                                          SUBSTACK2:
+                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='4:3 Transition')  # amk
+                                                        looks_seteffectto EFFECT='GHOST' VALUE=(variable:'_digit')  # ami
+                                                        looks_gotofrontback FRONT_BACK='front'  # aml
+                                                        control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('10'))  # O2
+                                                          SUBSTACK:
+                                                            data_changevariableby VARIABLE='_digit' VALUE=('8')  # amm
+                                                            control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('23'))  # O3
+                                                              SUBSTACK:
+                                                                control_delete_this_clone  # a`h
+                                                      SUBSTACK2:
+                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('team 1'))  # l5
+                                                          SUBSTACK:
+                                                            control_if_else CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')))  # l6
+                                                              SUBSTACK:
+                                                                looks_hide  # a`j
+                                                              SUBSTACK2:
+                                                                looks_seteffectto EFFECT='GHOST' VALUE=('20')  # amn
+                                                                looks_setsizeto SIZE=('80')  # amp
+                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # amq
+                                                                looks_seteffectto EFFECT='COLOR' VALUE=('20')  # amr
+                                                                control_if_else CONDITION=(operator_lt OPERAND1=(variable:':Kart Åpent') OPERAND2=('1'))  # l8
+                                                                  SUBSTACK:
+                                                                    procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'TEAM 1 POINTS') x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('1')) NUM2=('-13')) y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=(operator_add NUM1=('35') NUM2=(operator_multiply NUM1=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('2')) NUM2=('20')))) distance=('12') LR=('L')  # O5
+                                                                  SUBSTACK2:
+                                                                    looks_setsizeto SIZE=('100')  # ams
+                                                                    procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'TEAM 1') x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('13')) y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=(operator_add NUM1=('35') NUM2=(operator_multiply NUM1=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('2')) NUM2=('20')))) distance=('12') LR=('R')  # O6
+                                                          SUBSTACK2:
+                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('team 2'))  # l7
+                                                              SUBSTACK:
+                                                                control_if_else CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')))  # l9
+                                                                  SUBSTACK:
+                                                                    looks_hide  # a`s
+                                                                  SUBSTACK2:
+                                                                    looks_seteffectto EFFECT='GHOST' VALUE=('20')  # amB
+                                                                    looks_setsizeto SIZE=('80')  # amD
+                                                                    control_if_else CONDITION=(operator_lt OPERAND1=(variable:':Kart Åpent') OPERAND2=('1'))  # bj
+                                                                      SUBSTACK:
+                                                                        procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'TEAM 2 POINTS') x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('1')) NUM2=('-13')) y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=(operator_subtract NUM1=('55') NUM2=(operator_multiply NUM1=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('2')) NUM2=('20')))) distance=('12') LR=('L')  # O8
+                                                                      SUBSTACK2:
+                                                                        looks_setsizeto SIZE=('100')  # amF
+                                                                        procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'TEAM 2') x=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('13')) y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=(operator_subtract NUM1=('55') NUM2=(operator_multiply NUM1=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('2')) NUM2=('20')))) distance=('12') LR=('R')  # O9
+                                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # amE
+                                                                    looks_seteffectto EFFECT='COLOR' VALUE=('120')  # amO
+                                                                    control_if CONDITION=(operator_or OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')))  # O!
+                                                                      SUBSTACK:
+                                                                        control_delete_this_clone  # a`A
+                                                              SUBSTACK2:
+                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('countdown'))  # l!
+                                                                  SUBSTACK:
+                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='_reload')  # O%
+                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote'))  # l%
+                                                                      SUBSTACK:
+                                                                        looks_setsizeto SIZE=('150')  # amQ
+                                                                        data_setvariableto VARIABLE='_countdown value' VALUE=(operator_subtract NUM1=('30') NUM2=(sensing_current CURRENTMENU='SECOND'))  # O(
+                                                                        procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'_countdown value') x=(operator_multiply NUM1=(operator_subtract NUM1=(operator_length STRING=(variable:'_countdown value')) NUM2=('1')) NUM2=('-12')) y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=('50')) distance=('24') LR=('R')  # O)
+                                                                      SUBSTACK2:
+                                                                        control_if_else CONDITION=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('di'))  # l(
+                                                                          SUBSTACK:
+                                                                            data_setvariableto VARIABLE='_countdown value' VALUE=(operator_divide NUM1=(operator_round NUM=(operator_multiply NUM1=(operator_subtract NUM1=('7') NUM2=(operator_divide NUM1=(variable:'death countdown') NUM2=('30'))) NUM2=('10'))) NUM2=('10'))  # O*
+                                                                            control_if CONDITION=(operator_not OPERAND=(operator_contains STRING1=(variable:'_countdown value') STRING2=('.')))  # l*
+                                                                              SUBSTACK:
+                                                                                data_setvariableto VARIABLE='_countdown value' VALUE=(operator_join STRING1=(variable:'_countdown value') STRING2=('.0'))  # am1
+                                                                            looks_setsizeto SIZE=('80')  # amZ
+                                                                            procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'_countdown value') x=(operator_multiply NUM1=(operator_subtract NUM1=(operator_length STRING=(variable:'_countdown value')) NUM2=('1')) NUM2=('-5')) y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=('40') NUM2=(operator_multiply NUM1=(operator_not OPERAND=(operator_or OPERAND1=(operator_gt OPERAND1=(variable:'#PlayersOnline') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:'DEV.MODE') OPERAND2=('1')))) NUM2=('38')))) distance=('10') LR=('R')  # O+
+                                                                          SUBSTACK2:
+                                                                            control_if_else CONDITION=(operator_lt OPERAND1=(operator_subtract NUM1=(operator_subtract NUM1=(variable:'&Spill-lengde') NUM2=(operator_mod NUM1=(sensing_current CURRENTMENU='MINUTE') NUM2=(variable:'&Spill-lengde'))) NUM2=('1')) OPERAND2=('1'))  # l)
+                                                                              SUBSTACK:
+                                                                                data_setvariableto VARIABLE='_countdown value' VALUE=(operator_subtract NUM1=('59') NUM2=(sensing_current CURRENTMENU='SECOND'))  # O.
+                                                                                looks_changesizeby CHANGE=(operator_divide NUM1=(operator_subtract NUM1=('100') NUM2=(looks_size)) NUM2=('5'))  # O/
+                                                                                procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'_countdown value') x=(operator_multiply NUM1=(operator_subtract NUM1=(operator_length STRING=(variable:'_countdown value')) NUM2=('1')) NUM2=('-7.5')) y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('1')) NUM2=('-36')) distance=('15') LR=('R')  # O:
+                                                                              SUBSTACK2:
+                                                                                control_if_else CONDITION=(operator_lt OPERAND1=(operator_length STRING=(operator_subtract NUM1=('59') NUM2=(sensing_current CURRENTMENU='SECOND'))) OPERAND2=('2'))  # bk
+                                                                                  SUBSTACK:
+                                                                                    data_setvariableto VARIABLE='_countdown value' VALUE=(operator_join STRING1=(operator_join STRING1=(operator_subtract NUM1=(operator_subtract NUM1=(variable:'&Spill-lengde') NUM2=(operator_mod NUM1=(sensing_current CURRENTMENU='MINUTE') NUM2=(variable:'&Spill-lengde'))) NUM2=('1')) STRING2=(':')) STRING2=(operator_join STRING1=('0') STRING2=(operator_subtract NUM1=('59') NUM2=(sensing_current CURRENTMENU='SECOND'))))  # am.
+                                                                                  SUBSTACK2:
+                                                                                    data_setvariableto VARIABLE='_countdown value' VALUE=(operator_join STRING1=(operator_join STRING1=(operator_subtract NUM1=(operator_subtract NUM1=(variable:'&Spill-lengde') NUM2=(operator_mod NUM1=(sensing_current CURRENTMENU='MINUTE') NUM2=(variable:'&Spill-lengde'))) NUM2=('1')) STRING2=(':')) STRING2=(operator_subtract NUM1=('59') NUM2=(sensing_current CURRENTMENU='SECOND')))  # am/
+                                                                                looks_setsizeto SIZE=('60')  # am,
+                                                                                procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'_countdown value') x=(operator_multiply NUM1=(operator_subtract NUM1=(operator_length STRING=(variable:'_countdown value')) NUM2=('1')) NUM2=('-4')) y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('1')) NUM2=('-26')) distance=('8') LR=('R')  # O?
+                                                                  SUBSTACK2:
+                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('chat'))  # l#
+                                                                      SUBSTACK:
+                                                                        control_if_else CONDITION=(operator_and OPERAND1=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('sp'))) OPERAND2=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('di'))))  # bl
+                                                                          SUBSTACK:
+                                                                            motion_pointindirection DIRECTION=('90')  # anc
+                                                                            looks_seteffectto EFFECT='GHOST' VALUE=('10')  # ang
+                                                                            looks_show  # anh
+                                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Screen')  # O]
+                                                                            control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'_digit') NUM2=('0.5'))) OPERAND2=(sensing_keypressed KEY_OPTION=(data_itemoflist LIST=':CONTROLS:' INDEX=('8')))) OPERAND2=(operator_equals OPERAND1=(variable:':Kart Åpent') OPERAND2=('0')))  # l,
+                                                                              SUBSTACK:
+                                                                                data_setvariableto VARIABLE='_digit' VALUE=(sensing_timer)  # O_
+                                                                                data_setvariableto VARIABLE=':Kart Åpent' VALUE=('0')  # ani
+                                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_info') OPERAND2=('0'))  # l-
+                                                                                  SUBSTACK:
+                                                                                    data_setvariableto VARIABLE='_info' VALUE=('1')  # a`)
+                                                                                  SUBSTACK2:
+                                                                                    data_setvariableto VARIABLE='_info' VALUE=('0')  # a`*
+                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_info') OPERAND2=('1'))  # bm
+                                                                              SUBSTACK:
+                                                                                motion_changexby DX=(operator_divide NUM1=(operator_subtract NUM1=('-120') NUM2=(motion_xposition)) NUM2=('3'))  # O}
+                                                                                motion_sety Y=(operator_multiply NUM1=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')) NUM2=('-48'))  # O~
+                                                                                control_if_else CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(motion_xposition))) OPERAND2=('60')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(motion_yposition))) OPERAND2=('100')))  # bn
+                                                                                  SUBSTACK:
+                                                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # ann
+                                                                                    data_setvariableto VARIABLE='Mouse over chat.page' VALUE=('1')  # ant
+                                                                                    control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'_timer') NUM2=('0.2'))) OPERAND2=(sensing_mousedown))  # Pd
+                                                                                      SUBSTACK:
+                                                                                        data_changevariableby VARIABLE=':Chat.Page' VALUE=('1')  # anu
+                                                                                        data_setvariableto VARIABLE='_timer' VALUE=(sensing_timer)  # anv
+                                                                                  SUBSTACK2:
+                                                                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # ano
+                                                                                    data_setvariableto VARIABLE='Mouse over chat.page' VALUE=('0')  # a`^
+                                                                                procedures_call Chat %s %s %s %s %s %s %s %s %s chat duration %s 1=('1') 2=('2') 3=('3') 4=('4') 5=('5') 6=('6') 7=('7') 8=('8') 9=('9') d=('5')  # a`.
+                                                                              SUBSTACK2:
+                                                                                looks_hide  # anj
+                                                                                data_setvariableto VARIABLE='_timer' VALUE=('0')  # anw
+                                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # anx
+                                                                                data_setvariableto VARIABLE='Mouse over chat.page' VALUE=('0')  # any
+                                                                                control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(sensing_timer) OPERAND2=(operator_add NUM1=(variable:'_digit') NUM2=('0.2'))) OPERAND2=(sensing_keypressed KEY_OPTION=(data_itemoflist LIST=':CONTROLS:' INDEX=('9'))))  # l/
+                                                                                  SUBSTACK:
+                                                                                    data_setvariableto VARIABLE='_digit' VALUE=(sensing_timer)  # Ph
+                                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:':Kart Åpent') OPERAND2=('0'))  # l;
+                                                                                      SUBSTACK:
+                                                                                        data_setvariableto VARIABLE=':Kart Åpent' VALUE=('1')  # a{a
+                                                                                      SUBSTACK2:
+                                                                                        data_setvariableto VARIABLE=':Kart Åpent' VALUE=('0')  # a{b
+                                                                                control_if_else CONDITION=(operator_gt OPERAND1=(variable:':Kart Åpent') OPERAND2=('0'))  # l:
+                                                                                  SUBSTACK:
+                                                                                    looks_switchcostumeto COSTUME=(operator_join STRING1=('map-') STRING2=(variable:';KART'))  # l=
+                                                                                    motion_gotoxy X=('0') Y=('0')  # anA
+                                                                                    looks_cleargraphiceffects  # anB
+                                                                                    looks_seteffectto EFFECT='GHOST' VALUE=('10')  # anC
+                                                                                    looks_show  # anD
+                                                                                    data_setvariableto VARIABLE='_ID' VALUE=('map_player')  # anE
+                                                                                    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Pk
+                                                                                    data_setvariableto VARIABLE='_ID' VALUE=('chat')  # a{f
+                                                                                  SUBSTACK2:
+                                                                                    data_setvariableto VARIABLE=':Kart Åpent' VALUE=('0')  # anz
+                                                                                    motion_setx X=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('-100'))  # anF
+                                                                            control_if CONDITION=(operator_gt OPERAND1=(variable:':Chat.Page') OPERAND2=('4'))  # l.
+                                                                              SUBSTACK:
+                                                                                data_setvariableto VARIABLE=':Chat.Page' VALUE=('1')  # a{j
+                                                                            data_hidelist LIST='Leaderboard'  # anH
+                                                                            control_if CONDITION=(operator_gt OPERAND1=(variable:':Kart Åpent') OPERAND2=('0'))  # l?
+                                                                              SUBSTACK:
+                                                                                data_setvariableto VARIABLE='arm to front?' VALUE=('0')  # anI
+                                                                                control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=('-170'))) OPERAND2=('60')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=('95'))) OPERAND2=('20'))) OPERAND2=(operator_and OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('game'))))  # Pm
+                                                                                  SUBSTACK:
+                                                                                    data_showlist LIST='Leaderboard'  # a{l
+                                                                            control_if CONDITION=(operator_equals OPERAND1=(variable:':Kart Åpent') OPERAND2=('0'))  # Pl
+                                                                              SUBSTACK:
+                                                                                looks_switchcostumeto COSTUME=(operator_join STRING1=('Chat-') STRING2=(variable:':Chat.Page'))  # Pq
+                                                                          SUBSTACK2:
+                                                                            looks_hide  # and
+                                                                            data_setvariableto VARIABLE=':Kart Åpent' VALUE=('0')  # anQ
+                                                                            data_setvariableto VARIABLE='_info' VALUE=('0')  # a{t
+                                                                        control_if CONDITION=(operator_gt OPERAND1=(operator_round NUM=(sensing_timer)) OPERAND2=(variable:'_chat timer'))  # O@
+                                                                          SUBSTACK:
+                                                                            data_setvariableto VARIABLE='::Snakke' VALUE=('0')  # a{u
+                                                                      SUBSTACK2:
+                                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('map_player'))  # l+
+                                                                          SUBSTACK:
+                                                                            control_delete_this_clone  # a{x
+                                                                          SUBSTACK2:
+                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('i'))  # l@
+                                                                              SUBSTACK:
+                                                                                looks_setsizeto SIZE=('100')  # anT
+                                                                                motion_gotoxy X=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=('12')) Y=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=('12'))  # l]
+                                                                                looks_show  # anU
+                                                                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='i')  # Pr
+                                                                                control_if_else CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousex) NUM2=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=('12')))) OPERAND2=('11')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(sensing_mousey) NUM2=(operator_subtract NUM1=(variable:'&Screen Length y') NUM2=('12')))) OPERAND2=('11'))) OPERAND2=(operator_lt OPERAND1=(variable:':Kart Åpent') OPERAND2=('1')))  # Ps
+                                                                                  SUBSTACK:
+                                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='info')  # Pu
+                                                                                    motion_gotoxy X=('0') Y=(operator_multiply NUM1=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('vote')) NUM2=('-40'))  # Py
+                                                                                    looks_cleargraphiceffects  # a{I
+                                                                              SUBSTACK2:
+                                                                                control_if_else CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('sp'))) OPERAND2=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('di')))) OPERAND2=(operator_equals OPERAND1=(variable:';SCENE') OPERAND2=('game')))  # l[
+                                                                                  SUBSTACK:
+                                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('ammo'))  # l^
+                                                                                      SUBSTACK:
+                                                                                        looks_setsizeto SIZE=('140')  # an2
+                                                                                        control_if_else CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'Magazine size') OPERAND2=('')) OPERAND2=(operator_gt OPERAND1=(variable:'::Animation') OPERAND2=('8')))  # l`
+                                                                                          SUBSTACK:
+                                                                                            looks_hide  # a{P
+                                                                                          SUBSTACK2:
+                                                                                            procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'::Ammonisjon') x=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=(operator_add NUM1=('25') NUM2=('0'))) y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=('25') NUM2=('0'))) distance=('22') LR=('L')  # l{
+                                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'::Ammonisjon') OPERAND2=('0'))  # l|
+                                                                                              SUBSTACK:
+                                                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # an4
+                                                                                                motion_gotoxy X=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=(operator_add NUM1=('25') NUM2=('0'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=('25') NUM2=('0')))  # l}
+                                                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_digit') OPERAND2=('1'))  # l~
+                                                                                                  SUBSTACK:
+                                                                                                    motion_pointindirection DIRECTION=('90')  # an6
+                                                                                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='_reload')  # an7
+                                                                                                  SUBSTACK2:
+                                                                                                    control_if CONDITION=(operator_equals OPERAND1=(variable:'_digit') OPERAND2=('2'))  # PE
+                                                                                                      SUBSTACK:
+                                                                                                        looks_show  # an8
+                                                                                                        motion_pointindirection DIRECTION=(operator_add NUM1=(variable:'Reload Spin') NUM2=('90'))  # PF
+                                                                                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='_reload pin')  # an9
+                                                                                              SUBSTACK2:
+                                                                                                looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # a{W
+                                                                                      SUBSTACK2:
+                                                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('kills'))  # l_
+                                                                                          SUBSTACK:
+                                                                                            looks_setsizeto SIZE=('100')  # an!
+                                                                                            procedures_call Number - Digit %s value %s x / y %s %s distance %s left / right direction %s digit=(variable:'_digit') value=(variable:'::draphehe') x=('0') y=(operator_add NUM1=(variable:'&Screen Length y') NUM2=('-15')) distance=('12') LR=('R')  # an#
+                                                                                          SUBSTACK2:
+                                                                                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('healthbar'))  # ma
+                                                                                              SUBSTACK:
+                                                                                                looks_cleargraphiceffects  # an%
+                                                                                                looks_seteffectto EFFECT='GHOST' VALUE=('10')  # an(
+                                                                                                looks_show  # an)
+                                                                                                looks_setsizeto SIZE=('120')  # an*
+                                                                                                control_if_else CONDITION=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('heli'))  # bo
+                                                                                                  SUBSTACK:
+                                                                                                    looks_switchcostumeto COSTUME=(operator_join STRING1=('H') STRING2=(operator_round NUM=(operator_divide NUM1=(variable:'::Helicopter HP') NUM2=('10'))))  # mc
+                                                                                                    looks_seteffectto EFFECT='COLOR' VALUE=('110')  # a{9
+                                                                                                  SUBSTACK2:
+                                                                                                    looks_seteffectto EFFECT='COLOR' VALUE=('74')  # an+
+                                                                                                    looks_switchcostumeto COSTUME=(operator_join STRING1=('H') STRING2=(operator_round NUM=(operator_divide NUM1=(variable:'::Spiller-liv') NUM2=('2'))))  # PH
+                                                                                                control_if_else CONDITION=(operator_or OPERAND1=(operator_gt OPERAND1=(variable:'#PlayersOnline') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:'DEV.MODE') OPERAND2=('1')))  # mb
+                                                                                                  SUBSTACK:
+                                                                                                    motion_gotoxy X=('0') Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=('20'))  # an:
+                                                                                                  SUBSTACK2:
+                                                                                                    motion_gotoxy X=('0') Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=('58'))  # an;
+                                                                                              SUBSTACK2:
+                                                                                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('gear'))  # PG
+                                                                                                  SUBSTACK:
+                                                                                                    looks_setsizeto SIZE=('100')  # an@
+                                                                                                    looks_show  # an[
+                                                                                                    looks_gotofrontback FRONT_BACK='front'  # an]
+                                                                                                    motion_gotoxy X=(operator_subtract NUM1=(operator_subtract NUM1=(variable:'&Screen Length x') NUM2=('25')) NUM2=(operator_multiply NUM1=(operator_subtract NUM1=('3') NUM2=(variable:'_digit')) NUM2=('47'))) Y=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length y') NUM2=('-1')) NUM2=(operator_add NUM1=('20') NUM2=('0')))  # md
+                                                                                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_digit') OPERAND2=('1'))  # me
+                                                                                                      SUBSTACK:
+                                                                                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='Primary weapon')  # an_
+                                                                                                      SUBSTACK2:
+                                                                                                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_digit') OPERAND2=('2'))  # mf
+                                                                                                          SUBSTACK:
+                                                                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Secondary weapon')  # an`
+                                                                                                          SUBSTACK2:
+                                                                                                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Gadget')  # an{
+                                                                                  SUBSTACK2:
+                                                                                    looks_hide  # a{K
+
+event_whenbroadcastreceived BROADCAST_OPTION='transition'  # a}g
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=(''))  # P?
+  SUBSTACK:
+    data_setvariableto VARIABLE='_digit' VALUE=('0')  # ape
+    data_setvariableto VARIABLE='_timer' VALUE=('0')  # apf
+    data_setvariableto VARIABLE='*Flag message' VALUE=('')  # apg
+    data_setvariableto VARIABLE='_ID' VALUE=('transition')  # aph
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # P@
+    data_setvariableto VARIABLE='_ID' VALUE=('')  # a}i
+
+event_whenbroadcastreceived BROADCAST_OPTION='DELETE GAME CLONES'  # a{|
+control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('leave.transition')))  # PN
+  SUBSTACK:
+    data_setvariableto VARIABLE='flag msg y offset' VALUE=('0')  # aor
+    control_delete_this_clone  # a{~
+
+event_whenbroadcastreceived BROADCAST_OPTION='MENU'  # a}I
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('leave.transition'))  # Qd
+  SUBSTACK:
+    control_repeat TIMES=('10')  # Qe
+      SUBSTACK:
+        looks_show  # apA
+        looks_gotofrontback FRONT_BACK='front'  # apB
+        looks_changeeffectby EFFECT='GHOST' CHANGE=('10')  # a}L
+    control_delete_this_clone  # a}K
+
+event_whenbroadcastreceived BROADCAST_OPTION='The most front'  # a}k
+control_if CONDITION=(operator_or OPERAND1=(operator_or OPERAND1=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('transition')) OPERAND2=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('game result'))) OPERAND2=(operator_and OPERAND1=(operator_contains STRING1=(variable:'_ID') STRING2=('votemubers')) OPERAND2=(operator_equals OPERAND1=(variable:'arm to front?') OPERAND2=('1')))) OPERAND2=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('i')))  # mv
+  SUBSTACK:
+    control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(looks_costumenumbername NUMBER_NAME='name') OPERAND2=('i')))  # P^
+      SUBSTACK:
+        looks_gotofrontback FRONT_BACK='front'  # a}q
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('leave.transition'))  # P[
+  SUBSTACK:
+    motion_gotoxy X=('0') Y=('0')  # apk
+    looks_gotofrontback FRONT_BACK='front'  # apl
+    looks_show  # apm
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # P|
+    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # apn
+    data_changevariableby VARIABLE='_chat timer' VALUE=('1')  # apo
+    looks_seteffectto EFFECT='GHOST' VALUE=(operator_subtract NUM1=('100') NUM2=(operator_multiply NUM1=(variable:'_chat timer') NUM2=('5')))  # P}
+    sound_stopallsounds  # app
+    control_if CONDITION=(operator_equals OPERAND1=(variable:'_chat timer') OPERAND2=('40'))  # P~
+      SUBSTACK:
+        event_broadcast BROADCAST_INPUT=('DELETE GAME CLONES')  # apr
+        event_broadcast BROADCAST_INPUT=('Green Flag')  # aps
+        event_broadcast BROADCAST_INPUT=('DELETE GAME CLONES')  # apt
+        event_broadcast BROADCAST_INPUT=('Delete Player arm')  # apu
+        event_broadcast BROADCAST_INPUT=('MENU')  # a}w
+
+control_start_as_clone  # a|:
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('chat'))  # mq
+  SUBSTACK:
+    motion_setx X=(operator_add NUM1=(operator_multiply NUM1=(variable:'&Screen Length x') NUM2=('-1')) NUM2=('-100'))  # P.
+    data_setvariableto VARIABLE=':Chat.Page' VALUE=('1')  # ao*
+    data_setvariableto VARIABLE='_timer' VALUE=('0')  # ao,
+    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # ao-
+    data_setvariableto VARIABLE='Mouse over chat.page' VALUE=('0')  # a|?
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('transition'))  # mr
+      SUBSTACK:
+        data_setvariableto VARIABLE='arm to front?' VALUE=('0')  # ao.
+        motion_pointindirection DIRECTION=('90')  # ao/
+        data_changevariableby VARIABLE='_timer' VALUE=('1')  # ao:
+        looks_cleargraphiceffects  # ao;
+        looks_show  # ao=
+        looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # P/
+        control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('20'))  # mt
+          SUBSTACK:
+            data_changevariableby VARIABLE='_digit' VALUE=('10')  # ao@
+            control_if CONDITION=(operator_gt OPERAND1=(variable:'_timer') OPERAND2=('30'))  # P:
+              SUBSTACK:
+                control_delete_this_clone  # a|_
+        looks_seteffectto EFFECT='GHOST' VALUE=(variable:'_digit')  # ao?
+        looks_gotofrontback FRONT_BACK='front'  # a|`
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('map_player'))  # ms
+          SUBSTACK:
+            looks_cleargraphiceffects  # ao[
+            motion_pointindirection DIRECTION=('90')  # ao]
+            motion_gotoxy X=(operator_divide NUM1=(operator_subtract NUM1=(variable:'::Player X') NUM2=(operator_multiply NUM1=(variable:'(grid x *)') NUM2=('6'))) NUM2=('19.5')) Y=(operator_divide NUM1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'(grid y *)')) NUM2=('19.5'))  # mu
+            looks_gotofrontback FRONT_BACK='front'  # ao^
+            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('-100')  # ao|
+            looks_seteffectto EFFECT='GHOST' VALUE=('20')  # ao}
+            control_if_else CONDITION=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('heli'))  # bq
+              SUBSTACK:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='Map player heli')  # ao~
+              SUBSTACK2:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='Map player')  # apa
+            looks_setsizeto SIZE=('100')  # a|~
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=('leave.transition'))  # P;
+              SUBSTACK:
+                motion_gotoxy X=('0') Y=('0')  # apb
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='16:9 Transition')  # P=
+                looks_hide  # apc
+                looks_cleargraphiceffects  # apd
+                data_setvariableto VARIABLE='_chat timer' VALUE=('0')  # a}f
+
+procedures_call Clone %s digits %s ID=('UI') d=('1')  # beP
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # a{^
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=(''))  # PL
+  SUBSTACK:
+    data_setvariableto VARIABLE='flag msg y offset' VALUE=('0')  # an|
+    data_setvariableto VARIABLE='::Snakke' VALUE=('0')  # an}
+    data_setvariableto VARIABLE='_chat timer' VALUE=('0')  # an~
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # aoa
+    data_setvariableto VARIABLE='switch team timer' VALUE=('0')  # aob
+    data_setvariableto VARIABLE='rapportør Knapp' VALUE=('-20')  # aoc
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='blank')  # PM
+    motion_pointindirection DIRECTION=('90')  # aod
+    procedures_call Clone %s digits %s ID=('ammo') d=('2')  # aoe
+    procedures_call Clone %s digits %s ID=('players') d=('3')  # aof
+    procedures_call Clone %s digits %s ID=('healthbar') d=('1')  # aog
+    procedures_call Clone %s digits %s ID=('gamemode') d=('1')  # aoh
+    procedures_call Clone %s digits %s ID=('countdown') d=('4')  # aoi
+    procedures_call Clone %s digits %s ID=('chat') d=('1')  # aoj
+    procedures_call Clone %s digits %s ID=('leave') d=('1')  # aok
+    procedures_call Clone %s digits %s ID=('killcount') d=('4')  # aol
+    procedures_call Clone %s digits %s ID=('team 1') d=('2')  # aom
+    procedures_call Clone %s digits %s ID=('team 2') d=('2')  # aon
+    procedures_call Clone %s digits %s ID=('switch team') d=('1')  # aoo
+    procedures_call Clone %s digits %s ID=('heli-text') d=('1')  # aop
+    procedures_call Clone %s digits %s ID=('report') d=('1')  # a{{
+
+procedures_definition custom_block=(procedures_prototype Clone %s digits %s)  # ak,
+data_setvariableto VARIABLE='_ID' VALUE=(argument_reporter_string_number VALUE='ID')  # N-
+data_setvariableto VARIABLE='_digit' VALUE=('1')  # ak-
+control_repeat TIMES=(argument_reporter_string_number VALUE='d')  # lw
+  SUBSTACK:
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # N/
+    data_changevariableby VARIABLE='_digit' VALUE=('1')  # a^k
+data_setvariableto VARIABLE='_ID' VALUE=('')  # a^i
+
+procedures_call Clone %s digits %s ID=('kills') d=('3')  # beO
+
+event_whenbroadcastreceived BROADCAST_OPTION='flag update'  # a|f
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=(''))  # PP
+  SUBSTACK:
+    data_setvariableto VARIABLE='_digit' VALUE=('100')  # aot
+    data_setvariableto VARIABLE='_info' VALUE=(variable:'*Flag message')  # aou
+    data_setvariableto VARIABLE='_timer' VALUE=('0')  # aov
+    data_setvariableto VARIABLE='*Flag message' VALUE=('')  # aow
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_info') OPERAND2=('cl'))  # bp
+      SUBSTACK:
+        data_setvariableto VARIABLE='_ID' VALUE=('connection_driver_lost')  # aox
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # aoz
+      SUBSTACK2:
+        data_changevariableby VARIABLE='flag msg y offset' VALUE=('1')  # aoy
+        data_setvariableto VARIABLE='_ID' VALUE=('flag update')  # aoA
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # aoB
+    data_setvariableto VARIABLE='_ID' VALUE=('')  # a|h
+
+procedures_definition custom_block=(procedures_prototype Number - Digit %s value %s x / y %s %s distance %s left / right direction %s)  # ak8
+motion_pointindirection DIRECTION=('90')  # ak9
+control_if_else CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='LR') OPERAND2=('L'))  # a|
+  SUBSTACK:
+    motion_gotoxy X=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='digit') NUM2=(operator_length STRING=(argument_reporter_string_number VALUE='value'))) NUM2=(argument_reporter_string_number VALUE='distance'))) Y=(argument_reporter_string_number VALUE='y')  # N6
+  SUBSTACK2:
+    control_if CONDITION=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='LR') OPERAND2=('R'))  # N7
+      SUBSTACK:
+        motion_gotoxy X=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_multiply NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='digit') NUM2=('1')) NUM2=(argument_reporter_string_number VALUE='distance'))) Y=(argument_reporter_string_number VALUE='y')  # N#
+control_if_else CONDITION=(operator_lt OPERAND1=(operator_length STRING=(argument_reporter_string_number VALUE='value')) OPERAND2=(argument_reporter_string_number VALUE='digit'))  # lv
+  SUBSTACK:
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='_0')  # N*
+    looks_hide  # a^a
+  SUBSTACK2:
+    looks_show  # ak)
+    looks_switchcostumeto COSTUME=(operator_join STRING1=('_') STRING2=(operator_letter_of LETTER=(argument_reporter_string_number VALUE='digit') STRING=(argument_reporter_string_number VALUE='value')))  # N+
+
+procedures_definition custom_block=(procedures_prototype Chat %s %s %s %s %s %s %s %s %s chat duration %s)  # aoM
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='1'))  # mh
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('1'))  # PT
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # aoN
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # aoO
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='2'))  # mi
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('2'))  # PW
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # aoQ
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # aoR
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='3'))  # mj
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('3'))  # PZ
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # aoT
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # aoU
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='4'))  # mk
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('4'))  # P2
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # aoW
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # aoX
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='5'))  # ml
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('5'))  # P5
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # aoZ
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # ao0
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='6'))  # mm
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('6'))  # P8
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # ao2
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # ao3
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='7'))  # mn
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('7'))  # P#
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # ao5
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # ao6
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='8'))  # mo
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('8'))  # P)
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # ao8
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # ao9
+control_if CONDITION=(sensing_keypressed KEY_OPTION=(argument_reporter_string_number VALUE='9'))  # mp
+  SUBSTACK:
+    data_setvariableto VARIABLE='::Snakke' VALUE=(operator_join STRING1=(variable:':Chat.Page') STRING2=('9'))  # P,
+    data_setvariableto VARIABLE='_info' VALUE=('0')  # ao%
+    data_setvariableto VARIABLE='_chat timer' VALUE=(operator_add NUM1=(operator_round NUM=(sensing_timer)) NUM2=(argument_reporter_string_number VALUE='d'))  # ao(
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_info') OPERAND2=('1'))  # ao#
+
+event_whenbroadcastreceived BROADCAST_OPTION='report button'  # a}O
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=(''))  # Qf
+  SUBSTACK:
+    looks_hide  # apD
+    data_showlist LIST='@Players'  # apE
+    sensing_askandwait QUESTION=('Write the username here:')  # apF
+    control_if_else CONDITION=(operator_gt OPERAND1=(data_itemoflist LIST='@IDs' INDEX=(data_itemnumoflist LIST='@Players' ITEM=(sensing_answer))) OPERAND2=('1'))  # br
+      SUBSTACK:
+        data_setvariableto VARIABLE='::Player game-points' VALUE=(data_itemoflist LIST='@IDs' INDEX=(data_itemnumoflist LIST='@Players' ITEM=(sensing_answer)))  # Qg
+        data_setvariableto VARIABLE='*Flag message' VALUE=('reported')  # a}R
+      SUBSTACK2:
+        data_setvariableto VARIABLE='*Flag message' VALUE=('invalid')  # apI
+        data_setvariableto VARIABLE='rapportør Knapp' VALUE=('0')  # a}T
+    event_broadcast BROADCAST_INPUT=('flag update')  # apG
+    data_hidevariable VARIABLE='Killed by:'  # apN
+    data_hidelist LIST='@Players'  # a}U
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # a}V
+data_setvariableto VARIABLE='::Player game-points' VALUE=('0')  # apO
+data_hidevariable VARIABLE='Killed by:'  # apP
+data_hidelist LIST='@Players'  # a}W
+
+event_whenbroadcastreceived BROADCAST_OPTION='Front UI'  # a|c
+control_if CONDITION=(operator_gt OPERAND1=(variable:'_ID') OPERAND2=(''))  # PO
+  SUBSTACK:
+    looks_gotofrontback FRONT_BACK='front'  # a|e
+
+event_whenbroadcastreceived BROADCAST_OPTION='Game-end update'  # a|l
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_ID') OPERAND2=(''))  # PQ
+  SUBSTACK:
+    control_if CONDITION=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))  # mg
+      SUBSTACK:
+        data_setvariableto VARIABLE='_digit' VALUE=('100')  # aoD
+        data_setvariableto VARIABLE='_info' VALUE=(variable:'**game-end info')  # aoE
+        data_setvariableto VARIABLE='_timer' VALUE=('0')  # aoF
+        data_setvariableto VARIABLE='**game-end info' VALUE=('')  # aoG
+        data_setvariableto VARIABLE='_ID' VALUE=('game result')  # aoH
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # PR
+        data_setvariableto VARIABLE='_ID' VALUE=('')  # a|o
+    data_setvariableto VARIABLE='::VALG' VALUE=('0')  # aoC
+    procedures_call Clone %s digits %s ID=('vote') d=('4')  # aoI
+    procedures_call Clone %s digits %s ID=('1votemubers') d=('2')  # aoJ
+    procedures_call Clone %s digits %s ID=('2votemubers') d=('2')  # aoK
+    procedures_call Clone %s digits %s ID=('3votemubers') d=('2')  # aoL
+    procedures_call Clone %s digits %s ID=('4votemubers') d=('2')  # a|q
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # a}x
+data_hidelist LIST='Leaderboard'  # a}y

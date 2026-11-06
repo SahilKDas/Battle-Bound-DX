@@ -1,0 +1,94 @@
+SPRITE: Graphics
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+event_whenflagclicked  # bdD
+looks_hide  # bdE
+
+control_start_as_clone  # bdF
+control_if_else CONDITION=(operator_contains STRING1=(looks_costumenumbername NUMBER_NAME='name') STRING2=('bb-bg'))  # m^
+  SUBSTACK:
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='bb-bg-3')  # Su
+    looks_show  # au^
+    motion_gotoxy X=('0') Y=('0')  # au_
+    looks_cleargraphiceffects  # au`
+    motion_pointindirection DIRECTION=('90')  # au{
+    looks_setsizeto SIZE=('100')  # bdI
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_contains STRING1=(looks_costumenumbername NUMBER_NAME='name') STRING2=('battle bound'))  # m_
+      SUBSTACK:
+        control_if_else CONDITION=(operator_contains STRING1=(looks_costumenumbername NUMBER_NAME='name') STRING2=('thick'))  # m`
+          SUBSTACK:
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='battle bound thick')  # Sv
+            looks_setsizeto SIZE=('100')  # au~
+            looks_show  # ava
+            motion_gotoxy X=('0') Y=('-90')  # avb
+            looks_seteffectto EFFECT='GHOST' VALUE=('50')  # avc
+            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # avd
+            looks_gotofrontback FRONT_BACK='front'  # bdM
+          SUBSTACK2:
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='battle bound')  # Sw
+            looks_setsizeto SIZE=('100')  # ave
+            looks_show  # avf
+            motion_gotoxy X=('0') Y=('-90')  # avg
+            looks_seteffectto EFFECT='GHOST' VALUE=('0')  # avh
+            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # avi
+            looks_gotofrontback FRONT_BACK='front'  # bdO
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_contains STRING1=(looks_costumenumbername NUMBER_NAME='name') STRING2=('white main'))  # m{
+          SUBSTACK:
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='white main xd')  # Sx
+            looks_setsizeto SIZE=('185')  # avk
+            looks_show  # avl
+            motion_gotoxy X=('0') Y=(operator_add NUM1=(variable:'_thing') NUM2=('17.5'))  # Sy
+            looks_seteffectto EFFECT='GHOST' VALUE=('50')  # avm
+            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # avn
+            looks_gotofrontback FRONT_BACK='front'  # bdS
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_contains STRING1=(looks_costumenumbername NUMBER_NAME='name') STRING2=('main'))  # m|
+              SUBSTACK:
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='mainstick xd')  # Sz
+                looks_setsizeto SIZE=('185')  # avp
+                looks_show  # avq
+                motion_gotoxy X=('0') Y=(operator_add NUM1=(variable:'_thing') NUM2=('17.5'))  # SA
+                looks_gotofrontback FRONT_BACK='front'  # bdV
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_contains STRING1=(looks_costumenumbername NUMBER_NAME='name') STRING2=('wihte'))  # m}
+                  SUBSTACK:
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='thick wihte xd')  # SB
+                    looks_setsizeto SIZE=('185')  # avs
+                    looks_show  # avt
+                    motion_gotoxy X=('0') Y=(variable:'_thing')  # avu
+                    looks_seteffectto EFFECT='GHOST' VALUE=('50')  # avv
+                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('0')  # avw
+                    looks_gotofrontback FRONT_BACK='front'  # bdZ
+                  SUBSTACK2:
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='sidesticks xd')  # SC
+                    looks_setsizeto SIZE=('185')  # avx
+                    looks_show  # avy
+                    motion_gotoxy X=('0') Y=(variable:'_thing')  # avz
+                    looks_gotofrontback FRONT_BACK='front'  # bd1
+
+control_if CONDITION=(operator_and OPERAND2=(operator_equals OPERAND1=(variable:'&Screen Length x') OPERAND2=('240')) OPERAND1=(operator_equals OPERAND1=(sensing_username) OPERAND2=('KIKOKO_')))  # au)
+  SUBSTACK:
+    motion_pointindirection DIRECTION=('90')  # au*
+    event_broadcast BROADCAST_INPUT=('RESET')  # au,
+    motion_gotoxy X=('0') Y=('0')  # au-
+    looks_gotofrontback FRONT_BACK='front'  # au.
+    event_broadcast BROADCAST_INPUT=('Green Flag')  # au/
+    looks_switchbackdropto BACKDROP=(looks_backdrops BACKDROP='start')  # Sj
+    looks_gotofrontback FRONT_BACK='front'  # au:
+    data_setvariableto VARIABLE='_thing' VALUE=('2')  # au;
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='bb-bg-3')  # Sk
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Sl
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='thick wihte xd')  # Sm
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Sn
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='battle bound thick')  # So
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Sp
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='battle bound')  # Sq
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Sr
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='sidesticks xd')  # Ss
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # St
+    looks_setsizeto SIZE=('100')  # au=
+    motion_gotoxy X=('0') Y=('0')  # au?
+    looks_hide  # au@
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='bb-bg-3')  # au[

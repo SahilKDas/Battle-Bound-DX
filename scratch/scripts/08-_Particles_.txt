@@ -1,0 +1,630 @@
+SPRITE: [Particles]
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # a+_
+sound_setvolumeto VOLUME=(data_itemoflist LIST=':SETTINGS:' INDEX=('2'))  # |}
+
+event_whenbroadcastreceived BROADCAST_OPTION='Load Assets'  # a,C
+control_if CONDITION=(operator_not)  # jJ
+  SUBSTACK:
+    control_delete_this_clone  # a,E
+looks_setsizeto SIZE=('100')  # }o
+looks_show  # }p
+looks_seteffectto EFFECT='GHOST' VALUE=(operator_multiply NUM1=(variable:'hide asset load') NUM2=('100'))  # I.
+motion_gotoxy X=('0') Y=('0')  # }q
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='Boom')  # I/
+control_repeat TIMES=('1')  # I:
+  SUBSTACK:
+    looks_nextcostume  # a,H
+control_repeat_until CONDITION=(operator_equals OPERAND1=(looks_costumenumbername NUMBER_NAME='number') OPERAND2=('1'))  # jK
+  SUBSTACK:
+    looks_nextcostume  # a,I
+looks_cleargraphiceffects  # }r
+looks_hide  # a,K
+
+event_whenbroadcastreceived BROADCAST_OPTION='Front Sprites'  # a,x
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('smokebomb'))  # I-
+  SUBSTACK:
+    looks_gotofrontback FRONT_BACK='front'  # a,z
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # a+P
+procedures_call Volume  # a+Q
+
+data_setvariableto VARIABLE='_x' VALUE=(data_itemoflist LIST='""Driverless helicopters' INDEX=('1'))  # |7
+data_setvariableto VARIABLE='_y' VALUE=(data_itemoflist LIST='""Driverless helicopters' INDEX=('2'))  # Iz
+data_setvariableto VARIABLE='_RL' VALUE=(data_itemoflist LIST='""Driverless helicopters' INDEX=('3'))  # IA
+data_setvariableto VARIABLE='_color' VALUE=(data_itemoflist LIST='""Driverless helicopters' INDEX=('4'))  # IB
+data_setvariableto VARIABLE='_heli-HP' VALUE=(data_itemoflist LIST='""Driverless helicopters' INDEX=('5'))  # IC
+data_setvariableto VARIABLE='_heli-ID' VALUE=(operator_add NUM1=(operator_add NUM1=(variable:'_x') NUM2=(variable:'_y')) NUM2=(variable:'_color'))  # ID
+data_setvariableto VARIABLE='_:ID:' VALUE=('empty-heli')  # |8
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # IE
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a+L
+
+procedures_definition custom_block=(procedures_prototype Helicopter-position %s %s)  # }F
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='vent')  # I@
+motion_gotoxy X=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(variable:';CAM X')) Y=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(variable:';CAM Y'))  # jM
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='Helicopter')  # I]
+control_if_else CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(variable:';CAM X'))) OPERAND2=(operator_add NUM1=(variable:'&Screen Length x') NUM2=('220'))) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(variable:';CAM Y'))) OPERAND2=(operator_add NUM1=(variable:'&Screen Length y') NUM2=('50'))))  # jN
+  SUBSTACK:
+    looks_show  # }I
+    looks_seteffectto EFFECT='COLOR' VALUE=(operator_subtract NUM1=(variable:'_color') NUM2=('122'))  # I{
+    control_if CONDITION=(operator_and OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Player]')) OPERAND2=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:'::Helicopter passenger') OPERAND2=('0')) OPERAND2=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('heli')))))  # I|
+      SUBSTACK:
+        control_if CONDITION=(sensing_keypressed KEY_OPTION=(data_itemoflist LIST=':CONTROLS:' INDEX=('6')))  # I~
+          SUBSTACK:
+            data_addtolist LIST='Driverless helicopter deletion' ITEM=(variable:'_heli-ID')  # a,)
+  SUBSTACK2:
+    looks_hide  # a,5
+
+procedures_definition custom_block=(procedures_prototype Dust - Animation %s)  # |[
+data_changevariableby VARIABLE='_y' VALUE=('0.5')  # |]
+data_changevariableby VARIABLE='_x' VALUE=(operator_random FROM=('-1') TO=('1'))  # I2
+looks_changeeffectby EFFECT='GHOST' CHANGE=('4')  # |_
+procedures_call Dust - Position %s %s x=(variable:'_x') y=(variable:'_y')  # a+?
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # a+{
+looks_hide  # |~
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a+|
+
+procedures_definition custom_block=(procedures_prototype Explosion - Position %s %s radius %s)  # `5
+data_setvariableto VARIABLE='_:ID:' VALUE=('boom')  # `6
+sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Explosion')  # F^
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # F_
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # F`
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # F}
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Gb
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Gc
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Gf
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Gi
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Gj
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Gm
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Gp
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Gq
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Gt
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Gw
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Gx
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # GA
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # GD
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # GE
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # GH
+control_if CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('4')) OPERAND2=('1'))  # i^
+  SUBSTACK:
+    data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # GK
+    data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # GL
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # GO
+    data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # GR
+    data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # GS
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # GV
+    data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # GY
+    data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # GZ
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # G2
+    data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G5
+    data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G6
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # G9
+    data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G%
+    data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G(
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # G+
+    data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G.
+    data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G/
+    control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # G=
+    control_if CONDITION=(operator_equals OPERAND1=(variable:'*Explosion Helicopter') OPERAND2=('1'))  # G[
+      SUBSTACK:
+        data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G]
+        data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G^
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # G{
+        data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # G~
+        data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Ha
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Hd
+        data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Hg
+        data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Hh
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Hk
+        data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Hn
+        data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Ho
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Hr
+        data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Hu
+        data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # Hv
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # Hy
+        data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # HB
+        data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # HC
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # {i
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a(y
+
+procedures_definition custom_block=(procedures_prototype Dust - Position %s %s)  # |`
+motion_gotoxy X=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(variable:';CAM X')) Y=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(variable:';CAM Y'))  # I3
+
+procedures_definition custom_block=(procedures_prototype Dust - Radius %s Position %s %s)  # |*
+data_setvariableto VARIABLE='_:ID:' VALUE=('dust')  # |+
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # IH
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_divide NUM1=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')) NUM2=('2')))  # II
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # IL
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # IO
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_divide NUM1=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')) NUM2=('2')))  # IP
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # IS
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # IV
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_divide NUM1=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')) NUM2=('2')))  # IW
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # IZ
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a+/
+
+procedures_definition custom_block=(procedures_prototype Spark - setup)  # |%
+data_setvariableto VARIABLE='_ticks' VALUE=('0')  # |(
+data_setvariableto VARIABLE='_change' VALUE=(operator_random FROM=('0.3') TO=('0.6'))  # IF
+data_setvariableto VARIABLE='_sy' VALUE=('0')  # |)
+procedures_call Spark - Size %s size=(operator_random FROM=('20') TO=('35'))  # IG
+procedures_call Spark - Position %s %s x=(variable:'_y') y=(variable:'_x')  # a+V
+
+sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='elec1')  # a)5
+
+procedures_definition custom_block=(procedures_prototype Spark - Position %s %s)  # {n
+motion_pointindirection DIRECTION=(operator_multiply NUM1=(motion_direction) NUM2=('0.85'))  # HI
+motion_gotoxy X=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(variable:';CAM X')) Y=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(variable:';CAM Y'))  # i`
+looks_gotofrontback FRONT_BACK='front'  # a)G
+
+procedures_definition custom_block=(procedures_prototype flame damage %s)  # }z
+control_if CONDITION=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('heli')))  # I;
+  SUBSTACK:
+    control_if CONDITION=(operator_lt OPERAND1=(argument_reporter_string_number VALUE='thing') OPERAND2=('40'))  # I=
+      SUBSTACK:
+        control_if_else CONDITION=(operator_lt OPERAND1=(argument_reporter_string_number VALUE='thing') OPERAND2=('10'))  # a9
+          SUBSTACK:
+            data_changevariableby VARIABLE='::Spiller-liv' VALUE=('-0.3')  # a,S
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_lt OPERAND1=(argument_reporter_string_number VALUE='thing') OPERAND2=('28'))  # jL
+              SUBSTACK:
+                data_changevariableby VARIABLE='::Spiller-liv' VALUE=('-0.2')  # a,U
+              SUBSTACK2:
+                data_changevariableby VARIABLE='::Spiller-liv' VALUE=('-0.05')  # a,V
+        data_setvariableto VARIABLE='Health Timer' VALUE=(sensing_timer)  # I?
+        data_setvariableto VARIABLE='::Spiller-truffet-av' VALUE=(variable:'_name')  # }E
+        data_setvariableto VARIABLE=';Skjerm-risting' VALUE=('2')  # a,Y
+
+procedures_definition custom_block=(procedures_prototype Spark - Radius %s Position %s %s)  # {u
+data_setvariableto VARIABLE='_:ID:' VALUE=('spark')  # {v
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # HM
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # HN
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # HQ
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # HT
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # HU
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # HX
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a)3
+
+procedures_definition custom_block=(procedures_prototype Volume)  # |!
+sound_setvolumeto VOLUME=('100')  # a+N
+
+event_whenbroadcastreceived BROADCAST_OPTION='update'  # a).
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=(''))  # i|
+  SUBSTACK:
+    looks_hide  # {P
+    control_if CONDITION=(operator_gt OPERAND1=(data_lengthoflist LIST='""Driverless helicopters') OPERAND2=('0'))  # i~
+      SUBSTACK:
+        data_deleteoflist LIST='""Driverless helicopters' INDEX=('1')  # {R
+        data_deleteoflist LIST='""Driverless helicopters' INDEX=('1')  # {S
+        data_deleteoflist LIST='""Driverless helicopters' INDEX=('1')  # {T
+        data_deleteoflist LIST='""Driverless helicopters' INDEX=('1')  # {U
+        data_deleteoflist LIST='""Driverless helicopters' INDEX=('1')  # a);
+    control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'*Explosion X') OPERAND2=('')) OPERAND2=(operator_gt OPERAND1=(variable:'*Explosion Y') OPERAND2=('')))  # ja
+      SUBSTACK:
+        procedures_call Explosion - Position %s %s radius %s x=(variable:'*Explosion X') y=(variable:'*Explosion Y') r=(operator_add NUM1=('35') NUM2=(operator_multiply NUM1=(operator_equals OPERAND1=(variable:'*Explosion Helicopter') OPERAND2=('1')) NUM2=('50')))  # H9
+        data_setvariableto VARIABLE='*Explosion X' VALUE=('')  # {V
+        data_setvariableto VARIABLE='*Explosion Y' VALUE=('')  # {Y
+        control_if CONDITION=(operator_equals OPERAND1=(variable:'*Explosion Helicopter') OPERAND2=('1'))  # jc
+          SUBSTACK:
+            data_setvariableto VARIABLE='::[Spiller-action]' VALUE=('0')  # {Z
+            data_setvariableto VARIABLE=';Skjerm-risting' VALUE=('20')  # a)^
+        data_setvariableto VARIABLE='*Explosion Helicopter' VALUE=('0')  # a)[
+    control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'*Spark X') OPERAND2=('')) OPERAND2=(operator_gt OPERAND1=(variable:'*Spark Y') OPERAND2=('')))  # jb
+      SUBSTACK:
+        control_if CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('4')) OPERAND2=('1'))  # je
+          SUBSTACK:
+            procedures_call Spark - Radius %s Position %s %s r=('2') x=(operator_subtract NUM1=(variable:'*Spark X') NUM2=(operator_round NUM=(operator_multiply NUM1=(operator_mathop OPERATOR='sin' NUM=(variable:'*Spark Direction')) NUM2=('12')))) y=(operator_subtract NUM1=(variable:'*Spark Y') NUM2=(operator_round NUM=(operator_multiply NUM1=(operator_mathop OPERATOR='cos' NUM=(variable:'*Spark Direction')) NUM2=('12'))))  # H#
+        data_setvariableto VARIABLE='*Spark X' VALUE=('')  # {0
+        data_setvariableto VARIABLE='*Spark Y' VALUE=('')  # a)~
+    control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'*Dust x') OPERAND2=('')) OPERAND2=(operator_gt OPERAND1=(variable:'*Dust y') OPERAND2=('')))  # jd
+      SUBSTACK:
+        control_if CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('4')) OPERAND2=('1'))  # jg
+          SUBSTACK:
+            procedures_call Dust - Radius %s Position %s %s r=('7') x=(variable:'*Dust x') y=(variable:'*Dust y')  # a*c
+        data_setvariableto VARIABLE='*Dust x' VALUE=('')  # {8
+        data_setvariableto VARIABLE='*Dust y' VALUE=('')  # a*e
+    control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'*Gun Blast x') OPERAND2=('')) OPERAND2=(operator_gt OPERAND1=(variable:'*Gun Blast y') OPERAND2=('')))  # jf
+      SUBSTACK:
+        control_if CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('4')) OPERAND2=('1'))  # ji
+          SUBSTACK:
+            procedures_call Gun blast - Position %s %s %s %s x=(operator_add NUM1=(variable:'*Gun Blast x') NUM2=(operator_round NUM=(operator_multiply NUM1=(operator_mathop OPERATOR='sin' NUM=(variable:'*Gun blast direction')) NUM2=(data_itemoflist LIST='Gun lengths (for particles)' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(variable:'*Gun Blast Gun')))))) y=(operator_add NUM1=(variable:'*Gun Blast y') NUM2=(operator_round NUM=(operator_multiply NUM1=(operator_mathop OPERATOR='cos' NUM=(variable:'*Gun blast direction')) NUM2=(data_itemoflist LIST='Gun lengths (for particles)' INDEX=(data_itemnumoflist LIST='ITEMS' ITEM=(variable:'*Gun Blast Gun')))))) direction=(variable:'*Gun blast direction') gun=(variable:'*Gun Blast Gun')  # H)
+        data_setvariableto VARIABLE='*Gun Blast x' VALUE=('')  # {!
+        data_setvariableto VARIABLE='*Gun Blast y' VALUE=('')  # {-
+        data_setvariableto VARIABLE='*Gun Blast Gun' VALUE=('')  # {.
+        data_setvariableto VARIABLE='*Gun blast direction' VALUE=('')  # a*m
+    control_if CONDITION=(operator_and OPERAND1=(operator_gt OPERAND1=(variable:'*Smoke X') OPERAND2=('')) OPERAND2=(operator_gt OPERAND1=(variable:'*Smoke Y') OPERAND2=('')))  # jh
+      SUBSTACK:
+        data_setvariableto VARIABLE='_:ID:' VALUE=('smokebomb')  # {/
+        data_setvariableto VARIABLE='_x' VALUE=(variable:'*Smoke X')  # {:
+        data_setvariableto VARIABLE='_y' VALUE=(variable:'*Smoke Y')  # {;
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # H-
+        data_setvariableto VARIABLE='_:ID:' VALUE=('')  # {=
+        data_setvariableto VARIABLE='*Smoke X' VALUE=('')  # {?
+        data_setvariableto VARIABLE='*Smoke Y' VALUE=('')  # a*q
+    control_if CONDITION=(operator_gt OPERAND1=(variable:'*Light') OPERAND2=(''))  # jj
+      SUBSTACK:
+        control_if CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('4')) OPERAND2=('1'))  # jk
+          SUBSTACK:
+            data_setvariableto VARIABLE='_:ID:' VALUE=('light')  # {[
+            control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # H/
+            data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a*u
+        data_setvariableto VARIABLE='*Light' VALUE=('')  # a*s
+    control_if CONDITION=(operator_gt OPERAND1=(data_lengthoflist LIST='Opponent_flamethrower') OPERAND2=('0'))  # H.
+      SUBSTACK:
+        data_setvariableto VARIABLE='_x' VALUE=(data_itemoflist LIST='Opponent_flamethrower' INDEX=('1'))  # H:
+        data_setvariableto VARIABLE='_y' VALUE=(data_itemoflist LIST='Opponent_flamethrower' INDEX=('2'))  # H;
+        data_setvariableto VARIABLE='_direction' VALUE=(data_itemoflist LIST='Opponent_flamethrower' INDEX=('3'))  # H=
+        data_setvariableto VARIABLE='_color' VALUE=(data_itemoflist LIST='Opponent_flamethrower' INDEX=('4'))  # H?
+        data_setvariableto VARIABLE='_name' VALUE=(data_itemoflist LIST='Opponent_flamethrower' INDEX=('5'))  # H@
+        data_setvariableto VARIABLE='_:ID:' VALUE=('flame')  # {^
+        control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # H[
+        data_setvariableto VARIABLE='_:ID:' VALUE=('')  # {_
+        data_deleteoflist LIST='Opponent_flamethrower' INDEX=('1')  # {`
+        data_deleteoflist LIST='Opponent_flamethrower' INDEX=('1')  # {{
+        data_deleteoflist LIST='Opponent_flamethrower' INDEX=('1')  # {|
+        data_deleteoflist LIST='Opponent_flamethrower' INDEX=('1')  # {}
+        data_deleteoflist LIST='Opponent_flamethrower' INDEX=('1')  # a*D
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('spark'))  # i}
+      SUBSTACK:
+        control_if CONDITION=(operator_gt OPERAND1=(variable:'_ticks') OPERAND2=('14'))  # jl
+          SUBSTACK:
+            control_delete_this_clone  # a*G
+        looks_show  # {~
+        procedures_call Spark - Effect  # a*H
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('light'))  # jm
+          SUBSTACK:
+            control_if CONDITION=(operator_gt OPERAND1=(variable:'_ticks') OPERAND2=('2'))  # jn
+              SUBSTACK:
+                control_delete_this_clone  # a*K
+            data_changevariableby VARIABLE='_ticks' VALUE=('1')  # |a
+            looks_changeeffectby EFFECT='GHOST' CHANGE=('5')  # a*L
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('boom'))  # jo
+              SUBSTACK:
+                control_if CONDITION=(operator_gt OPERAND1=(variable:'_ticks') OPERAND2=('26'))  # jp
+                  SUBSTACK:
+                    control_delete_this_clone  # a*O
+                looks_show  # |b
+                data_changevariableby VARIABLE='_ticks' VALUE=('1')  # |c
+                procedures_call Boom %s %s e=(operator_random FROM=('30') TO=('50')) ticks=(variable:'_ticks')  # |d
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('dust'))  # jq
+                  SUBSTACK:
+                    control_if CONDITION=(operator_gt OPERAND1=(variable:'_ticks') OPERAND2=('12'))  # jr
+                      SUBSTACK:
+                        control_delete_this_clone  # a*S
+                    looks_show  # |e
+                    data_changevariableby VARIABLE='_ticks' VALUE=('1')  # |f
+                    procedures_call Dust - Animation %s ticks=(variable:'_ticks')  # a*T
+                  SUBSTACK2:
+                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('blast'))  # js
+                      SUBSTACK:
+                        control_if CONDITION=(operator_equals OPERAND1=(variable:'_ticks') OPERAND2=('5'))  # jt
+                          SUBSTACK:
+                            control_delete_this_clone  # a*W
+                        looks_gotofrontback FRONT_BACK='front'  # |g
+                        looks_show  # |h
+                        control_if CONDITION=(operator_gt OPERAND1=(variable:'_ticks') OPERAND2=('0'))  # jv
+                          SUBSTACK:
+                            data_changevariableby VARIABLE='_x' VALUE=(operator_divide NUM1=(variable:'_sin') NUM2=(variable:'_ticks'))  # H]
+                            data_changevariableby VARIABLE='_y' VALUE=(operator_divide NUM1=(variable:'_cos') NUM2=(variable:'_ticks'))  # H^
+                            procedures_call Gun blast - size %s size=(operator_subtract NUM1=(looks_size) NUM2=(operator_multiply NUM1=(variable:'_ticks') NUM2=('5')))  # H_
+                            looks_changeeffectby EFFECT='GHOST' CHANGE=('20')  # a*0
+                        procedures_call Dust - Position %s %s x=(variable:'_x') y=(variable:'_y')  # |i
+                        data_changevariableby VARIABLE='_ticks' VALUE=('1')  # a*3
+                      SUBSTACK2:
+                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('rpg_blast'))  # ju
+                          SUBSTACK:
+                            control_if CONDITION=(operator_equals OPERAND1=(variable:'_ticks') OPERAND2=('10'))  # jw
+                              SUBSTACK:
+                                control_delete_this_clone  # a*6
+                            looks_gotofrontback FRONT_BACK='front'  # |j
+                            looks_show  # |k
+                            control_if CONDITION=(operator_gt OPERAND1=(variable:'_ticks') OPERAND2=('0'))  # jy
+                              SUBSTACK:
+                                data_changevariableby VARIABLE='_x' VALUE=(operator_divide NUM1=(variable:'_sin') NUM2=(variable:'_ticks'))  # H{
+                                data_changevariableby VARIABLE='_y' VALUE=(operator_divide NUM1=(variable:'_cos') NUM2=(variable:'_ticks'))  # H|
+                                procedures_call Gun blast - size %s size=(operator_subtract NUM1=(looks_size) NUM2=(operator_multiply NUM1=(variable:'_ticks') NUM2=('4')))  # H}
+                                looks_changeeffectby EFFECT='GHOST' CHANGE=('4')  # a*!
+                            procedures_call Dust - Position %s %s x=(variable:'_x') y=(variable:'_y')  # |l
+                            data_changevariableby VARIABLE='_ticks' VALUE=('1')  # a*(
+                          SUBSTACK2:
+                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('smokebomb'))  # jx
+                              SUBSTACK:
+                                procedures_call Boom - Position %s %s x=(variable:'_x') y=(variable:'_y')  # |m
+                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='smoke')  # Ia
+                                control_if CONDITION=(operator_and OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Player]')) OPERAND2=(operator_lt OPERAND1=(variable:'_smoke.timer') OPERAND2=('60')))  # jA
+                                  SUBSTACK:
+                                    data_setvariableto VARIABLE='arm to front?' VALUE=('0')  # a*+
+                                looks_show  # |n
+                                looks_seteffectto EFFECT='GHOST' VALUE=(variable:'_smoke.timer')  # |p
+                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_smoke.mode') OPERAND2=('0'))  # a4
+                                  SUBSTACK:
+                                    data_changevariableby VARIABLE='_smoke.timer' VALUE=('-4')  # a*/
+                                  SUBSTACK2:
+                                    data_changevariableby VARIABLE='_smoke.timer' VALUE=('1')  # |q
+                                    control_if CONDITION=(operator_gt OPERAND1=(variable:'_smoke.timer') OPERAND2=('100'))  # Id
+                                      SUBSTACK:
+                                        control_delete_this_clone  # a*;
+                                control_if CONDITION=(operator_lt OPERAND1=(variable:'_smoke.timer') OPERAND2=('-1000'))  # Ic
+                                  SUBSTACK:
+                                    data_setvariableto VARIABLE='_smoke.mode' VALUE=('1')  # |r
+                                    data_setvariableto VARIABLE='_smoke.timer' VALUE=('0')  # a*?
+                              SUBSTACK2:
+                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('flame'))  # jz
+                                  SUBSTACK:
+                                    control_if CONDITION=(operator_lt OPERAND1=(looks_size) OPERAND2=('400'))  # jB
+                                      SUBSTACK:
+                                        procedures_call Flame - size %s size=(operator_add NUM1=(looks_size) NUM2=(operator_random FROM=('14') TO=('22')))  # |u
+                                    procedures_call Dust - Position %s %s x=(variable:'_x') y=(variable:'_y')  # |s
+                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='fire')  # If
+                                    data_changevariableby VARIABLE='_flame tick' VALUE=('1')  # |v
+                                    looks_changeeffectby EFFECT='BRIGHTNESS' CHANGE=('-4')  # |w
+                                    looks_changeeffectby EFFECT='GHOST' CHANGE=('2')  # |x
+                                    control_if CONDITION=(operator_gt OPERAND1=(variable:'_flame tick') OPERAND2=('50'))  # jD
+                                      SUBSTACK:
+                                        control_delete_this_clone  # a*{
+                                    control_if_else CONDITION=(operator_or OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[PLATFORM]')) OPERAND2=(operator_and OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Player]')) OPERAND2=(operator_and OPERAND1=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:'::Våpen holdt') OPERAND2=('m')) OPERAND2=(operator_lt OPERAND1=(variable:'::Animation') OPERAND2=('7'))) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(operator_subtract NUM1=(variable:'.Cloud.ARM.Direction') NUM2=(operator_multiply NUM1=('180') NUM2=(operator_divide NUM1=(operator_mathop OPERATOR='abs' NUM=(variable:'.Cloud.ARM.Direction')) NUM2=(variable:'.Cloud.ARM.Direction')))) NUM2=(motion_direction))) OPERAND2=('40')))))  # a5
+                                      SUBSTACK:
+                                        data_changevariableby VARIABLE='_x' VALUE=(operator_random FROM=('-1') TO=('1'))  # Ih
+                                        data_changevariableby VARIABLE='_y' VALUE=(operator_random FROM=('-1') TO=('1'))  # |F
+                                      SUBSTACK2:
+                                        data_changevariableby VARIABLE='_x' VALUE=(operator_add NUM1=(variable:'_sin') NUM2=(operator_random FROM=(operator_multiply NUM1=(operator_round NUM=(operator_divide NUM1=(looks_size) NUM2=('200'))) NUM2=('-1')) TO=(operator_round NUM=(operator_divide NUM1=(looks_size) NUM2=('200')))))  # Ii
+                                        data_changevariableby VARIABLE='_y' VALUE=(operator_add NUM1=(variable:'_cos') NUM2=(operator_random FROM=(operator_multiply NUM1=(operator_round NUM=(operator_divide NUM1=(looks_size) NUM2=('200'))) NUM2=('-1')) TO=(operator_round NUM=(operator_divide NUM1=(looks_size) NUM2=('200')))))  # |G
+                                    control_if CONDITION=(operator_or OPERAND1=(operator_gt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(motion_xposition)) OPERAND2=(operator_add NUM1=(variable:'&Screen Length x') NUM2=('5'))) OPERAND2=(operator_gt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(motion_yposition)) OPERAND2=(operator_add NUM1=(variable:'&Screen Length y') NUM2=('5'))))  # jE
+                                      SUBSTACK:
+                                        control_delete_this_clone  # a+j
+                                    control_if CONDITION=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Player]'))  # Ip
+                                      SUBSTACK:
+                                        control_if_else CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3')))  # jF
+                                          SUBSTACK:
+                                            control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'_color') OPERAND2=(variable:'::Farge')))  # Iu
+                                              SUBSTACK:
+                                                procedures_call flame damage %s thing=(variable:'_flame tick')  # a+s
+                                          SUBSTACK2:
+                                            procedures_call flame damage %s thing=(variable:'_flame tick')  # a+p
+                                  SUBSTACK2:
+                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('empty-heli'))  # jC
+                                      SUBSTACK:
+                                        control_if CONDITION=(operator_gt OPERAND1=(data_lengthoflist LIST='Driverless helicopter deletion') OPERAND2=('10'))  # jG
+                                          SUBSTACK:
+                                            data_deleteoflist LIST='Driverless helicopter deletion' INDEX=(data_itemnumoflist LIST='Driverless helicopter deletion' ITEM=('m'))  # Iv
+                                            control_delete_this_clone  # a+x
+                                        control_if CONDITION=(data_listcontainsitem LIST='Driverless helicopter deletion' ITEM=(variable:'_heli-ID'))  # jH
+                                          SUBSTACK:
+                                            data_deleteoflist LIST='Driverless helicopter deletion' INDEX=(data_itemnumoflist LIST='Driverless helicopter deletion' ITEM=('m'))  # Iw
+                                            data_deleteoflist LIST='Driverless helicopter deletion' INDEX=(data_itemnumoflist LIST='Driverless helicopter deletion' ITEM=(variable:'_heli-ID'))  # Ix
+                                            data_setvariableto VARIABLE='::[Spiller-action]' VALUE=('heli')  # |Z
+                                            data_setvariableto VARIABLE='::Player X' VALUE=(variable:'_x')  # |0
+                                            data_setvariableto VARIABLE='::Player Y' VALUE=(variable:'_y')  # |1
+                                            data_setvariableto VARIABLE='::Høyre/Venstre' VALUE=(variable:'_RL')  # |2
+                                            data_setvariableto VARIABLE=':Heli-ID' VALUE=(variable:'_heli-ID')  # |3
+                                            data_setvariableto VARIABLE='::Helicopter HP' VALUE=(variable:'_heli-HP')  # |4
+                                            control_delete_this_clone  # a+C
+                                        looks_show  # |Y
+                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='Helicopter HITBOX')  # Iy
+                                        looks_cleargraphiceffects  # |5
+                                        motion_pointindirection DIRECTION=(variable:'_RL')  # |6
+                                        procedures_call Helicopter-position %s %s x=(variable:'_x') y=(variable:'_y')  # a+E
+                                      SUBSTACK2:
+                                        control_delete_this_clone  # a+v
+
+event_whenbroadcastreceived BROADCAST_OPTION='DELETE GAME CLONES'  # a+R
+looks_hide  # |#
+control_delete_this_clone  # a+S
+
+procedures_definition custom_block=(procedures_prototype Flame - size %s)  # }t
+control_if_else CONDITION=(operator_gt OPERAND1=(argument_reporter_string_number VALUE='size') OPERAND2=('100'))  # a8
+  SUBSTACK:
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='SIZE2')  # }x
+  SUBSTACK2:
+    looks_switchcostumeto COSTUME=(looks_costume COSTUME='SIZE')  # }y
+looks_setsizeto SIZE=(argument_reporter_string_number VALUE='size')  # }v
+
+procedures_definition custom_block=(procedures_prototype Spark - Size %s)  # {r
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SIZE')  # HK
+looks_setsizeto SIZE=(argument_reporter_string_number VALUE='size')  # HL
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='Spark')  # {t
+
+procedures_definition custom_block=(procedures_prototype Boom - Position %s %s)  # {k
+motion_gotoxy X=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(variable:';CAM X')) Y=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(variable:';CAM Y'))  # i_
+looks_gotofrontback FRONT_BACK='front'  # a)A
+
+control_start_as_clone  # a%v
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('boom'))  # i-
+  SUBSTACK:
+    looks_seteffectto EFFECT='GHOST' VALUE=(operator_random FROM=('10') TO=('40'))  # F4
+    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=(operator_random FROM=('30') TO=('40'))  # F5
+    looks_gotofrontback FRONT_BACK='front'  # _*
+    procedures_call Boom - Size %s size=('1')  # _+
+    data_setvariableto VARIABLE='_ticks' VALUE=('0')  # _,
+    looks_hide  # a%z
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('spark'))  # i.
+      SUBSTACK:
+        looks_switchcostumeto COSTUME=(looks_costume COSTUME='Spark')  # F6
+        procedures_call Spark - Size %s size=('1')  # _-
+        motion_pointindirection DIRECTION=(variable:'*Spark Direction')  # _.
+        motion_turnright DEGREES=(operator_random FROM=('-70') TO=('70'))  # F7
+        looks_seteffectto EFFECT='GHOST' VALUE=(operator_random FROM=('5') TO=('15'))  # F8
+        looks_gotofrontback FRONT_BACK='front'  # _/
+        procedures_call Spark - setup  # _:
+        looks_hide  # a%E
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('light'))  # i/
+          SUBSTACK:
+            looks_setsizeto SIZE=('100')  # _;
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='light')  # F9
+            motion_pointindirection DIRECTION=('90')  # _=
+            motion_gotoxy X=('0') Y=('0')  # _?
+            looks_cleargraphiceffects  # _@
+            looks_show  # _[
+            looks_gotofrontback FRONT_BACK='front'  # _]
+            looks_seteffectto EFFECT='GHOST' VALUE=('88')  # _^
+            data_setvariableto VARIABLE='_ticks' VALUE=('0')  # a%H
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('vent'))  # i:
+              SUBSTACK:
+                looks_setsizeto SIZE=('100')  # __
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='vent')  # F!
+                motion_pointindirection DIRECTION=('90')  # _`
+                motion_gotoxy X=('0') Y=('0')  # _{
+                looks_cleargraphiceffects  # _|
+                looks_show  # _}
+                looks_gotofrontback FRONT_BACK='front'  # _~
+                looks_seteffectto EFFECT='GHOST' VALUE=('20')  # `a
+                data_setvariableto VARIABLE='_ticks' VALUE=('0')  # a%K
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('dust'))  # i;
+                  SUBSTACK:
+                    motion_pointindirection DIRECTION=('90')  # `b
+                    looks_cleargraphiceffects  # `c
+                    procedures_call Boom - Size %s size=(operator_random FROM=('20') TO=('50'))  # F#
+                    looks_hide  # `d
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='Dust')  # F%
+                    looks_seteffectto EFFECT='GHOST' VALUE=('50')  # `e
+                    data_setvariableto VARIABLE='_ticks' VALUE=('0')  # `f
+                    looks_gotofrontback FRONT_BACK='front'  # a%O
+                  SUBSTACK2:
+                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('blast'))  # i=
+                      SUBSTACK:
+                        motion_pointindirection DIRECTION=('90')  # `g
+                        looks_cleargraphiceffects  # `h
+                        looks_hide  # `i
+                        data_setvariableto VARIABLE='_ticks' VALUE=('0')  # `j
+                        looks_seteffectto EFFECT='GHOST' VALUE=('20')  # `k
+                        looks_seteffectto EFFECT='BRIGHTNESS' VALUE=(operator_random FROM=('40') TO=('50'))  # F(
+                        looks_gotofrontback FRONT_BACK='front'  # `l
+                        procedures_call Gun blast - size %s size=(operator_random FROM=('20') TO=('30'))  # F)
+                        procedures_call Dust - Position %s %s x=(variable:'_x') y=(variable:'_y')  # `m
+                        motion_pointindirection DIRECTION=(operator_add NUM1=(variable:'_direction') NUM2=(operator_random FROM=('-35') TO=('35')))  # F*
+                        procedures_call Calculate sin cos %s multiplier %s direction=(motion_direction) multiplier=('3')  # `n
+                      SUBSTACK2:
+                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('rpg_blast'))  # i?
+                          SUBSTACK:
+                            motion_pointindirection DIRECTION=('90')  # `p
+                            looks_cleargraphiceffects  # `q
+                            looks_hide  # `r
+                            data_setvariableto VARIABLE='_ticks' VALUE=('0')  # `s
+                            looks_seteffectto EFFECT='GHOST' VALUE=('50')  # `t
+                            looks_gotofrontback FRONT_BACK='front'  # `u
+                            procedures_call Gun blast - size %s size=(operator_random FROM=('40') TO=('50'))  # F+
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Dust')  # F,
+                            looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('100')  # `v
+                            procedures_call Dust - Position %s %s x=(variable:'_x') y=(variable:'_y')  # `w
+                            motion_pointindirection DIRECTION=(operator_add NUM1=(operator_subtract NUM1=(variable:'_direction') NUM2=(operator_multiply NUM1=('180') NUM2=(operator_divide NUM1=(operator_mathop OPERATOR='abs' NUM=(variable:'_direction')) NUM2=(variable:'_direction')))) NUM2=(operator_random FROM=('-30') TO=('30')))  # F-
+                            procedures_call Calculate sin cos %s multiplier %s direction=(motion_direction) multiplier=(operator_random FROM=('1') TO=('5'))  # F.
+                          SUBSTACK2:
+                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('smokebomb'))  # i@
+                              SUBSTACK:
+                                motion_pointindirection DIRECTION=('90')  # `A
+                                looks_cleargraphiceffects  # `B
+                                looks_show  # `C
+                                procedures_call Boom - Size %s size=('110')  # `D
+                                procedures_call Boom - Position %s %s x=(variable:'_x') y=(variable:'_y')  # `E
+                                data_setvariableto VARIABLE='_smoke.timer' VALUE=('100')  # `F
+                                data_setvariableto VARIABLE='_smoke.mode' VALUE=('0')  # `G
+                                looks_seteffectto EFFECT='GHOST' VALUE=(variable:'_smoke.timer')  # `H
+                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='smoke')  # `I
+                              SUBSTACK2:
+                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('flame'))  # i[
+                                  SUBSTACK:
+                                    motion_setrotationstyle STYLE='all around'  # `J
+                                    looks_show  # `K
+                                    motion_pointindirection DIRECTION=(variable:'_direction')  # `L
+                                    data_setvariableto VARIABLE='_sin' VALUE=(operator_round NUM=(operator_multiply NUM1=(operator_mathop OPERATOR='sin' NUM=(motion_direction)) NUM2=('6')))  # F;
+                                    data_setvariableto VARIABLE='_cos' VALUE=(operator_round NUM=(operator_multiply NUM1=(operator_mathop OPERATOR='cos' NUM=(motion_direction)) NUM2=('6')))  # F=
+                                    data_changevariableby VARIABLE='_x' VALUE=(operator_multiply NUM1=(variable:'_sin') NUM2=('5'))  # F?
+                                    data_changevariableby VARIABLE='_y' VALUE=(operator_multiply NUM1=(variable:'_cos') NUM2=('5'))  # F@
+                                    looks_cleargraphiceffects  # `S
+                                    looks_seteffectto EFFECT='BRIGHTNESS' VALUE=('90')  # `T
+                                    data_setvariableto VARIABLE='_flame tick' VALUE=('0')  # `U
+                                    procedures_call Flame - size %s size=(variable:';SIZE')  # `V
+                                    procedures_call Dust - Position %s %s x=(variable:'_x') y=(variable:'_y')  # `W
+                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='fire')  # F[
+                                    looks_gotofrontback FRONT_BACK='back'  # a%8
+                                  SUBSTACK2:
+                                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('empty-heli'))  # F:
+                                      SUBSTACK:
+                                        motion_setrotationstyle STYLE='left-right'  # `X
+                                        looks_hide  # `Y
+                                        motion_pointindirection DIRECTION=(variable:'_RL')  # `Z
+                                        looks_cleargraphiceffects  # `0
+                                        data_setvariableto VARIABLE='_flame tick' VALUE=('0')  # `1
+                                        procedures_call Flame - size %s size=('100')  # `2
+                                        procedures_call Dust - Position %s %s x=(variable:'_x') y=(variable:'_y')  # `3
+                                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='Helicopter')  # F]
+                                        data_addtolist LIST='Driverless helicopter deletion' ITEM=('m')  # `4
+                                        looks_gotofrontback FRONT_BACK='back'  # a%%
+
+procedures_definition custom_block=(procedures_prototype Gun blast - size %s)  # }d
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SIZE')  # I%
+looks_setsizeto SIZE=(argument_reporter_string_number VALUE='size')  # I(
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='Blast')  # }f
+
+procedures_definition custom_block=(procedures_prototype Boom - Size %s)  # _%
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SIZE')  # F2
+looks_setsizeto SIZE=(argument_reporter_string_number VALUE='size')  # F3
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='Boom')  # _)
+
+data_setvariableto VARIABLE='_x' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='x') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # {A
+data_setvariableto VARIABLE='_y' VALUE=(operator_add NUM1=(argument_reporter_string_number VALUE='y') NUM2=(operator_random FROM=(operator_multiply NUM1=(argument_reporter_string_number VALUE='r') NUM2=('-1')) TO=(argument_reporter_string_number VALUE='r')))  # H0
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # {C
+
+procedures_definition custom_block=(procedures_prototype Gun blast - Position %s %s %s %s)  # }a
+control_if_else CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='gun') OPERAND2=('j')) OPERAND2=(operator_contains STRING1=(argument_reporter_string_number VALUE='gun') STRING2=('heli')))  # a6
+  SUBSTACK:
+    data_setvariableto VARIABLE='_:ID:' VALUE=('rpg_blast')  # a,c
+  SUBSTACK2:
+    data_setvariableto VARIABLE='_:ID:' VALUE=('blast')  # a,d
+data_setvariableto VARIABLE='_x' VALUE=(argument_reporter_string_number VALUE='x')  # I5
+data_setvariableto VARIABLE='_y' VALUE=(argument_reporter_string_number VALUE='y')  # I7
+data_setvariableto VARIABLE='_direction' VALUE=(argument_reporter_string_number VALUE='direction')  # I8
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # I9
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # I!
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # I#
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a,l
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # a,A
+sound_seteffectto EFFECT='PAN' VALUE=('0')  # }m
+sound_seteffectto EFFECT='PITCH' VALUE=('0')  # }n
+sound_cleareffects  # a,B
+
+procedures_definition custom_block=(procedures_prototype Boom %s %s)  # _T
+control_if_else CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='ticks') OPERAND2=('1')) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='ticks') OPERAND2=('2')) OPERAND2=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='ticks') OPERAND2=('3'))))  # i)
+  SUBSTACK:
+    procedures_call Boom - Size %s size=(operator_add NUM1=(looks_size) NUM2=(argument_reporter_string_number VALUE='e'))  # FR
+    procedures_call Boom - Position %s %s x=(operator_add NUM1=(variable:'_x') NUM2=(operator_random FROM=('-10') TO=('10'))) y=(operator_add NUM1=(variable:'_y') NUM2=(operator_random FROM=('-10') TO=('10')))  # i+
+    looks_changeeffectby EFFECT='BRIGHTNESS' CHANGE=('4')  # a%b
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_or OPERAND1=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='ticks') OPERAND2=('4')) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='ticks') OPERAND2=('5')) OPERAND2=(operator_or OPERAND1=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='ticks') OPERAND2=('6')) OPERAND2=(operator_equals OPERAND1=(argument_reporter_string_number VALUE='ticks') OPERAND2=('7')))))  # i*
+      SUBSTACK:
+        procedures_call Boom - Size %s size=(operator_add NUM1=(looks_size) NUM2=(operator_multiply NUM1=(argument_reporter_string_number VALUE='e') NUM2=('-0.6')))  # FV
+        procedures_call Boom - Position %s %s x=(operator_add NUM1=(variable:'_x') NUM2=(operator_random FROM=('-10') TO=('10'))) y=(operator_add NUM1=(variable:'_y') NUM2=(operator_random FROM=('-10') TO=('10')))  # i,
+        looks_changeeffectby EFFECT='GHOST' CHANGE=('8')  # _4
+        looks_changeeffectby EFFECT='BRIGHTNESS' CHANGE=('-5')  # a%m
+      SUBSTACK2:
+        control_if CONDITION=(operator_gt OPERAND1=(argument_reporter_string_number VALUE='ticks') OPERAND2=('7'))  # FW
+          SUBSTACK:
+            procedures_call Boom - Size %s size=(operator_subtract NUM1=(looks_size) NUM2=('1'))  # F0
+            procedures_call Boom - Position %s %s x=(operator_add NUM1=(variable:'_x') NUM2=(operator_random FROM=('-2') TO=('2'))) y=(variable:'_y')  # F1
+            data_changevariableby VARIABLE='_y' VALUE=('2')  # _9
+            looks_changeeffectby EFFECT='GHOST' CHANGE=('2')  # _#
+            looks_changeeffectby EFFECT='BRIGHTNESS' CHANGE=('-10')  # a%q
+
+procedures_definition custom_block=(procedures_prototype Spark - Effect)  # {E
+data_changevariableby VARIABLE='_ticks' VALUE=('1')  # {F
+procedures_call Spark - Size %s size=(operator_subtract NUM1=(looks_size) NUM2=('1'))  # H5
+data_changevariableby VARIABLE='_sy' VALUE=(variable:'_change')  # {G
+data_changevariableby VARIABLE='_x' VALUE=(operator_subtract NUM1=('0') NUM2=(operator_multiply NUM1=(operator_mathop OPERATOR='sin' NUM=(motion_direction)) NUM2=(variable:'_sy')))  # H6
+data_changevariableby VARIABLE='_y' VALUE=(operator_subtract NUM1=('0') NUM2=(operator_multiply NUM1=(operator_mathop OPERATOR='cos' NUM=(motion_direction)) NUM2=(variable:'_sy')))  # H7
+procedures_call Spark - Position %s %s x=(variable:'_x') y=(variable:'_y')  # {L
+looks_changeeffectby EFFECT='GHOST' CHANGE=('7')  # a)-
+
+procedures_definition custom_block=(procedures_prototype Calculate sin cos %s multiplier %s)  # }g
+data_setvariableto VARIABLE='_sin' VALUE=(operator_round NUM=(operator_multiply NUM1=(operator_mathop OPERATOR='sin' NUM=(argument_reporter_string_number VALUE='direction')) NUM2=(argument_reporter_string_number VALUE='multiplier')))  # I)
+data_setvariableto VARIABLE='_cos' VALUE=(operator_round NUM=(operator_multiply NUM1=(operator_mathop OPERATOR='cos' NUM=(argument_reporter_string_number VALUE='direction')) NUM2=(argument_reporter_string_number VALUE='multiplier')))  # }h

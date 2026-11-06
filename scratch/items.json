@@ -1,0 +1,184 @@
+[
+  {
+    "code": "a",
+    "name": "Hands",
+    "description": "Hands. You can always use them when you have nothing else. Attack speed: 200 RPM",
+    "category": ".Secondary weapons",
+    "gearPoints": "0"
+  },
+  {
+    "code": "b",
+    "name": "Pistol",
+    "description": "A common pistol. It is handy, but kind of bad  compared to other guns. Fire rate: 200 RPM",
+    "category": ".Gadgets",
+    "gearPoints": "150"
+  },
+  {
+    "code": "c",
+    "name": "Axe",
+    "description": "This viking lookin' axe does a good amout of  damage, but it has a low attack speed. Attack speed: 75 RPM",
+    "category": ".Secondary weapons",
+    "gearPoints": "100"
+  },
+  {
+    "code": "d",
+    "name": "SMG",
+    "description": "This gun has a pretty high fire rate, and a decent  sized magazine. Fire rate: 750 RPM",
+    "category": ".Primary weapons",
+    "gearPoints": "500"
+  },
+  {
+    "code": "e",
+    "name": "Bow and arrow",
+    "description": "The bow is a really unique item. The damage and  speed depends on how much you load it. It takes around 0.7 seconds to fully load.",
+    "category": ".Primary weapons",
+    "gearPoints": "200"
+  },
+  {
+    "code": "f",
+    "name": "Grenade",
+    "description": "High explosive warning! The grenade can be thrown, and it'll bounce around for a couple seconds before exploding. Throw speed: 40 RPM",
+    "category": ".Gadgets",
+    "gearPoints": "100"
+  },
+  {
+    "code": "g",
+    "name": "Shotgun",
+    "description": "The only weapon that can fire multiple bullets at once. Recoil and damage is pretty powerful. Fire rate: 60 RPM",
+    "category": ".Primary weapons",
+    "gearPoints": "400"
+  },
+  {
+    "code": "h",
+    "name": "Sniper",
+    "description": "Good old bolt action sniper. This gun deals a lot of  damage, but its fire rate is slow. Fire rate: 38 RPM",
+    "category": ".Primary weapons",
+    "gearPoints": "600"
+  },
+  {
+    "code": "i",
+    "name": "Pet cube",
+    "description": "Commonly found in the wild under #games Remember to feed them with loves and faves regularly. They are not dangerous, but can be annoying at times.",
+    "category": ".Gadgets",
+    "gearPoints": "50"
+  },
+  {
+    "code": "j",
+    "name": "RPG",
+    "description": "High explosive warning. Shoot this rocket with caution! This gun can only shoot once per reload. Reload speed: 2 sec",
+    "category": ".Primary weapons",
+    "gearPoints": "650"
+  },
+  {
+    "code": "k",
+    "name": "Shurikens",
+    "description": "Throwable knife circle thing. A pretty dangerous  weapon that ninjas like to use. Attack speed: 150 RPM",
+    "category": ".Gadgets",
+    "gearPoints": "200"
+  },
+  {
+    "code": "l",
+    "name": "Knife",
+    "description": "It is a knife. Kind of looks like the one from  Robot Destructor but I swear I redrew it. Attack speed: 240 RPM",
+    "category": ".Secondary weapons",
+    "gearPoints": "200"
+  },
+  {
+    "code": "m",
+    "name": "Shield",
+    "description": "This shield only protect you if you aim it at projectiles. It reduces bullet damages with 50%, and completely  protects you from arrows, throwables and melee weapons.",
+    "category": ".Gadgets",
+    "gearPoints": "300"
+  },
+  {
+    "code": "n",
+    "name": "Machinegun",
+    "description": "This big boi will set back anyone in front of it, with  it's very big magazine and high fire rate. Fire rate: 1400 RPM",
+    "category": ".Primary weapons",
+    "gearPoints": "650"
+  },
+  {
+    "code": "o",
+    "name": "Assult rifle",
+    "description": "The m16 assult rifle. An iconic and powerful gun. Fire rate: 668 RPM",
+    "category": ".Primary weapons",
+    "gearPoints": "700"
+  },
+  {
+    "code": "p",
+    "name": "Heavy pistol",
+    "description": "This is a pistol with a slow fire rate, small magazine  and pretty high damage. Fire rate: 75 RPM",
+    "category": ".Primary weapons",
+    "gearPoints": "250"
+  },
+  {
+    "code": "q",
+    "name": "Katana",
+    "description": "A Samurai's sword, the katana. This weapon can  block throwables and arrows, and it can also attack. Attack speed: 150 RPM",
+    "category": ".Secondary weapons",
+    "gearPoints": "300"
+  },
+  {
+    "code": "r",
+    "name": "Semi-auto rifle",
+    "description": "The m1 Garand, commonly used in WW 2 by the US.  Also it has a cool iconic \"ping\" sound. Fire rate: 170 RPM",
+    "category": ".Primary weapons",
+    "gearPoints": "400"
+  },
+  {
+    "code": "s",
+    "name": "Light SMG",
+    "description": "This SMG has a ridiculously high fire rate. It has a  small magazine size to compromise the speed. Fire rate: 1500 RPM",
+    "category": ".Primary weapons",
+    "gearPoints": "450"
+  },
+  {
+    "code": "t",
+    "name": "Taser",
+    "description": "The only electrical item in the game, this small thing can  deliver a constant spark when it is turned on. Attack speed: constant",
+    "category": ".Secondary weapons",
+    "gearPoints": "250"
+  },
+  {
+    "code": "u",
+    "name": "Medic gun",
+    "description": "The infamous medic gun. This gun gives health to  others, instead of dealing damage. Fire rate: 150 RPM",
+    "category": ".Secondary weapons",
+    "gearPoints": "150"
+  },
+  {
+    "code": "v",
+    "name": "Medkit",
+    "description": "A medkit. Since another item can already heal others, there  should be something to heal yourself with, right? Stand still and hold your [use item] button to heal yourself.",
+    "category": ".Gadgets",
+    "gearPoints": "100"
+  },
+  {
+    "code": "w",
+    "name": "Nunchaku",
+    "description": "Another japanese weapon, ey? This item does constant  damage when it has reached a high enough spin velocity. Attack speed: ~1.5 seconds to reach damaging velocity",
+    "category": ".Secondary weapons",
+    "gearPoints": "150"
+  },
+  {
+    "code": "x",
+    "name": "Smoke bomb",
+    "description": "A grenade that instantly goes off and creates a  smoke cloud for some time. Attack speed: 20 RPM",
+    "category": ".Gadgets",
+    "gearPoints": "250"
+  },
+  {
+    "code": "y",
+    "name": "Flamethrower",
+    "description": "The Boring Company flamethrower. It spews out a big flame that takes damage depending on the smoke. Fire rate: Constant",
+    "category": ".Primary weapons",
+    "gearPoints": "500"
+  },
+  {
+    "code": "heli",
+    "name": null,
+    "description": null,
+    "category": null,
+    "gearPoints": null
+  }
+]

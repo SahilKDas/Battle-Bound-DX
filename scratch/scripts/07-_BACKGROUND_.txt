@@ -1,0 +1,389 @@
+SPRITE: [BACKGROUND]
+Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.
+
+event_whenbroadcastreceived BROADCAST_OPTION='DELETE GAME CLONES'  # a!Y
+looks_hide  # ^5
+control_delete_this_clone  # a!Z
+
+event_whenbroadcastreceived BROADCAST_OPTION='Load Assets'  # a#!
+control_if CONDITION=(operator_not)  # i%
+  SUBSTACK:
+    control_delete_this_clone  # a#%
+looks_setsizeto SIZE=('100')  # _G
+looks_show  # _H
+looks_seteffectto EFFECT='GHOST' VALUE=(operator_multiply NUM1=(variable:'hide asset load') NUM2=('100'))  # FM
+motion_gotoxy X=('0') Y=('0')  # _I
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='1--12')  # FN
+control_repeat TIMES=('1')  # FO
+  SUBSTACK:
+    looks_nextcostume  # a#*
+control_repeat_until CONDITION=(operator_equals OPERAND1=(looks_costumenumbername NUMBER_NAME='number') OPERAND2=('1'))  # i(
+  SUBSTACK:
+    looks_nextcostume  # a#+
+looks_cleargraphiceffects  # _J
+looks_hide  # a#-
+
+event_whenbroadcastreceived BROADCAST_OPTION='Front Sprites'  # a!0
+control_if CONDITION=(operator_gt OPERAND1=(variable:'_:ID:') OPERAND2=(''))  # E@
+  SUBSTACK:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('1parallax'))  # iY
+      SUBSTACK:
+        looks_gotofrontback FRONT_BACK='back'  # a!3
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('2parallax'))  # iZ
+          SUBSTACK:
+            looks_gotofrontback FRONT_BACK='back'  # a!5
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('flag 1'))  # i0
+              SUBSTACK:
+                control_if_else CONDITION=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))  # i1
+                  SUBSTACK:
+                    looks_gotofrontback FRONT_BACK='front'  # ^6
+                    looks_cleargraphiceffects  # ^7
+                    procedures_call Normal Positon %s %s Scroll %s %s x=(variable:'_x') y=(variable:'_y') sx=(variable:';CAM X') sy=(variable:';CAM Y')  # ^8
+                    motion_pointindirection DIRECTION=('90')  # ^9
+                    procedures_call Size %s size=('100')  # ^!
+                    control_if CONDITION=(operator_gt OPERAND1=(variable:'#PlayersOnline') OPERAND2=('1'))  # i2
+                      SUBSTACK:
+                        control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('2')) OPERAND2=(operator_and OPERAND1=(operator_and OPERAND1=(operator_gt OPERAND1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y')) OPERAND2=('0')) OPERAND2=(operator_lt OPERAND1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y')) OPERAND2=('100'))) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(variable:'::Player X') NUM2=(variable:'_x'))) OPERAND2=('10')))) OPERAND2=(operator_and OPERAND1=(operator_not OPERAND=(data_listcontainsitem LIST='Capture the flag info' ITEM=('1'))) OPERAND2=(operator_equals OPERAND1=(variable:'::Player.INFO') OPERAND2=('0'))))  # E]
+                          SUBSTACK:
+                            data_setvariableto VARIABLE='::Player.INFO' VALUE=('1')  # ^#
+                            data_setvariableto VARIABLE='*Flag message' VALUE=('ys')  # ^,
+                            event_broadcast BROADCAST_INPUT=('flag update')  # a!*
+                    control_if CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:'::Player.INFO') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('2')))  # i3
+                      SUBSTACK:
+                        data_addtolist LIST='Capture the flag info' ITEM=('1')  # a!+
+                    control_if_else CONDITION=(data_listcontainsitem LIST='Capture the flag info' ITEM=('1'))  # a1
+                      SUBSTACK:
+                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='Flag Team 1 not there')  # ^-
+                      SUBSTACK2:
+                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='Flag Team 1 there')  # ^.
+                    control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:'::Player.INFO') OPERAND2=('1'))) OPERAND2=(operator_and OPERAND1=(operator_and OPERAND1=(operator_gt OPERAND1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y')) OPERAND2=('0')) OPERAND2=(operator_lt OPERAND1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y')) OPERAND2=('100'))) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(variable:'::Player X') NUM2=(variable:'_x'))) OPERAND2=('10'))))  # E~
+                      SUBSTACK:
+                        data_setvariableto VARIABLE='::Player.INFO' VALUE=('0')  # ^/
+                        sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Tada')  # Fe
+                        data_setvariableto VARIABLE='*Flag message' VALUE=('yc')  # ^@
+                        event_broadcast BROADCAST_INPUT=('flag update')  # ^[
+                        data_changevariableby VARIABLE='TEAM 1 POINTS' VALUE=('1')  # a!^
+                  SUBSTACK2:
+                    looks_hide  # a!8
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('flag 2'))  # E[
+                  SUBSTACK:
+                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:';Spill-Modus') OPERAND2=('3'))  # i4
+                      SUBSTACK:
+                        looks_gotofrontback FRONT_BACK='front'  # ^]
+                        looks_cleargraphiceffects  # ^^
+                        procedures_call Normal Positon %s %s Scroll %s %s x=(variable:'_x') y=(variable:'_y') sx=(variable:';CAM X') sy=(variable:';CAM Y')  # ^_
+                        motion_pointindirection DIRECTION=('90')  # ^`
+                        procedures_call Size %s size=('100')  # ^{
+                        control_if CONDITION=(operator_gt OPERAND1=(variable:'#PlayersOnline') OPERAND2=('1'))  # i5
+                          SUBSTACK:
+                            control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('1')) OPERAND2=(operator_and OPERAND1=(operator_and OPERAND1=(operator_gt OPERAND1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y')) OPERAND2=('0')) OPERAND2=(operator_lt OPERAND1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y')) OPERAND2=('100'))) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(variable:'::Player X') NUM2=(variable:'_x'))) OPERAND2=('10')))) OPERAND2=(operator_and OPERAND1=(operator_not OPERAND=(data_listcontainsitem LIST='Capture the flag info' ITEM=('2'))) OPERAND2=(operator_equals OPERAND1=(variable:'::Player.INFO') OPERAND2=('0'))))  # Ff
+                              SUBSTACK:
+                                data_setvariableto VARIABLE='::Player.INFO' VALUE=('1')  # ^|
+                                data_setvariableto VARIABLE='*Flag message' VALUE=('ys')  # _d
+                                event_broadcast BROADCAST_INPUT=('flag update')  # a#d
+                        control_if CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:'::Player.INFO') OPERAND2=('1')) OPERAND2=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('1')))  # i6
+                          SUBSTACK:
+                            data_addtolist LIST='Capture the flag info' ITEM=('2')  # a#e
+                        control_if_else CONDITION=(data_listcontainsitem LIST='Capture the flag info' ITEM=('2'))  # a2
+                          SUBSTACK:
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Flag Team 2 not there')  # _e
+                          SUBSTACK2:
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Flag Team 2 there')  # _f
+                        control_if CONDITION=(operator_and OPERAND1=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:';Ditt Lag') OPERAND2=('2')) OPERAND2=(operator_equals OPERAND1=(variable:'::Player.INFO') OPERAND2=('1'))) OPERAND2=(operator_and OPERAND1=(operator_and OPERAND1=(operator_gt OPERAND1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y')) OPERAND2=('0')) OPERAND2=(operator_lt OPERAND1=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y')) OPERAND2=('100'))) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(variable:'::Player X') NUM2=(variable:'_x'))) OPERAND2=('10'))))  # Fm
+                          SUBSTACK:
+                            data_setvariableto VARIABLE='::Player.INFO' VALUE=('0')  # _g
+                            data_changevariableby VARIABLE='::Gamemode.POINTS' VALUE=('1')  # _l
+                            sound_play SOUND_MENU=(sound_sounds_menu SOUND_MENU='Tada')  # Fr
+                            data_setvariableto VARIABLE='*Flag message' VALUE=('yc')  # _m
+                            event_broadcast BROADCAST_INPUT=('flag update')  # _n
+                            data_changevariableby VARIABLE='TEAM 2 POINTS' VALUE=('1')  # a#q
+                      SUBSTACK2:
+                        looks_hide  # a!{
+
+control_if_else CONDITION=(operator_equals OPERAND1=(variable:';KART') OPERAND2=('1'))  # _R
+  SUBSTACK2:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:';KART') OPERAND2=('2'))  # _S
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start'  # a9e
+control_if CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=(''))  # Ee
+  SUBSTACK:
+    looks_setsizeto SIZE=('100')  # [?
+    looks_hide  # [@
+    data_setvariableto VARIABLE='_move.position' VALUE=('0')  # [[
+    procedures_call Create clones  # []
+    data_setvariableto VARIABLE='_for map #' VALUE=('1')  # [^
+    procedures_call Create clone %s %s %s other clone=('flag 1') x=('76') y=('466')  # [_
+    procedures_call Create clone %s %s %s other clone=('flag 2') x=('8588') y=('414')  # [`
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('334') y=('500')  # [{
+    procedures_call Create clone %s %s %s other clone=('short ladder') x=('586') y=('728')  # [|
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('8307') y=('500')  # [}
+    procedures_call Create clone %s %s %s other clone=('short ladder') x=('8055') y=('728')  # [~
+    procedures_call Create clone %s %s %s other clone=('short ladder') x=('5786') y=('190')  # ]a
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('678') y=('200')  # ]b
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('678') y=('-70')  # ]c
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('7962') y=('200')  # ]d
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('7962') y=('-70')  # ]e
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('1991') y=('-370')  # ]f
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('5288') y=('-400')  # ]g
+    procedures_call Create clone %s %s %s other clone=('long ladder') x=('4292') y=('-400')  # ]h
+    control_if CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('7')) OPERAND2=('1'))  # iH
+      SUBSTACK:
+        procedures_call Create clone %s %s %s other clone=('2parallax') x=(operator_round NUM=(operator_subtract NUM1=(operator_divide NUM1=(operator_multiply NUM1=(variable:'(grid x *)') NUM2=('12')) NUM2=('2')) NUM2=(operator_divide NUM1=(operator_multiply NUM1=(operator_multiply NUM1=('480') NUM2=('2.2')) NUM2=('-6')) NUM2=('2')))) y=('1')  # Ef
+        procedures_call Create clone %s %s %s other clone=('2parallax') x=(operator_round NUM=(operator_add NUM1=(operator_divide NUM1=(operator_multiply NUM1=(variable:'(grid x *)') NUM2=('12')) NUM2=('2')) NUM2=(operator_divide NUM1=(operator_multiply NUM1=(operator_multiply NUM1=('480') NUM2=('2.2')) NUM2=('-6')) NUM2=('2')))) y=('2')  # Eg
+        procedures_call Create clone %s %s %s other clone=('1parallax') x=(operator_round NUM=(operator_add NUM1=(operator_divide NUM1=(operator_multiply NUM1=(variable:'(grid x *)') NUM2=('12')) NUM2=('2')) NUM2=(operator_multiply NUM1=(operator_multiply NUM1=('480') NUM2=('2')) NUM2=('-3')))) y=('0')  # Ei
+        procedures_call Create clone %s %s %s other clone=('1parallax') x=(operator_round NUM=(operator_divide NUM1=(operator_multiply NUM1=(variable:'(grid x *)') NUM2=('12')) NUM2=('2'))) y=('0')  # Ek
+        procedures_call Create clone %s %s %s other clone=('1parallax') x=(operator_round NUM=(operator_add NUM1=(operator_divide NUM1=(operator_multiply NUM1=(variable:'(grid x *)') NUM2=('12')) NUM2=('2')) NUM2=(operator_multiply NUM1=(operator_multiply NUM1=('480') NUM2=('2')) NUM2=('3')))) y=('0')  # ]v
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('80')  # ]i
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('1262') y=('550')  # ]B
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('110')  # ]C
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('1400') y=('540')  # ]D
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('65')  # ]E
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('1960') y=('435')  # ]F
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('92')  # ]G
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('3520') y=('310')  # ]H
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('70')  # ]I
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('7100') y=('500')  # ]J
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('76')  # ]K
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('7240') y=('550')  # ]L
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('90')  # ]M
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('5960') y=('320')  # ]N
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('94')  # ]O
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('5220') y=('320')  # ]P
+    data_setvariableto VARIABLE='_barbed direction' VALUE=('90')  # ]Q
+    procedures_call Create clone %s %s %s other clone=('barbed wire') x=('4880') y=('15')  # ]R
+    procedures_call Create clone %s %s %s other clone=('spooky lava') x=('69') y=('69')  # a9q
+
+procedures_call Create clone %s %s %s other clone=('long ladder') x=('7082') y=('-900')  # a9r
+procedures_call Create clone %s %s %s other clone=('long ladder') x=('7302') y=('-500')  # a9s
+
+data_setvariableto VARIABLE=';Ditt Lag' VALUE=('2')  # beC
+
+procedures_call Create clone %s %s %s other clone=('short ladder') x=('5786') y=('190')  # beB
+
+procedures_definition custom_block=(procedures_prototype Normal Positon %s %s Scroll %s %s)  # _o
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SCREEN')  # Fs
+motion_gotoxy X=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='sx')) Y=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='sy'))  # i7
+control_if_else CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='sx'))) OPERAND2=(operator_round NUM=(motion_xposition))) OPERAND2=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='sy'))) OPERAND2=(operator_round NUM=(motion_yposition))))  # i8
+  SUBSTACK:
+    looks_show  # a#A
+  SUBSTACK2:
+    looks_hide  # a#B
+
+event_whenbroadcastreceived BROADCAST_OPTION='Start Project'  # a!U
+control_delete_this_clone  # a!V
+
+procedures_definition custom_block=(procedures_prototype Position %s %s Scroll x, y %s %s)  # ^t
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SCREEN')  # EW
+motion_gotoxy X=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='scroll x')) Y=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='scroll y'))  # iS
+data_setvariableto VARIABLE='_index' VALUE=(operator_join STRING1=(operator_add NUM1=(operator_divide NUM1=(variable:'Grid y') NUM2=(variable:'(grid y *)')) NUM2=(variable:'_y')) STRING2=(operator_add NUM1=(operator_divide NUM1=(variable:'Grid x') NUM2=(variable:'(grid x *)')) NUM2=(variable:'_x')))  # EX
+control_if_else CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='scroll x'))) OPERAND2=(operator_round NUM=(motion_xposition))) OPERAND2=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='scroll y'))) OPERAND2=(operator_round NUM=(motion_yposition))))  # iT
+  SUBSTACK:
+    looks_switchcostumeto COSTUME=(operator_join STRING1=(operator_join STRING1=(variable:';KART') STRING2=('-')) STRING2=(variable:'_index'))  # iU
+    control_if_else CONDITION=(operator_equals OPERAND1=(operator_join STRING1=(operator_join STRING1=(variable:';KART') STRING2=('-')) STRING2=(variable:'_index')) OPERAND2=(looks_costumenumbername NUMBER_NAME='name'))  # iV
+      SUBSTACK:
+        control_if_else CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('7')) OPERAND2=('0'))  # iW
+          SUBSTACK:
+            pen_stamp  # ^D
+            looks_hide  # a!r
+          SUBSTACK2:
+            looks_show  # a!p
+      SUBSTACK2:
+        looks_hide  # a!m
+  SUBSTACK2:
+    looks_hide  # a!d
+
+procedures_definition custom_block=(procedures_prototype Create clone %s %s %s)  # ^0
+data_setvariableto VARIABLE='_:ID:' VALUE=(argument_reporter_string_number VALUE='other clone')  # E:
+data_setvariableto VARIABLE='_x' VALUE=(argument_reporter_string_number VALUE='x')  # E;
+data_setvariableto VARIABLE='_y' VALUE=(argument_reporter_string_number VALUE='y')  # E=
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E?
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # a!S
+
+procedures_definition custom_block=(procedures_prototype xyID %s %s)  # ^Y
+data_setvariableto VARIABLE='_x' VALUE=(argument_reporter_string_number VALUE='x')  # E.
+data_setvariableto VARIABLE='_y' VALUE=(argument_reporter_string_number VALUE='y')  # ^Z
+
+procedures_definition custom_block=(procedures_prototype Create clones)  # ^E
+procedures_call Size %s size=('150')  # ^F
+data_setvariableto VARIABLE='(grid x *)' VALUE=(operator_multiply NUM1=('480') NUM2=(operator_multiply NUM1=(looks_size) NUM2=('0.01')))  # E7
+data_setvariableto VARIABLE='(grid y *)' VALUE=(operator_multiply NUM1=('360') NUM2=(operator_multiply NUM1=(looks_size) NUM2=('0.01')))  # E8
+data_setvariableto VARIABLE='_:ID:' VALUE=('platform')  # ^I
+procedures_call xyID %s %s x=('1') y=('-1')  # ^L
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E9
+procedures_call xyID %s %s x=('1') y=('0')  # ^M
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E!
+procedures_call xyID %s %s x=('1') y=('1')  # ^N
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E#
+procedures_call xyID %s %s x=('0') y=('-1')  # ^O
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E%
+procedures_call xyID %s %s x=('0') y=('0')  # ^P
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E(
+procedures_call xyID %s %s x=('0') y=('1')  # ^Q
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E)
+procedures_call xyID %s %s x=('-1') y=('-1')  # ^R
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E*
+procedures_call xyID %s %s x=('-1') y=('0')  # ^S
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E+
+procedures_call xyID %s %s x=('-1') y=('1')  # ^T
+control_create_clone_of CLONE_OPTION=(control_create_clone_of_menu CLONE_OPTION='_myself_')  # E,
+data_setvariableto VARIABLE='_:ID:' VALUE=('')  # ^U
+looks_setsizeto SIZE=('100')  # a!E
+
+data_setvariableto VARIABLE='_for map #' VALUE=(variable:';KART')  # beD
+
+procedures_call Create clone %s %s %s other clone=('flag 1') x=('76') y=('466')  # a#6
+procedures_call Create clone %s %s %s other clone=('flag 2') x=('8588') y=('414')  # a#7
+
+event_whenbroadcastreceived BROADCAST_OPTION='update'  # a9t
+control_if CONDITION=(operator_gt OPERAND1=(variable:'_:ID:') OPERAND2=(''))  # En
+  SUBSTACK:
+    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('platform'))  # iI
+      SUBSTACK:
+        looks_cleargraphiceffects  # ]S
+        procedures_call Position %s %s Scroll x, y %s %s x=(operator_add NUM1=(variable:'Grid x') NUM2=(operator_multiply NUM1=(variable:'(grid x *)') NUM2=(variable:'_x'))) y=(operator_add NUM1=(variable:'Grid y') NUM2=(operator_multiply NUM1=(variable:'(grid y *)') NUM2=(variable:'_y'))) scroll x=(variable:';CAM X') scroll y=(variable:';CAM Y')  # iK
+        motion_pointindirection DIRECTION=('90')  # ]T
+        looks_gotofrontback FRONT_BACK='back'  # a9y
+      SUBSTACK2:
+        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('short ladder'))  # iJ
+          SUBSTACK:
+            procedures_call Map-clones %s your map=(variable:'_for map #')  # ]W
+            procedures_call Normal Positon %s %s Scroll %s %s x=(variable:'_x') y=(variable:'_y') sx=(variable:';CAM X') sy=(variable:';CAM Y')  # ]X
+            motion_pointindirection DIRECTION=('90')  # ]Y
+            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Short ladder')  # Eo
+            looks_gotofrontback FRONT_BACK='back'  # ]Z
+            control_if CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(variable:'::Player X') NUM2=(variable:'_x'))) OPERAND2=('15')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y'))) OPERAND2=('91')))  # Ep
+              SUBSTACK:
+                control_if CONDITION=(operator_or OPERAND1=(operator_lt OPERAND1=(variable:'::Animation') OPERAND2=('7')) OPERAND2=(operator_gt OPERAND1=(variable:'::Animation') OPERAND2=('10')))  # Er
+                  SUBSTACK:
+                    data_changevariableby VARIABLE='STIGE' VALUE=('1')  # a9D
+          SUBSTACK2:
+            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('long ladder'))  # iL
+              SUBSTACK:
+                procedures_call Map-clones %s your map=(variable:'_for map #')  # ]4
+                procedures_call Normal Positon %s %s Scroll %s %s x=(variable:'_x') y=(variable:'_y') sx=(variable:';CAM X') sy=(variable:';CAM Y')  # ]5
+                looks_switchcostumeto COSTUME=(looks_costume COSTUME='Long ladder')  # Et
+                looks_gotofrontback FRONT_BACK='back'  # ]6
+                motion_pointindirection DIRECTION=('90')  # ]7
+                control_if CONDITION=(operator_and OPERAND1=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(variable:'::Player X') NUM2=(variable:'_x'))) OPERAND2=('15')) OPERAND2=(operator_lt OPERAND1=(operator_mathop OPERATOR='abs' NUM=(operator_subtract NUM1=(variable:'::Player Y') NUM2=(variable:'_y'))) OPERAND2=('141')))  # Eu
+                  SUBSTACK:
+                    control_if CONDITION=(operator_or OPERAND1=(operator_lt OPERAND1=(variable:'::Animation') OPERAND2=('7')) OPERAND2=(operator_gt OPERAND1=(variable:'::Animation') OPERAND2=('10')))  # Ew
+                      SUBSTACK:
+                        data_changevariableby VARIABLE='STIGE' VALUE=('1')  # a9K
+              SUBSTACK2:
+                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('1parallax'))  # iM
+                  SUBSTACK:
+                    procedures_call Map-clones %s your map=(variable:'_for map #')  # ]%
+                    procedures_call Parallax position %s %s divide power %s Scroll variables %s %s x=(variable:'_x') y=('100') /=('3') scroll x=(variable:';CAM X') scroll y=(variable:';CAM Y')  # ](
+                    procedures_call Size %s size=('200')  # ])
+                    motion_pointindirection DIRECTION=('90')  # ]*
+                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='1-parallax Layer 1')  # Ey
+                    looks_gotofrontback FRONT_BACK='back'  # a9O
+                  SUBSTACK2:
+                    control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('2parallax'))  # iN
+                      SUBSTACK:
+                        procedures_call Map-clones %s your map=(variable:'_for map #')  # ]+
+                        procedures_call Parallax position %s %s divide power %s Scroll variables %s %s x=(variable:'_x') y=('120') /=('6') scroll x=(variable:';CAM X') scroll y=(variable:';CAM Y')  # ],
+                        motion_pointindirection DIRECTION=('90')  # ]-
+                        procedures_call Size %s size=('220')  # ].
+                        looks_switchcostumeto COSTUME=(looks_costume COSTUME='1-parallax Layer 2')  # Ez
+                        looks_gotofrontback FRONT_BACK='back'  # a9R
+                      SUBSTACK2:
+                        control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('barbed wire'))  # iO
+                          SUBSTACK:
+                            procedures_call Map-clones %s your map=(variable:'_for map #')  # ]/
+                            procedures_call Normal Positon %s %s Scroll %s %s x=(variable:'_x') y=(variable:'_y') sx=(variable:';CAM X') sy=(variable:';CAM Y')  # ]:
+                            motion_pointindirection DIRECTION=(variable:'_barbed direction')  # ];
+                            procedures_call Size %s size=('120')  # ]=
+                            looks_switchcostumeto COSTUME=(looks_costume COSTUME='Barbed Wire')  # EA
+                            control_if CONDITION=(operator_and OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Player]')) OPERAND2=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('heli'))))  # iQ
+                              SUBSTACK:
+                                control_if CONDITION=(operator_and OPERAND1=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'::Animation') OPERAND2=('9'))) OPERAND2=(operator_not OPERAND=(operator_equals OPERAND1=(variable:'::Animation') OPERAND2=('10'))))  # iR
+                                  SUBSTACK:
+                                    data_setvariableto VARIABLE='::sx' VALUE=(operator_multiply NUM1=(variable:'::sx') NUM2=('0.4'))  # EE
+                                    control_if CONDITION=(operator_or OPERAND1=(sensing_keypressed KEY_OPTION=(data_itemoflist LIST=':CONTROLS:' INDEX=('2'))) OPERAND2=(sensing_keypressed KEY_OPTION=(data_itemoflist LIST=':CONTROLS:' INDEX=('3'))))  # EF
+                                      SUBSTACK:
+                                        data_changevariableby VARIABLE='::Spiller-liv' VALUE=('-0.5')  # ]^
+                                        data_setvariableto VARIABLE='Health Timer' VALUE=(sensing_timer)  # ]_
+                                data_setvariableto VARIABLE='::sy' VALUE=('-2')  # a9X
+                            control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';KART') OPERAND2=('1')))  # EB
+                              SUBSTACK:
+                                control_delete_this_clone  # a96
+                          SUBSTACK2:
+                            control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('helicopter'))  # iP
+                              SUBSTACK:
+                                motion_setrotationstyle STYLE='left-right'  # ]{
+                                looks_show  # ]|
+                                looks_gotofrontback FRONT_BACK='front'  # ]}
+                                looks_cleargraphiceffects  # ]~
+                                procedures_call Map-clones %s your map=(variable:'_for map #')  # ^a
+                                procedures_call Normal Positon %s %s Scroll %s %s x=(variable:'_x') y=(variable:'_y') sx=(variable:';CAM X') sy=(variable:';CAM Y')  # ^b
+                                looks_switchcostumeto COSTUME=(looks_costume COSTUME='helicopter')  # EK
+                                looks_setsizeto SIZE=('100')  # ^c
+                                motion_pointindirection DIRECTION=(operator_add NUM1=(operator_multiply NUM1=(operator_gt OPERAND1=(variable:'_x') OPERAND2=('4000')) NUM2=('-2')) NUM2=('1'))  # EL
+                                looks_seteffectto EFFECT='COLOR' VALUE=(operator_subtract NUM1=(variable:'::Farge') NUM2=('122'))  # EM
+                                control_if CONDITION=(operator_and OPERAND1=(sensing_touchingobject TOUCHINGOBJECTMENU=(sensing_touchingobjectmenu TOUCHINGOBJECTMENU='[Player]')) OPERAND2=(operator_and OPERAND1=(operator_equals OPERAND1=(variable:'::Helicopter passenger') OPERAND2=('0')) OPERAND2=(operator_not OPERAND=(operator_contains STRING1=(variable:'::[Spiller-action]') STRING2=('heli')))))  # ^f
+                              SUBSTACK2:
+                                control_if_else CONDITION=(operator_equals OPERAND1=(variable:'_:ID:') OPERAND2=('spooky lava'))  # EJ
+                                  SUBSTACK:
+                                    looks_cleargraphiceffects  # ^i
+                                    looks_setsizeto SIZE=('100')  # ^j
+                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='SCREEN lava')  # EP
+                                    data_setvariableto VARIABLE='_y' VALUE=(operator_subtract NUM1=('-670') NUM2=(operator_multiply NUM1=(operator_mathop OPERATOR='sin' NUM=(operator_multiply NUM1=(sensing_timer) NUM2=('80'))) NUM2=('10')))  # EQ
+                                    motion_gotoxy X=('0') Y=(operator_subtract NUM1=(variable:'_y') NUM2=(variable:';CAM Y'))  # ER
+                                    control_if_else CONDITION=(operator_equals OPERAND1=(operator_round NUM=(operator_subtract NUM1=(variable:'_y') NUM2=(variable:';CAM Y'))) OPERAND2=(operator_round NUM=(motion_yposition)))  # aZ
+                                      SUBSTACK:
+                                        looks_show  # ^p
+                                        control_if CONDITION=(operator_lt OPERAND1=(variable:'::Player Y') OPERAND2=(operator_add NUM1=(variable:'_y') NUM2=('88')))  # ET
+                                          SUBSTACK:
+                                            data_setvariableto VARIABLE='::sy' VALUE=(operator_multiply NUM1=(variable:'::sy') NUM2=('0.5'))  # EU
+                                            data_setvariableto VARIABLE='::sx' VALUE=(operator_multiply NUM1=(variable:'::sx') NUM2=('0.4'))  # EV
+                                            data_changevariableby VARIABLE='::Spiller-liv' VALUE=('-8')  # a9?
+                                      SUBSTACK2:
+                                        looks_hide  # a9.
+                                    looks_switchcostumeto COSTUME=(looks_costume COSTUME='Lava')  # ^o
+
+procedures_call Create clone %s %s %s other clone=('long ladder') x=('1308') y=('-20')  # a#:
+procedures_call Create clone %s %s %s other clone=('long ladder') x=('2295') y=('-20')  # a#;
+
+procedures_definition custom_block=(procedures_prototype Size %s)  # ^V
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SIZE')  # E-
+looks_setsizeto SIZE=(argument_reporter_string_number VALUE='size')  # ^X
+
+procedures_call Create clone %s %s %s other clone=('long ladder') x=('1307') y=('-28')  # a#=
+procedures_call Create clone %s %s %s other clone=('long ladder') x=('2295') y=('-28')  # _N
+procedures_call Create clone %s %s %s other clone=('short ladder') x=('2764') y=('188')  # _O
+procedures_call Create clone %s %s %s other clone=('short ladder') x=('570') y=('188')  # _P
+procedures_call Create clone %s %s %s other clone=('short ladder') x=('1222') y=('602')  # _Q
+procedures_call Create clone %s %s %s other clone=('long ladder') x=('957') y=('410')  # a#?
+
+procedures_definition custom_block=(procedures_prototype Map-clones %s)  # _B
+control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';KART') OPERAND2=(argument_reporter_string_number VALUE='your map')))  # _C
+
+event_whenbroadcastreceived BROADCAST_OPTION='Green Flag'  # a!W
+motion_gotoxy X=('0') Y=('0')  # ^1
+motion_pointindirection DIRECTION=('90')  # ^2
+looks_hide  # ^3
+looks_setsizeto SIZE=('100')  # ^4
+looks_gotofrontback FRONT_BACK='back'  # a!X
+
+control_delete_this_clone  # beE
+
+control_if CONDITION=(operator_not OPERAND=(operator_equals OPERAND1=(variable:';KART') OPERAND2=('1')))  # _L
+  SUBSTACK:
+    control_delete_this_clone  # a#.
+
+procedures_definition custom_block=(procedures_prototype Parallax position %s %s divide power %s Scroll variables %s %s)  # _t
+looks_switchcostumeto COSTUME=(looks_costume COSTUME='SCREEN')  # FA
+motion_gotoxy X=(operator_round NUM=(operator_divide NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='scroll x')) NUM2=(argument_reporter_string_number VALUE='/'))) Y=(operator_round NUM=(operator_divide NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='scroll y')) NUM2=(argument_reporter_string_number VALUE='/')))  # i9
+control_if_else CONDITION=(operator_and OPERAND1=(operator_equals OPERAND1=(operator_round NUM=(operator_divide NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='x') NUM2=(argument_reporter_string_number VALUE='scroll x')) NUM2=(argument_reporter_string_number VALUE='/'))) OPERAND2=(operator_round NUM=(motion_xposition))) OPERAND2=(operator_equals OPERAND1=(operator_round NUM=(operator_divide NUM1=(operator_subtract NUM1=(argument_reporter_string_number VALUE='y') NUM2=(argument_reporter_string_number VALUE='scroll y')) NUM2=(argument_reporter_string_number VALUE='/'))) OPERAND2=(operator_round NUM=(motion_yposition))))  # i!
+  SUBSTACK:
+    control_if_else CONDITION=(operator_equals OPERAND1=(data_itemoflist LIST=':SETTINGS:' INDEX=('7')) OPERAND2=('0'))  # i#
+      SUBSTACK:
+        looks_hide  # a#3
+      SUBSTACK2:
+        looks_show  # a#4
+  SUBSTACK2:
+    looks_hide  # a#U
