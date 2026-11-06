@@ -19,26 +19,14 @@ if ($LASTEXITCODE -ne 0) { throw 'Executable has non-system DLL dependencies' }
 if ($Test) {
     ctest --test-dir $buildRoot --verbose
     if ($LASTEXITCODE -ne 0) { throw 'Native checks failed' }
-    $isolatedRoot = Join-Path $buildRoot 'isolated'
-    New-Item -ItemType Directory -Force $isolatedRoot | Out-Null
-    Copy-Item -LiteralPath (Join-Path $buildRoot 'battle_bound_dx.exe') -Destination (Join-Path $isolatedRoot 'battle_bound_dx.exe') -Force
-    $savedPath = $env:PATH
-    Push-Location $isolatedRoot
-    try {
-        $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
-        $portableCheck = Start-Process -FilePath (Join-Path $isolatedRoot 'battle_bound_dx.exe') -ArgumentList '--headless', '--exercise', '--ticks', '300' -Wait -PassThru -WindowStyle Hidden
-        if ($portableCheck.ExitCode -ne 0) { throw "Isolated single-file test failed: $($portableCheck.ExitCode)" }
-        Write-Host 'Isolated EXE passed: empty working folder, no assets or toolchain on PATH.'
-    } finally {
-        $env:PATH = $savedPath
-        Pop-Location
-    }
+    python (Join-Path $PSScriptRoot 'test_standalone.py') (Join-Path $buildRoot 'battle_bound_dx.exe')
+    if ($LASTEXITCODE -ne 0) { throw 'Isolated executable check failed' }
 }
 if ($Preview) {
     python (Join-Path $PSScriptRoot 'workspace_budget.py') --reserve 5000000
     if ($LASTEXITCODE -ne 0) { throw 'Preview exceeds workspace budget' }
-    $previewCheck = Start-Process -FilePath (Join-Path $buildRoot 'battle_bound_dx.exe') -ArgumentList '--root', ('"{0}"' -f $repoRoot), '--game', '--render-smoke', '--ticks', '90' -Wait -PassThru -WindowStyle Hidden
-    if ($previewCheck.ExitCode -ne 0) { throw 'Native render check failed' }
+    python (Join-Path $PSScriptRoot 'test_render_replay.py') (Join-Path $buildRoot 'battle_bound_dx.exe')
+    if ($LASTEXITCODE -ne 0) { throw 'Native rendering/replay check failed' }
     python (Join-Path $PSScriptRoot 'finalize_preview.py')
     if ($LASTEXITCODE -ne 0) { throw 'Framebuffer preview conversion failed' }
 }

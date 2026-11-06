@@ -53,7 +53,7 @@ signing process and certificate, not a runtime dependency change.
 | `scratch/project.bbdx` | Versioned little-endian runtime image, about 1.53 MB |
 | `scratch/compile-report.json` | Source SHA-256 and all 107 imported opcodes |
 | `tools/rasterize_assets.py` | SVG → PNG preparation; retains original pivots/resolution metadata |
-| `scratch/raster/` | 765 unique SVG rasterizations at 2× resolution, about 7.08 MB total |
+| `assets/raster/` | 765 unique SVG rasterizations at 2× resolution, about 7.08 MB total |
 | `tools/workspace_budget.py` | Workspace storage guard |
 
 All imported instructions retain their Scratch block IDs for diagnostics.
@@ -169,3 +169,10 @@ gameplay and Vulkan rendering/readback inspection**. The updated
 `scratch/native-preview.png` is the 1280×720 Vulkan capture. See
 `docs/VALIDATION.md` for scope and remaining coverage gaps. The unsigned publisher
 warning remains a signing issue, independent of the API.
+
+## Replay/content milestone
+
+See [repeatable gameplay and typed content](REPLAY_AND_CONTENT.md). Asset paths
+are now descriptive and manifest-resolved; all original bytes are preserved.
+The input tape, UTC clock, seed and JSONL traces provide the reference for
+future typed simulation work. CTest also runs replay and asset-provenance checks.

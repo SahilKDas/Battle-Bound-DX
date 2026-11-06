@@ -64,6 +64,9 @@ struct Task {
     double wake{}; bool alive{true};
 };
 struct CachedImage { Image image{}; Texture2D texture{}; };
+struct GameplayEvent {
+    std::string kind, sprite, block, before, after;
+};
 class Runtime {
 public:
     explicit Runtime(std::filesystem::path root, bool headless = false);
@@ -77,12 +80,23 @@ public:
     std::string diagnostics() const;
     bool stopped() const { return halted; }
     Value namedValue(const std::string& name) const;
+    void setDeterministic(std::uint32_t seed, std::int64_t unixSeconds);
+    void applyInput(const std::set<std::string>& keys, bool fire, double aimX,
+                    double aimY, int wheel);
+    double simulationTime() const { return now; }
+    std::uint64_t randomDrawCount() const { return randomDraws; }
+    std::size_t taskCount() const { return tasks.size(); }
+    bool captureEvents{};
+    std::vector<GameplayEvent> gameplayEvents;
     std::size_t bulletClones{};
     std::size_t executed{};
     std::string username{"DX_Player"};
     bool mute{true};
     bool scriptedInput{}, scriptedMouse{};
     std::set<std::string> scriptedKeys;
+    std::set<std::string> previousScriptedKeys;
+    double scriptedAimX{}, scriptedAimY{};
+    int scriptedWheel{};
     std::vector<Definition> definitions;
     std::vector<std::shared_ptr<Actor>> actors;
     std::set<std::string> unsupported;
@@ -97,6 +111,12 @@ private:
     std::unordered_map<std::string, CachedImage> images;
     std::unordered_map<std::string, Sound> sounds;
     std::mt19937 random{0xBBD};
+    bool deterministic{};
+    std::uint32_t randomSeed{0xBBD};
+    std::int64_t epochSeconds{};
+    std::uint64_t randomDraws{};
+    double randomUnit();
+    double calendarSeconds() const;
     std::vector<std::shared_ptr<Actor>> stamps;
     std::string answer, question;
     std::uint64_t asking{};

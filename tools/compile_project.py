@@ -4,6 +4,7 @@ from pathlib import Path
 import struct
 import hashlib
 from workspace_budget import check_budget
+from asset_paths import asset_manifest, runtime_path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -11,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def compile_project():
     check_budget(12_000_000)
     project = json.loads((ROOT / 'scratch/original/project.json').read_text(encoding='utf-8'))
+    manifest = asset_manifest()
     opcodes = sorted({b['opcode'] for t in project['targets'] for b in t['blocks'].values() if isinstance(b, dict)})
     output = bytearray(b'BBDX\x01\x00\x00\x00')
     def integer(value):
@@ -54,7 +56,7 @@ def compile_project():
             integer(len(target[kind]))
             for asset in target[kind]:
                 string(asset['name'])
-                string(asset.get('md5ext', asset['assetId'] + '.' + asset['dataFormat']))
+                string(runtime_path(asset, manifest))
                 raster_scale = 2 if asset['dataFormat'] == 'svg' else 1
                 number(asset.get('rotationCenterX', 0) * raster_scale)
                 number(asset.get('rotationCenterY', 0) * raster_scale)

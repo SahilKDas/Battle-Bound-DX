@@ -1,14 +1,34 @@
 #include "runtime.hpp"
 #include "assets.hpp"
 #include "graphics.hpp"
+#include "content.hpp"
+#include "replay.hpp"
 #include <iostream>
 #include <fstream>
+#include <charconv>
+
+namespace {
+template<class Integer>
+Integer parseInteger(const char* text) {
+    const std::string_view value(text);
+    Integer result{};
+    const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
+    if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size()) {
+        throw std::runtime_error("Invalid integer argument: " + std::string(value));
+    }
+    return result;
+}
+}
 
 int main(int argc, char** argv) {
     try {
         std::filesystem::path root = std::filesystem::current_path();
         bool headless = false, game = false, unmuted = false, renderSmoke = false, exercise = false;
         int ticks = 300;
+        std::uint32_t seed = 3005;
+        std::int64_t epoch = 1793966460;
+        bool deterministic = false, clockOverride = false, showCredits = false;
+        std::filesystem::path replayPath, recordPath, tracePath;
         std::string username = "DX_Player";
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -19,12 +39,40 @@ int main(int argc, char** argv) {
             else if (arg == "--audio") unmuted = true;
             else if (arg == "--render-smoke") renderSmoke = true;
             else if (arg == "--exercise") { exercise = true; game = true; }
-            else if (arg == "--ticks" && i + 1 < argc) ticks = std::stoi(argv[++i]);
+            else if (arg == "--ticks" && i + 1 < argc) ticks = parseInteger<int>(argv[++i]);
+            else if (arg == "--seed" && i + 1 < argc) {
+                seed = parseInteger<std::uint32_t>(argv[++i]);
+                deterministic = true; clockOverride = true;
+            }
+            else if (arg == "--epoch" && i + 1 < argc) { epoch = parseInteger<std::int64_t>(argv[++i]); deterministic = true; clockOverride = true; }
+            else if (arg == "--replay" && i + 1 < argc) { replayPath = argv[++i]; headless = true; game = true; deterministic = true; }
+            else if (arg == "--record" && i + 1 < argc) { recordPath = argv[++i]; game = true; deterministic = true; }
+            else if (arg == "--trace" && i + 1 < argc) { tracePath = argv[++i]; game = true; deterministic = true; }
             else if (arg == "--username" && i + 1 < argc) username = argv[++i];
+            else if (arg == "--credits") showCredits = true;
+            else throw std::runtime_error("Unknown or incomplete option: " + arg);
         }
+        if (ticks < 1 || ticks > 10000) throw std::runtime_error("Ticks must be 1..10000");
+        if (username.empty() || username.size() > 128 || username.find_first_of("\r\n") != std::string::npos) {
+            throw std::runtime_error("Invalid replay username");
+        }
+        bb::ReplayTape tape;
+        if (!replayPath.empty()) {
+            if (clockOverride) throw std::runtime_error("Replay files own their seed and clock");
+            tape = bb::readReplay(replayPath);
+            ticks = static_cast<int>(tape.frames.size());
+            seed = tape.seed; epoch = tape.epoch; username = tape.username;
+        } else if (exercise) {
+            tape = bb::exerciseTape(ticks, seed, epoch);
+            deterministic = true;
+        }
+        tape.seed = seed; tape.epoch = epoch; tape.username = username;
+        if (tracePath == replayPath && !tracePath.empty()) throw std::runtime_error("Input and output paths must differ");
+        if (recordPath == replayPath && !recordPath.empty()) throw std::runtime_error("Input and output paths must differ");
+        bb::content::validate();
         SetTraceLogLevel(LOG_WARNING);
         bb::openAssetPackage(root);
-        for (int i = 1; i < argc; ++i) if (std::string(argv[i]) == "--credits") {
+        if (showCredits) {
             auto credits = bb::readAsset("CREDITS.md");
             std::cout.write(reinterpret_cast<const char*>(credits.data()), static_cast<std::streamsize>(credits.size()));
             return 0;
@@ -40,22 +88,23 @@ int main(int argc, char** argv) {
             runtime.username = username;
             runtime.mute = !unmuted;
             runtime.load();
+            if (deterministic) runtime.setDeterministic(seed, epoch);
+            runtime.captureEvents = !tracePath.empty();
             runtime.greenFlag();
             if (game) runtime.startGame();
+            std::unique_ptr<bb::TraceWriter> trace;
+            if (!tracePath.empty()) trace = std::make_unique<bb::TraceWriter>(tracePath, tape, root);
+            bb::ReplayTape recording;
+            recording.seed = seed; recording.epoch = epoch; recording.username = username;
             if (headless || renderSmoke) {
                 double minimumX = 1e30, maximumX = -1e30;
                 for (int i = 0; i < ticks; ++i) {
-                    if (exercise) {
-                        runtime.scriptedInput = true;
-                        runtime.scriptedKeys.clear();
-                        if (i < 80) runtime.scriptedKeys.insert("d");
-                        if (i >= 80 && i < 160) runtime.scriptedKeys.insert("a");
-                        if (i >= 30 && i < 35) runtime.scriptedKeys.insert("w");
-                        if (i >= 180 && i < 210) runtime.scriptedKeys.insert("s");
-                        if (i >= 210 && i < 220) runtime.scriptedKeys.insert("r");
-                        runtime.scriptedMouse = i >= 60 && i < 180;
-                    }
+                    bb::InputFrame frame;
+                    if (!tape.frames.empty()) frame = tape.frames.at(i);
+                    if (deterministic) runtime.applyInput(frame.keys, frame.fire, frame.aimX, frame.aimY, frame.wheel);
                     runtime.tick(1.0 / 30);
+                    if (trace) trace->write(i, frame, runtime);
+                    if (!recordPath.empty()) recording.frames.push_back(frame);
                     if (i > 5) { double x = runtime.namedValue("::Player X").number(); minimumX = std::min(minimumX, x); maximumX = std::max(maximumX, x); }
                     if (renderSmoke) { bb::gfx::beginFrame(); runtime.draw(); if (i == ticks - 1) bb::gfx::requestCapture(); bb::gfx::endFrame(); }
                 }
@@ -78,16 +127,27 @@ int main(int argc, char** argv) {
                     if (maximumX - minimumX < 10 || runtime.bulletClones == 0) throw std::runtime_error("Scripted movement/shooting did not exercise the original gameplay");
                 }
             } else {
+                std::size_t tick = 0;
                 while (!bb::gfx::shouldClose()) {
-                    if (bb::gfx::keyPressed(KEY_F5)) runtime.greenFlag();
-                    if (bb::gfx::keyPressed(KEY_F6)) runtime.startGame();
+                    if ((!recordPath.empty() || trace) && tick >= static_cast<std::size_t>(ticks)) break;
+                    bb::InputFrame frame;
+                    if (deterministic) {
+                        frame = bb::sampleInput();
+                        runtime.applyInput(frame.keys, frame.fire, frame.aimX, frame.aimY, frame.wheel);
+                    }
+                    if (!deterministic && bb::gfx::keyPressed(KEY_F5)) runtime.greenFlag();
+                    if (!deterministic && bb::gfx::keyPressed(KEY_F6)) runtime.startGame();
                     runtime.tick(1.0 / 30);
+                    if (trace) trace->write(tick, frame, runtime);
+                    if (!recordPath.empty()) recording.frames.push_back(frame);
+                    ++tick;
                     bb::gfx::beginFrame();
                     runtime.draw();
                     bb::gfx::endFrame();
                 }
                 std::cout << runtime.diagnostics() << '\n';
             }
+            if (!recordPath.empty() && !recording.frames.empty()) bb::writeReplay(recordPath, recording, root);
         }
         if (!headless) {
             if (IsAudioDeviceReady()) CloseAudioDevice();

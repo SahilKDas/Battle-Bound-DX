@@ -10,6 +10,7 @@ for the original scripts and assets. Current gameplay is offline.
 
 - [Build, single-EXE packaging, limitations and workspace budget](docs/NATIVE_PORT.md)
 - [Clean C++ migration brainstorm](docs/CPP_MIGRATION.md)
+- [Repeatable traces, typed content and named assets](docs/REPLAY_AND_CONTENT.md)
 
 - [Original game architecture](docs/SCRATCH_ARCHITECTURE.md)
 - [Credits, licensing and provenance](CREDITS.md)
@@ -19,7 +20,8 @@ for the original scripts and assets. Current gameplay is offline.
 
 Rebuild the extracted reference with `python tools/unpack_scratch.py`.
 The original archive was deleted after extraction verification at the user's request.
-All extracted contents remain in `scratch/original/`. Workspace tools enforce
+Original project metadata remains in `scratch/original/project.json`; named
+source assets live in `assets/source/` with their identities in `assets/manifest.json`. Workspace tools enforce
 a conservative 450 MB limit beneath the requested 500 MB ceiling; builds stay
 in the system temporary directory.
 

@@ -7,7 +7,7 @@
   "targets": [
     {
       "name": "Stage",
-      "scriptFile": "scripts/00-Stage.txt",
+      "scriptFile": "scripts/stage.txt",
       "blocks": 126,
       "topLevelStacks": 9,
       "variables": {
@@ -2247,7 +2247,7 @@
     },
     {
       "name": "Blank",
-      "scriptFile": "scripts/01-Blank.txt",
+      "scriptFile": "scripts/notes.txt",
       "blocks": 1,
       "topLevelStacks": 1,
       "variables": {},
@@ -2288,7 +2288,7 @@
     },
     {
       "name": "[Player]",
-      "scriptFile": "scripts/02-_Player_.txt",
+      "scriptFile": "scripts/player.txt",
       "blocks": 2651,
       "topLevelStacks": 63,
       "variables": {
@@ -4438,7 +4438,7 @@
     },
     {
       "name": "[Bullet]",
-      "scriptFile": "scripts/03-_Bullet_.txt",
+      "scriptFile": "scripts/weapons.txt",
       "blocks": 2076,
       "topLevelStacks": 41,
       "variables": {
@@ -5189,7 +5189,7 @@
     },
     {
       "name": "[Opponents]",
-      "scriptFile": "scripts/04-_Opponents_.txt",
+      "scriptFile": "scripts/remote-players.txt",
       "blocks": 3030,
       "topLevelStacks": 41,
       "variables": {
@@ -7520,7 +7520,7 @@
     },
     {
       "name": "☁",
-      "scriptFile": "scripts/05-_.txt",
+      "scriptFile": "scripts/network.txt",
       "blocks": 438,
       "topLevelStacks": 19,
       "variables": {
@@ -8400,7 +8400,7 @@
     },
     {
       "name": "[PLATFORM]",
-      "scriptFile": "scripts/06-_PLATFORM_.txt",
+      "scriptFile": "scripts/collision-map.txt",
       "blocks": 245,
       "topLevelStacks": 17,
       "variables": {
@@ -9013,7 +9013,7 @@
     },
     {
       "name": "[BACKGROUND]",
-      "scriptFile": "scripts/07-_BACKGROUND_.txt",
+      "scriptFile": "scripts/scenery.txt",
       "blocks": 628,
       "topLevelStacks": 25,
       "variables": {
@@ -9597,7 +9597,7 @@
     },
     {
       "name": "[Particles]",
-      "scriptFile": "scripts/08-_Particles_.txt",
+      "scriptFile": "scripts/effects.txt",
       "blocks": 1201,
       "topLevelStacks": 31,
       "variables": {
@@ -9990,7 +9990,7 @@
     },
     {
       "name": "[UI]",
-      "scriptFile": "scripts/09-_UI_.txt",
+      "scriptFile": "scripts/menus.txt",
       "blocks": 2500,
       "topLevelStacks": 49,
       "variables": {
@@ -12290,7 +12290,7 @@
     },
     {
       "name": "[GAME UI]",
-      "scriptFile": "scripts/10-_GAME_UI_.txt",
+      "scriptFile": "scripts/hud.txt",
       "blocks": 1231,
       "topLevelStacks": 21,
       "variables": {
@@ -13455,7 +13455,7 @@
     },
     {
       "name": "[DATA]",
-      "scriptFile": "scripts/11-_DATA_.txt",
+      "scriptFile": "scripts/save-data.txt",
       "blocks": 300,
       "topLevelStacks": 9,
       "variables": {
@@ -13560,7 +13560,7 @@
     },
     {
       "name": "[Detector]",
-      "scriptFile": "scripts/12-_Detector_.txt",
+      "scriptFile": "scripts/runtime-checks.txt",
       "blocks": 158,
       "topLevelStacks": 6,
       "variables": {
@@ -13701,7 +13701,7 @@
     },
     {
       "name": "[Introduction]",
-      "scriptFile": "scripts/13-_Introduction_.txt",
+      "scriptFile": "scripts/introduction.txt",
       "blocks": 633,
       "topLevelStacks": 16,
       "variables": {
@@ -14139,7 +14139,7 @@
     },
     {
       "name": "Graphics",
-      "scriptFile": "scripts/14-Graphics.txt",
+      "scriptFile": "scripts/title-graphics.txt",
       "blocks": 113,
       "topLevelStacks": 3,
       "variables": {

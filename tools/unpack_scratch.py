@@ -8,6 +8,8 @@ import re
 import zipfile
 import xml.etree.ElementTree as ET
 from workspace_budget import check_budget
+from asset_paths import asset_manifest, source_path
+from name_assets import TARGETS
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'Battle Bound.sb3'
@@ -17,13 +19,8 @@ OUT = ROOT / 'scratch'
 def main():
     check_budget(60_000_000)
     OUT.mkdir(exist_ok=True)
-    with zipfile.ZipFile(SOURCE) as archive:
-        for entry in archive.infolist():
-            destination = (OUT / 'original' / entry.filename).resolve()
-            if not destination.is_relative_to((OUT / 'original').resolve()):
-                raise ValueError('Unsafe archive path')
-        archive.extractall(OUT / 'original')
     project = json.loads((OUT / 'original/project.json').read_text(encoding='utf-8'))
+    paths = asset_manifest()
     scripts = OUT / 'scripts'
     scripts.mkdir(exist_ok=True)
     inventory = []
@@ -66,7 +63,7 @@ def main():
                         lines.extend(stack(value[1], indent + 2, seen))
                 block_id = block.get('next')
             return lines
-        name = f'{index:02d}-' + re.sub(r'[^\w-]', '_', target['name'])
+        name = TARGETS[index]
         lines = [f"SPRITE: {target['name']}", 'Notation: raw Scratch opcodes; nested reporter expressions; original block IDs.', '']
         tops = [(key, b) for key, b in blocks.items() if isinstance(b, dict) and b.get('topLevel')]
         for key, block in sorted(tops, key=lambda pair: (pair[1].get('y', 0), pair[1].get('x', 0))):
@@ -92,7 +89,7 @@ def main():
             'comments': target.get('comments', {}),
             'customBlocks': [b.get('mutation', {}) for b in blocks.values() if isinstance(b, dict) and b['opcode'] == 'procedures_prototype'],
         })
-    report = {'source': SOURCE.name, 'sha256': hashlib.sha256(SOURCE.read_bytes()).hexdigest(), 'extensions': project.get('extensions', []), 'targets': inventory, 'events': dict(events)}
+    report = {'source': SOURCE.name, 'sha256': json.loads((OUT / 'inventory.json').read_text(encoding='utf-8'))['sha256'], 'extensions': project.get('extensions', []), 'targets': inventory, 'events': dict(events)}
     (OUT / 'inventory.json').write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding='utf-8')
     catalog = ['<!doctype html><meta charset="utf-8"><title>Battle Bound assets</title>',
                '<style>body{font:16px system-ui;background:#20242c;color:#eee;margin:32px}section{display:flex;flex-wrap:wrap;gap:12px}figure{margin:0;padding:10px;width:180px;background:#343b47;overflow-wrap:anywhere}img{width:180px;height:120px;object-fit:contain}audio{width:180px}small{font-size:10px}</style>',
@@ -101,7 +98,7 @@ def main():
         catalog.append('<h2>' + html.escape(target['name']) + '</h2><section>')
         for asset in target['costumes'] + target['sounds']:
             filename = asset.get('md5ext', asset['assetId'] + '.' + asset['dataFormat'])
-            url = 'original/' + filename
+            url = '../' + paths[filename]['sourcePath']
             media = f'<img loading="lazy" src="{url}" alt="">' if asset in target['costumes'] else f'<audio controls preload="none" src="{url}"></audio>'
             catalog.append(f'<figure>{media}<figcaption>{html.escape(asset["name"])}<br><a href="{url}"><small>{filename}</small></a></figcaption></figure>')
         catalog.append('</section>')
@@ -110,7 +107,7 @@ def main():
     labels = {}
     for costume in ui['costumes']:
         if costume['name'].endswith(('_name', '_info')) and costume['dataFormat'] == 'svg':
-            tree = ET.parse(OUT / 'original' / costume['md5ext'])
+            tree = ET.parse(ROOT / source_path(costume, paths))
             labels[costume['name']] = ' '.join(node.text for node in tree.iter() if node.tag.endswith(('}text', '}tspan')) and node.text).strip()
     stage_lists = {v[0]: v[1] for v in project['targets'][0]['lists'].values()}
     items = []

@@ -1,4 +1,6 @@
 # Preserve imported assets and upstream license notices byte-for-byte.
 scratch/original/** -text
+assets/source/** -text
+tests/fixtures/** -text
 licenses/** -text
 LICENSE -text

@@ -10,7 +10,8 @@ Run `python tools/unpack_scratch.py` from the repository root (Python standard
 library only). Outputs:
 
 - `scratch/original/project.json`: exact Scratch project definition.
-- `scratch/original/*`: original hash-named SVG, bitmap, and sound files.
+- `assets/source/*`: original SVG, bitmap and sound files with descriptive names.
+- `assets/manifest.json`: original hash identities, shared aliases and named paths.
 - `scratch/scripts/*.txt`: all top-level stacks, nested control stacks,
   reporter expressions, custom calls, and original block IDs.
 - `scratch/inventory.json`: source SHA-256, variables, lists, costumes, sounds,

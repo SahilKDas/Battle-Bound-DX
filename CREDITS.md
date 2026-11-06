@@ -91,3 +91,8 @@ The Vulkan SDK and loader are not redistributed; the graphics driver supplies
 the runtime loader. SPIR-V shaders in the executable are compiled from this
 repository's shader sources. Raylib remains for CPU image decoding and audio;
 the game no longer creates an OpenGL rendering context.
+
+The replay/content milestone renames imported media to descriptive sprite/asset
+paths under `assets/source/`, without changing their bytes. Original identities,
+checksums and shared aliases remain in `assets/manifest.json`. New typed item
+definitions and deterministic gameplay trace tools are local DX additions.

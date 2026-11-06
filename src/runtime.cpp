@@ -1,6 +1,7 @@
 #include "runtime.hpp"
 #include "assets.hpp"
 #include "graphics.hpp"
+#include "content.hpp"
 #include <charconv>
 #include <chrono>
 #include <cctype>
@@ -115,7 +116,43 @@ void Runtime::load() {
     if (definitions.empty()) throw std::runtime_error("No targets in image");
 
 }
+void Runtime::setDeterministic(std::uint32_t seed, std::int64_t unixSeconds) {
+    if (unixSeconds < 946684800 || unixSeconds > 4102444800LL) {
+        throw std::runtime_error("Replay epoch must be between 2000 and 2100");
+    }
+    deterministic = true;
+    randomSeed = seed;
+    epochSeconds = unixSeconds;
+}
+void Runtime::applyInput(const std::set<std::string>& keys, bool fire, double aimX,
+                         double aimY, int wheel) {
+    scriptedInput = true;
+    previousScriptedKeys = scriptedKeys;
+    scriptedKeys = keys;
+    scriptedMouse = fire;
+    scriptedAimX = aimX;
+    scriptedAimY = aimY;
+    scriptedWheel = wheel;
+}
+double Runtime::randomUnit() {
+    const auto high = random() >> 5;
+    const auto low = random() >> 6;
+    randomDraws += 2;
+    return (high * 67108864.0 + low) / 9007199254740992.0;
+}
+double Runtime::calendarSeconds() const {
+    if (deterministic) return static_cast<double>(epochSeconds) + now;
+    return std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
 void Runtime::greenFlag() {
+    if (deterministic) {
+        now = 0; timerOrigin = 0; nextTask = 1;
+        random.seed(randomSeed); randomDraws = 0;
+        scriptedKeys.clear(); previousScriptedKeys.clear(); scriptedInput = false;
+        scriptedMouse = false; scriptedWheel = 0;
+        executed = 0; bulletClones = 0;
+        unsupported.clear(); executedOps.clear(); gameplayEvents.clear();
+    }
     tasks.clear(); actors.clear(); stamps.clear(); shownLists.clear(); halted = false; asking = 0; question.clear(); timerOrigin = now;
     for (std::size_t index = 0; index < definitions.size(); ++index) {
         auto& d = definitions[index];
@@ -172,13 +209,26 @@ void Runtime::startGame() {
 }
 int Runtime::listIndex(const Value& value, std::size_t size, bool insertion) {
     if (lower(value.text) == "last") return static_cast<int>(size) - (insertion ? 0 : 1);
-    if (lower(value.text) == "random" || lower(value.text) == "any") return size ? std::uniform_int_distribution<int>(0, static_cast<int>(size) - (insertion ? 0 : 1))(random) : (insertion ? 0 : -1);
+    if (lower(value.text) == "random" || lower(value.text) == "any") {
+        if (!size) return insertion ? 0 : -1;
+        if (deterministic) return static_cast<int>(std::floor(randomUnit() * (size + (insertion ? 1 : 0))));
+        return std::uniform_int_distribution<int>(0, static_cast<int>(size) - (insertion ? 0 : 1))(random);
+    }
     double n = std::floor(value.number()) - 1;
     if (!std::isfinite(n) || n < 0 || n >= static_cast<double>(size + (insertion ? 1 : 0))) return -1;
     return static_cast<int>(n);
 }
 bool Runtime::key(const std::string& name, bool pressed) {
-    if (scriptedInput) return scriptedKeys.contains(lower(name)) || (name == "any" && !scriptedKeys.empty());
+    if (scriptedInput) {
+        const auto label = lower(name);
+        if (label == "any") {
+            if (!pressed) return !scriptedKeys.empty();
+            return std::any_of(scriptedKeys.begin(), scriptedKeys.end(), [&](const auto& key) {
+                return !previousScriptedKeys.contains(key);
+            });
+        }
+        return scriptedKeys.contains(label) && (!pressed || !previousScriptedKeys.contains(label));
+    }
     if (headless) return false;
     auto label = lower(name); int code = KEY_NULL;
     if (label.size() == 1) code = std::toupper(static_cast<unsigned char>(label[0]));
@@ -191,8 +241,8 @@ bool Runtime::key(const std::string& name, bool pressed) {
     else if (label == "any") { for (int k = 32; k < 350; ++k) if (pressed ? gfx::keyPressed(k) : gfx::keyDown(k)) return true; return false; }
     return code != KEY_NULL && (pressed ? gfx::keyPressed(code) : gfx::keyDown(code));
 }
-double Runtime::mx() const { return headless ? 0 : gfx::mouseX() * 640.0 / gfx::width() - 320; }
-double Runtime::my() const { return headless ? 0 : 180 - gfx::mouseY() * 360.0 / gfx::height(); }
+double Runtime::mx() const { return scriptedInput ? scriptedAimX : headless ? 0 : gfx::mouseX() * 640.0 / gfx::width() - 320; }
+double Runtime::my() const { return scriptedInput ? scriptedAimY : headless ? 0 : 180 - gfx::mouseY() * 360.0 / gfx::height(); }
 void Runtime::position(Actor& a, double x, double y) {
     if (!std::isfinite(x) || !std::isfinite(y)) return;
     // Scratch fencing keeps at least 15 pixels of the costume in view.
@@ -249,7 +299,19 @@ Value Runtime::eval(Task& task, int index, int depth) {
     if (op == "operator_length") return static_cast<double>(v("STRING").text.size());
     if (op == "operator_letter_of") { auto s = v("STRING").text; double i = std::floor(n("LETTER")) - 1; return i >= 0 && i < static_cast<double>(s.size()) ? s.substr(static_cast<std::size_t>(i), 1) : ""; }
     if (op == "operator_contains") return boolean(lower(v("STRING1").text).find(lower(v("STRING2").text)) != std::string::npos);
-    if (op == "operator_random") { double x = n("FROM"), y = n("TO"); if (x > y) std::swap(x, y); if (!std::isfinite(x) || !std::isfinite(y)) return 0.0; if (std::floor(x) == x && std::floor(y) == y) return std::floor(std::uniform_real_distribution<double>(x, y + 1)(random)); return std::uniform_real_distribution<double>(x, y)(random); }
+    if (op == "operator_random") {
+        double x = n("FROM");
+        double y = n("TO");
+        if (x > y) std::swap(x, y);
+        if (!std::isfinite(x) || !std::isfinite(y)) return 0.0;
+        const bool integers = std::floor(x) == x && std::floor(y) == y;
+        double result;
+        if (deterministic) result = x + randomUnit() * (y - x + (integers ? 1 : 0));
+        else result = std::uniform_real_distribution<double>(x, integers ? y + 1 : y)(random);
+        if (integers) result = std::min(y, std::floor(result));
+        if (captureEvents) gameplayEvents.push_back({"random", definitions[a.type].name, b.id, "", Value(result).text});
+        return result;
+    }
     if (op == "operator_mathop") {
         double x = n("NUM"); auto name = field(b, "OPERATOR");
         if (name == "abs") return std::abs(x);
@@ -293,8 +355,8 @@ Value Runtime::eval(Task& task, int index, int depth) {
     if (op == "sensing_touchingobject") return boolean(touching(a, v("TOUCHINGOBJECTMENU").text));
     if (op == "sensing_distanceto") { auto target = v("DISTANCETOMENU").text; double x = mx(), y = my(); for (auto& actor : actors) if (!actor->clone && definitions[actor->type].name == target) { x = actor->x; y = actor->y; break; } return std::hypot(x - a.x, y - a.y); }
     if (op == "sensing_answer") return answer;
-    if (op == "sensing_dayssince2000") { auto time = std::chrono::system_clock::now().time_since_epoch(); return std::chrono::duration<double, std::ratio<86400>>(time).count() - 10957; }
-    if (op == "sensing_current") { auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); auto calendar = *std::localtime(&time); auto name = field(b, "CURRENTMENU"); if (name == "YEAR") return calendar.tm_year + 1900.0; if (name == "MONTH") return calendar.tm_mon + 1.0; if (name == "DATE") return static_cast<double>(calendar.tm_mday); if (name == "DAYOFWEEK") return calendar.tm_wday + 1.0; if (name == "HOUR") return static_cast<double>(calendar.tm_hour); if (name == "MINUTE") return static_cast<double>(calendar.tm_min); return static_cast<double>(calendar.tm_sec); }
+    if (op == "sensing_dayssince2000") { return calendarSeconds() / 86400.0 - 10957; }
+    if (op == "sensing_current") { auto time = static_cast<std::time_t>(calendarSeconds()); auto calendar = *(deterministic ? std::gmtime(&time) : std::localtime(&time)); auto name = field(b, "CURRENTMENU"); if (name == "YEAR") return calendar.tm_year + 1900.0; if (name == "MONTH") return calendar.tm_mon + 1.0; if (name == "DATE") return static_cast<double>(calendar.tm_mday); if (name == "DAYOFWEEK") return calendar.tm_wday + 1.0; if (name == "HOUR") return static_cast<double>(calendar.tm_hour); if (name == "MINUTE") return static_cast<double>(calendar.tm_min); return static_cast<double>(calendar.tm_sec); }
     if (op.ends_with("menu") || op == "looks_costume" || op == "looks_backdrops" || op == "sensing_keyoptions") { if (!b.fields.empty()) return b.fields.begin()->second; return ""; }
     if (op == "procedures_prototype") return "";
     unsupported.insert(op); return "";
@@ -364,13 +426,29 @@ void Runtime::run(Task& task) {
             if (name != "_myself_") { source.reset(); for (auto& actor : actors) if (!actor->clone && definitions[actor->type].name == name) { source = actor; break; } }
             if (source) {
                 auto clone = std::make_shared<Actor>(*source); clone->clone = true; actors.push_back(clone);
-                if (definitions[clone->type].name == "[Bullet]") for (auto& [id, name] : definitions[clone->type].variableNames) if (name == "__ID" && clone->variables[id] == "bullet") { ++bulletClones; break; }
+                if (definitions[clone->type].name == "[Bullet]") for (auto& [id, name] : definitions[clone->type].variableNames) if (name == "__ID" && clone->variables[id] == "bullet") { ++bulletClones; if (captureEvents) gameplayEvents.push_back({"shot", d.name, b.id, "", "bullet"}); break; }
                 auto& blocks = definitions[clone->type].blocks;
                 for (std::size_t i = 0; i < blocks.size(); ++i) if (blocks[i].op == "control_start_as_clone") spawn(clone, static_cast<int>(i));
             }
             continue;
         }
-        if (op == "data_setvariableto" || op == "data_changevariableby") { auto id = field(b, "VARIABLE_ID"); if (id.empty()) id = resolve(field(b, "VARIABLE"), false); auto value = v("VALUE"); auto& ref = variableRef(a, id); ref = op == "data_changevariableby" ? Value(Value(ref).number() + value.number()).text : value.text; continue; }
+        if (op == "data_setvariableto" || op == "data_changevariableby") {
+            auto id = field(b, "VARIABLE_ID");
+            if (id.empty()) id = resolve(field(b, "VARIABLE"), false);
+            auto value = v("VALUE");
+            auto& ref = variableRef(a, id);
+            auto before = ref;
+            ref = op == "data_changevariableby" ? Value(Value(ref).number() + value.number()).text : value.text;
+            if (captureEvents && before != ref && definitions[0].variableNames.contains(id)) {
+                const auto& name = definitions[0].variableNames.at(id);
+                if (name == "::Spiller-liv" || name == "::Ammonisjon" ||
+                    name == "::Våpen holdt" || name == ";SCENE" || name == ";Spill-Modus" ||
+                    name == "::Player game-points" || name == "::[Spiller-action]") {
+                    gameplayEvents.push_back({name, d.name, b.id, before, ref});
+                }
+            }
+            continue;
+        }
         if (op.starts_with("data_")) {
             if (op == "data_hidevariable") continue;
             auto id = field(b, "LIST_ID"); if (id.empty()) id = resolve(field(b, "LIST"), true); auto& values = list(a, id);
@@ -410,7 +488,7 @@ void Runtime::run(Task& task) {
             auto wanted = v("SOUND_MENU"); const Asset* asset = nullptr;
             for (auto& item : d.sounds) if (item.name == wanted.text) { asset = &item; break; }
             if (!asset) { int i = listIndex(wanted, d.sounds.size()); if (i >= 0) asset = &d.sounds[i]; }
-            if (asset) { auto it = sounds.find(asset->file); if (it == sounds.end()) it = sounds.emplace(asset->file, loadPackagedSound("scratch/original/" + asset->file)).first; if (it->second.frameCount) { SetSoundVolume(it->second, static_cast<float>(a.volume / 100)); SetSoundPitch(it->second, static_cast<float>(std::pow(2, a.effects["pitch"] / 120))); SetSoundPan(it->second, static_cast<float>((a.effects["pan"] + 100) / 200)); PlaySound(it->second); } }
+            if (asset) { auto it = sounds.find(asset->file); if (it == sounds.end()) it = sounds.emplace(asset->file, loadPackagedSound(asset->file)).first; if (it->second.frameCount) { SetSoundVolume(it->second, static_cast<float>(a.volume / 100)); SetSoundPitch(it->second, static_cast<float>(std::pow(2, a.effects["pitch"] / 120))); SetSoundPan(it->second, static_cast<float>((a.effects["pan"] + 100) / 200)); PlaySound(it->second); } }
             continue;
         }
         unsupported.insert(op);
@@ -419,17 +497,20 @@ void Runtime::run(Task& task) {
 }
 
 void Runtime::tick(double dt) {
+    gameplayEvents.clear();
     now += dt;
+    if (scriptedInput && scriptedWheel > 0) broadcast("scroll up");
+    if (scriptedInput && scriptedWheel < 0) broadcast("scroll down");
     if (halted) return;
-    if (!headless) {
-        if (asking) { int c; while ((c = gfx::nextCharacter()) > 0) if (c >= 32 && c < 127) answer += static_cast<char>(c); if (gfx::keyPressed(KEY_BACKSPACE) && !answer.empty()) answer.pop_back(); if (gfx::keyPressed(KEY_ENTER)) { for (auto& task : tasks) if (task->id == asking) task->wake = now; asking = 0; question.clear(); } }
+    if (!headless || scriptedInput) {
+        if (asking && !headless) { int c; while ((c = gfx::nextCharacter()) > 0) if (c >= 32 && c < 127) answer += static_cast<char>(c); if (gfx::keyPressed(KEY_BACKSPACE) && !answer.empty()) answer.pop_back(); if (gfx::keyPressed(KEY_ENTER)) { for (auto& task : tasks) if (task->id == asking) task->wake = now; asking = 0; question.clear(); } }
         auto snapshot = actors;
         for (auto& a : snapshot) if (a->alive) {
             auto& blocks = definitions[a->type].blocks;
             for (std::size_t i = 0; i < blocks.size(); ++i) if (blocks[i].op == "event_whenkeypressed" && key(field(blocks[i], "KEY_OPTION"), true)) spawn(a, static_cast<int>(i));
         }
-        if (gfx::mouseWheel() > 0) broadcast("scroll up");
-        if (gfx::mouseWheel() < 0) broadcast("scroll down");
+        if (!scriptedInput && gfx::mouseWheel() > 0) broadcast("scroll up");
+        if (!scriptedInput && gfx::mouseWheel() < 0) broadcast("scroll down");
     }
     // Newly broadcast hats run this tick; loop yields resume on the next tick.
     // Bound task count as well as per-task work to avoid accidental infinite dispatch.
@@ -451,8 +532,7 @@ CachedImage* Runtime::image(Actor& a) {
     if (a.costume < 0 || a.costume >= static_cast<int>(assets.size())) return nullptr;
     auto& asset = assets[a.costume]; auto it = images.find(asset.file);
     if (it != images.end()) return &it->second;
-    auto path = std::filesystem::path("scratch/original") / asset.file;
-    if (path.extension() == ".svg") path = std::filesystem::path("scratch/raster") / (path.stem().string() + ".png");
+    auto path = std::filesystem::path(asset.file);
     auto bytes = readAsset(path.generic_string());
     CachedImage cached; cached.image = LoadImageFromMemory(path.extension().string().c_str(), bytes.data(), static_cast<int>(bytes.size()));
     if (!cached.image.data) throw std::runtime_error("Cannot decode costume " + path.string() + "; run tools/build.ps1");
@@ -538,6 +618,17 @@ std::string Runtime::diagnostics() const {
 }
 int selfTest() {
     auto require = [](bool pass, const char* message) { if (!pass) throw std::runtime_error(message); };
+    content::validate();
+    require(content::items().size() == 26 && content::matches().size() == 4,
+            "Complete typed content catalog");
+    auto smg = content::findItem("d");
+    require(smg && content::item(*smg).gearPoints == 500 &&
+                content::item(*smg).reloadSeconds == 2.0,
+            "SMG source tuning preserved");
+    require(!content::findItem("invalid"), "Unknown legacy code has no silent fallback");
+    require(!content::item(content::ItemId::Bow).reloadSeconds &&
+                !content::item(content::ItemId::Helicopter).gearPoints,
+            "Missing source values remain missing");
     require(equal("01", "1"), "Numeric Scratch comparison");
     require(equal("HELLO", "hello"), "Case-insensitive comparison");
     require(!equal("", "0"), "Empty strings compare lexically");
