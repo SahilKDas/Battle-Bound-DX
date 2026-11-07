@@ -88,7 +88,9 @@ public:
     void submitLiveInput(const RawInput& frame);
     const PlayerInput& playerInput() const { return mappedInput; }
     const CameraSystem& camera() const { return cameraSystem; }
+    void useLegacyMovement(bool legacy) { nativeMovement = !legacy; }
     void useLegacyCamera(bool legacy) { nativeCamera = !legacy; }
+    int matchSecondsRemaining() const;
     double simulationTime() const { return now; }
     std::uint64_t randomDrawCount() const { return randomDraws; }
     std::size_t taskCount() const { return tasks.size(); }
@@ -135,6 +137,9 @@ private:
     std::uint64_t asking{};
     std::set<std::string> shownLists;
     std::shared_ptr<Task> spawn(std::shared_ptr<Actor> actor, int pc);
+    bool nativeMovement{true};
+    bool runNativeMovement(Task& task, const Block& block, const Frame& frame);
+    void playActorSound(Actor& actor, const Value& wanted);
     void run(Task& task);
     Value eval(Task& task, int block, int depth = 0);
     Value input(Task& task, const Block& block, const std::string& key, int depth = 0);
@@ -154,6 +159,7 @@ private:
     double my() const;
     void setNamed(const std::string& name, const Value& value);
 };
+void testMovement();
 int selfTest();
 int testCameraBridge(const std::filesystem::path& root);
 }

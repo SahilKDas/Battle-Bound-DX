@@ -18,7 +18,7 @@ execute_process(COMMAND "${SPIRV_VAL}" --target-env vulkan1.0 "${CMAKE_BINARY_DI
 execute_process(COMMAND "${SPIRV_VAL}" --target-env vulkan1.0 "${CMAKE_BINARY_DIR}/sprite.frag.spv" COMMAND_ERROR_IS_FATAL ANY)
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/embed_shaders.py" "${CMAKE_BINARY_DIR}/sprite.vert.spv" "${CMAKE_BINARY_DIR}/sprite.frag.spv" "${CMAKE_BINARY_DIR}/sprite_shaders.hpp" COMMAND_ERROR_IS_FATAL ANY)
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/static_glfw.py" "${RAYLIB_LIBRARY}" "${CMAKE_BINARY_DIR}/static_glfw.cpp" COMMAND_ERROR_IS_FATAL ANY)
-add_executable(battle_bound_dx WIN32 src/main.cpp src/runtime.cpp src/assets.cpp src/graphics.cpp src/content.cpp src/replay.cpp src/input.cpp src/platform_input.cpp src/camera.cpp src/camera_bridge.cpp "${CMAKE_BINARY_DIR}/static_glfw.cpp")
+add_executable(battle_bound_dx WIN32 src/main.cpp src/runtime.cpp src/movement.cpp src/game_ui.cpp src/assets.cpp src/graphics.cpp src/content.cpp src/replay.cpp src/input.cpp src/platform_input.cpp src/camera.cpp src/camera_bridge.cpp "${CMAKE_BINARY_DIR}/static_glfw.cpp")
 target_compile_options(battle_bound_dx PRIVATE -std=c++2c -Wall -Wextra -Wpedantic -Werror)
 target_include_directories(battle_bound_dx PRIVATE ${RAYLIB_INCLUDE_DIR} ${VULKAN_HEADERS} "${CMAKE_BINARY_DIR}")
 target_link_libraries(battle_bound_dx PRIVATE ${RAYLIB_LIBRARY} ${GLFW_LIBRARY})

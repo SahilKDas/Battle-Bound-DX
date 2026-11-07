@@ -1,3 +1,4 @@
+#include "game_ui.hpp"
 #include "runtime.hpp"
 #include "assets.hpp"
 #include "graphics.hpp"
@@ -154,6 +155,14 @@ double Runtime::randomUnit() {
 double Runtime::calendarSeconds() const {
     if (deterministic) return static_cast<double>(epochSeconds) + now;
     return std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+int Runtime::matchSecondsRemaining() const {
+    const auto minutes = static_cast<int>(namedValue("&Spill-lengde").number());
+    if (minutes <= 0) return 0;
+    const auto seconds = static_cast<std::time_t>(calendarSeconds());
+    const auto* calendar = deterministic ? std::gmtime(&seconds) : std::localtime(&seconds);
+    if (!calendar) return 0;
+    return (minutes - calendar->tm_min % minutes - 1) * 60 + 59 - calendar->tm_sec;
 }
 void Runtime::greenFlag() {
     if (deterministic) {
@@ -382,6 +391,7 @@ void Runtime::run(Task& task) {
         auto n = [&](const std::string& name) { return v(name).number(); };
         auto body = [&](const std::string& name) { auto it = b.inputs.find(name); return it == b.inputs.end() ? -1 : it->second.block; };
         if (op.starts_with("event_when") || op == "control_start_as_clone") continue;
+        if (op != "procedures_call" && runNativeMovement(task, b, frame)) continue;
         if (op == "control_if" || op == "control_if_else") { bool yes = v("CONDITION").truth(); if (yes || op == "control_if_else") push(body(yes ? "SUBSTACK" : "SUBSTACK2")); continue; }
         if (op == "control_repeat" || op == "control_forever" || op == "control_repeat_until") {
             Frame loop; loop.kind = op == "control_repeat" ? 1 : op == "control_forever" ? 2 : 3;
@@ -395,6 +405,7 @@ void Runtime::run(Task& task) {
             auto& definition = d.blocks[it->second]; auto& prototype = d.blocks.at(definition.inputs.at("custom_block").block);
             Frame call; call.pc = definition.next; call.warp = prototype.warp; call.procedure = true;
             for (auto& [id, name] : prototype.arguments) call.arguments[name] = v(id).text;
+            if (runNativeMovement(task, b, call)) continue;
             if (task.frames.size() > 512) throw std::runtime_error("Procedure stack limit");
             task.frames.push_back(std::move(call)); continue;
         }
@@ -477,16 +488,21 @@ void Runtime::run(Task& task) {
         if (op == "sound_seteffectto" || op == "sound_cleareffects") { if (op == "sound_cleareffects") { a.effects.erase("pitch"); a.effects.erase("pan"); } else a.effects[lower(field(b, "EFFECT"))] = n("VALUE"); continue; }
         if (op == "sound_stopallsounds") { for (auto& [name, sound] : sounds) StopSound(sound); continue; }
         if (op == "sound_play") {
-            if (headless || mute || !IsAudioDeviceReady()) continue;
-            auto wanted = v("SOUND_MENU"); const Asset* asset = nullptr;
-            for (auto& item : d.sounds) if (item.name == wanted.text) { asset = &item; break; }
-            if (!asset) { int i = listIndex(wanted, d.sounds.size()); if (i >= 0) asset = &d.sounds[i]; }
-            if (asset) { auto it = sounds.find(asset->file); if (it == sounds.end()) it = sounds.emplace(asset->file, loadPackagedSound(asset->file)).first; if (it->second.frameCount) { SetSoundVolume(it->second, static_cast<float>(a.volume / 100)); SetSoundPitch(it->second, static_cast<float>(std::pow(2, a.effects["pitch"] / 120))); SetSoundPan(it->second, static_cast<float>((a.effects["pan"] + 100) / 200)); PlaySound(it->second); } }
+            if (!headless && !mute && IsAudioDeviceReady()) playActorSound(a, v("SOUND_MENU"));
             continue;
         }
         unsupported.insert(op);
         throw std::runtime_error("Unsupported statement " + op + " in " + d.name + " block " + b.id);
     }
+}
+
+void Runtime::playActorSound(Actor& a, const Value& wanted) {
+    const auto& d = definitions[a.type];
+    if (headless || mute || !IsAudioDeviceReady()) return;
+    const Asset* asset = nullptr;
+    for (auto& item : d.sounds) if (item.name == wanted.text) { asset = &item; break; }
+    if (!asset) { int i = listIndex(wanted, d.sounds.size()); if (i >= 0) asset = &d.sounds[i]; }
+    if (asset) { auto it = sounds.find(asset->file); if (it == sounds.end()) it = sounds.emplace(asset->file, loadPackagedSound(asset->file)).first; if (it->second.frameCount) { SetSoundVolume(it->second, static_cast<float>(a.volume / 100)); SetSoundPitch(it->second, static_cast<float>(std::pow(2, a.effects["pitch"] / 120))); SetSoundPan(it->second, static_cast<float>((a.effects["pan"] + 100) / 200)); PlaySound(it->second); } }
 }
 
 void Runtime::tick(double dt) {
@@ -595,13 +611,38 @@ void Runtime::paint(Actor& a) {
 void Runtime::draw() {
     if (headless) return;
     if (!actors.empty()) paint(*actors[0]);
-    for (auto& stamp : stamps) paint(*stamp);
+    const auto scene = namedValue(";SCENE").text;
+    const auto worldArt = [&](const Actor& actor) {
+        const auto& definition = definitions[actor.type];
+        if (definition.name == "[Introduction]" || definition.name == "Graphics")
+            return false;
+        if (definition.name == "[UI]") return scene != "game";
+        const bool hasCostume = actor.costume >= 0 &&
+            static_cast<std::size_t>(actor.costume) < definition.costumes.size();
+        if (hasCostume) {
+            const auto& name = definition.costumes[actor.costume].name;
+            if (name == "Crosshair" || name == "lonely game") return false;
+        }
+        if (definition.name != "[GAME UI]") return true;
+        for (const auto& [id, name] : definition.variableNames) {
+            if (name != "_ID") continue;
+            const auto found = actor.variables.find(id);
+            if (found == actor.variables.end()) return true;
+            const auto& role = found->second;
+            return role != "healthbar" && role != "ammo" && role != "kills" &&
+                   role != "killcount" && role != "gamemode" && role != "heli-text" &&
+                   role != "players" && (role != "countdown" || scene != "game");
+        }
+        return true;
+    };
+    for (auto& stamp : stamps) if (worldArt(*stamp)) paint(*stamp);
     auto sorted = actors;
     std::stable_sort(sorted.begin(), sorted.end(), [](const auto& x, const auto& y) { return x->layer < y->layer; });
-    for (auto& actor : sorted) if (actor->type != 0 && actor->alive && actor->visible) { paint(*actor); if (!actor->bubble.empty()) gfx::text(actor->bubble.c_str(), static_cast<float>(actor->x + 320), static_cast<float>(160 - actor->y), 10, WHITE); }
+    for (auto& actor : sorted) if (actor->type != 0 && actor->alive && actor->visible && worldArt(*actor)) { paint(*actor); if (!actor->bubble.empty()) gfx::text(actor->bubble.c_str(), static_cast<float>(actor->x + 320), static_cast<float>(160 - actor->y), 10, WHITE); }
     int row = 25;
     for (auto& id : shownLists) { std::string text; for (auto& actor : actors) if (actor->lists.contains(id)) for (auto& value : actor->lists[id]) text += value.text + "\n"; gfx::rectangle(8, row, 450, 70, {35, 40, 50, 230}); gfx::text(text.c_str(), 12, row + 5, 10, WHITE); row += 75; }
     if (asking) { gfx::rectangle(10, 280, 460, 70, DARKGRAY); gfx::text(question.c_str(), 15, 287, 10, WHITE); gfx::text(answer.c_str(), 15, 310, 12, WHITE); }
+    drawGameHud(*this);
     if (halted) gfx::text("Scripts stopped | F5 restart | F6 offline game", 10, 345, 8, ORANGE);
 }
 std::string Runtime::diagnostics() const {
@@ -614,6 +655,7 @@ std::string Runtime::diagnostics() const {
 int selfTest() {
     testInputSystem();
     testCameraSystem();
+    testMovement();
     auto require = [](bool pass, const char* message) { if (!pass) throw std::runtime_error(message); };
     content::validate();
     require(content::items().size() == 26 && content::matches().size() == 4,

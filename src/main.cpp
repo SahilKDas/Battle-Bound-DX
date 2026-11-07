@@ -1,3 +1,4 @@
+#include "game_ui.hpp"
 #include "runtime.hpp"
 #include "assets.hpp"
 #include "graphics.hpp"
@@ -29,7 +30,7 @@ int main(int argc, char** argv) {
         std::uint32_t seed = 3005;
         std::int64_t epoch = 1793966460;
         bool deterministic = false, clockOverride = false, showCredits = false;
-        bool legacyCamera = false, cameraCheck = false;
+        bool legacyMovement = false, legacyCamera = false, cameraCheck = false;
         std::filesystem::path replayPath, recordPath, tracePath, systemsPath;
         std::string username = "DX_Player";
         for (int i = 1; i < argc; ++i) {
@@ -52,6 +53,7 @@ int main(int argc, char** argv) {
             else if (arg == "--trace" && i + 1 < argc) { tracePath = argv[++i]; game = true; deterministic = true; }
             else if (arg == "--username" && i + 1 < argc) username = argv[++i];
             else if (arg == "--credits") showCredits = true;
+            else if (arg == "--legacy-movement") legacyMovement = true;
             else if (arg == "--legacy-camera") legacyCamera = true;
             else if (arg == "--camera-check") cameraCheck = true;
             else if (arg == "--systems-trace" && i + 1 < argc) { systemsPath = argv[++i]; deterministic = true; game = true; }
@@ -98,6 +100,7 @@ int main(int argc, char** argv) {
             runtime.mute = !unmuted;
             runtime.load();
             runtime.useLegacyCamera(legacyCamera);
+            runtime.useLegacyMovement(legacyMovement);
             if (deterministic) runtime.setDeterministic(seed, epoch);
             runtime.captureEvents = !tracePath.empty();
             runtime.greenFlag();
@@ -109,6 +112,7 @@ int main(int argc, char** argv) {
             bb::ReplayTape recording;
             recording.seed = seed; recording.epoch = epoch; recording.username = username;
             if (headless || renderSmoke) {
+                const bb::GameUi previewUi(game);
                 double minimumX = 1e30, maximumX = -1e30;
                 for (int i = 0; i < ticks; ++i) {
                     bb::InputFrame frame;
@@ -119,7 +123,12 @@ int main(int argc, char** argv) {
                     if (systemsTrace) systemsTrace->writeSystems(i, runtime);
                     if (!recordPath.empty()) recording.frames.push_back(frame);
                     if (i > 5) { double x = runtime.namedValue("::Player X").number(); minimumX = std::min(minimumX, x); maximumX = std::max(maximumX, x); }
-                    if (renderSmoke) { bb::gfx::beginFrame(); runtime.draw(); if (i == ticks - 1) bb::gfx::requestCapture(); bb::gfx::endFrame(); }
+                    if (renderSmoke) {
+                        bb::gfx::beginFrame();
+                        previewUi.draw(runtime);
+                        if (i == ticks - 1) bb::gfx::requestCapture();
+                        bb::gfx::endFrame();
+                    }
                 }
                 if (renderSmoke) {
                     Image screenshot = bb::gfx::capture();
@@ -140,15 +149,20 @@ int main(int argc, char** argv) {
                     if (maximumX - minimumX < 10 || runtime.bulletClones == 0) throw std::runtime_error("Scripted movement/shooting did not exercise the original gameplay");
                 }
             } else {
+                bb::GameUi ui(game || deterministic);
                 std::size_t tick = 0;
                 while (!bb::gfx::shouldClose()) {
                     if ((!recordPath.empty() || trace || systemsTrace) && tick >= static_cast<std::size_t>(ticks)) break;
                     bb::InputFrame frame;
-                    if (!deterministic && bb::gfx::keyPressed(KEY_F5)) runtime.greenFlag();
-                    if (!deterministic && bb::gfx::keyPressed(KEY_F6)) runtime.startGame();
                     const bb::Viewport viewport{static_cast<double>(bb::gfx::width()),
                                                   static_cast<double>(bb::gfx::height())};
                     const auto physical = bb::capturePlatformInput(viewport, deterministic);
+                    if (!deterministic && !ui.update(runtime, physical)) {
+                        bb::gfx::beginFrame();
+                        ui.draw(runtime);
+                        bb::gfx::endFrame();
+                        continue;
+                    }
                     frame = bb::encodeInput(physical);
                     if (deterministic) runtime.applyInput(frame);
                     else runtime.submitLiveInput(physical);
@@ -158,7 +172,7 @@ int main(int argc, char** argv) {
                     if (!recordPath.empty()) recording.frames.push_back(frame);
                     ++tick;
                     bb::gfx::beginFrame();
-                    runtime.draw();
+                    ui.draw(runtime);
                     bb::gfx::endFrame();
                 }
                 std::cout << runtime.diagnostics() << '\n';

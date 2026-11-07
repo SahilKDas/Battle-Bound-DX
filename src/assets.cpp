@@ -72,6 +72,10 @@ std::size_t packagedAssetCount() { return entries.size(); }
 void showStartupError(const std::string& message) { MessageBoxA(nullptr, message.c_str(), "Battle Bound DX", MB_OK | MB_ICONERROR); }
 FontAtlas makeFontAtlas() {
     FontAtlas atlas;
+    auto fontBytes = readAsset("assets/fonts/Nunito.ttf");
+    DWORD fontCount = 0;
+    const auto installedFont = AddFontMemResourceEx(fontBytes.data(), static_cast<DWORD>(fontBytes.size()), nullptr, &fontCount);
+    if (!installedFont) throw std::runtime_error("Cannot load embedded Nunito font");
     HDC dc = CreateCompatibleDC(nullptr);
     BITMAPINFO info{};
     info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -86,7 +90,7 @@ FontAtlas makeFontAtlas() {
     auto previousBitmap = SelectObject(dc, bitmap);
     HFONT font = CreateFontW(-48, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                            ANTIALIASED_QUALITY, DEFAULT_PITCH, L"Segoe UI");
+                            ANTIALIASED_QUALITY, DEFAULT_PITCH, L"Nunito");
     auto previousFont = SelectObject(dc, font);
     SetBkColor(dc, RGB(0, 0, 0));
     SetTextColor(dc, RGB(255, 255, 255));
@@ -106,6 +110,7 @@ FontAtlas makeFontAtlas() {
     }
     SelectObject(dc, previousFont); SelectObject(dc, previousBitmap);
     DeleteObject(font); DeleteObject(bitmap); DeleteDC(dc);
+    RemoveFontMemResourceEx(installedFont);
     return atlas;
 }
 }

@@ -45,7 +45,7 @@ def main():
             for backend in ['native', 'legacy']:
                 traces[backend] = work / f'{name}-{backend}.jsonl'
                 systems[backend] = work / f'{name}-{backend}-systems.jsonl'
-                flags = ['--legacy-camera'] if backend == 'legacy' else []
+                flags = ['--legacy-camera', '--legacy-movement'] if backend == 'legacy' else []
                 run('--replay', tape, '--trace', traces[backend], '--systems-trace', systems[backend], *flags)
             for paths in [traces, systems]:
                 assert paths['native'].read_bytes() == paths['legacy'].read_bytes(), compare(paths['legacy'], paths['native'])
@@ -71,7 +71,7 @@ def main():
                 if index:
                     assert row['aimWorld'] == [rows[index-1]['camera'][0] + float(frame[3]),
                                                 rows[index-1]['camera'][1] + float(frame[4])]
-        print('Input/camera parity passed: unchanged golden trace, 900 native/legacy ticks, typed action edges/aim, 104 source-expression checks.')
+        print('Input/camera/movement parity passed: unchanged golden trace, 900 native/legacy ticks, typed action edges/aim, 104 source-expression checks.')
 
 
 if __name__ == '__main__':

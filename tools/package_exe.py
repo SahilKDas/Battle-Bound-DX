@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 executable = Path(sys.argv[1]).resolve()
 project = json.loads((ROOT / 'scratch/original/project.json').read_text(encoding='utf-8'))
 manifest = asset_manifest()
-names = {'assets/manifest.json', 'scratch/project.bbdx', 'LICENSE', 'CREDITS.md', 'licenses/raylib.txt', 'licenses/glfw.txt'}
+names = {'assets/manifest.json', 'assets/fonts/Nunito.ttf', 'assets/fonts/OFL.txt', 'scratch/project.bbdx', 'LICENSE', 'CREDITS.md', 'licenses/raylib.txt', 'licenses/glfw.txt'}
 for target in project['targets']:
     for asset in target['costumes'] + target['sounds']:
         names.add(runtime_path(asset, manifest))

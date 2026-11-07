@@ -100,3 +100,9 @@ definitions and deterministic gameplay trace tools are local DX additions.
 Typed input and camera systems are additional local DX code. Camera source-block
 mapping and compatibility tuning preserve the current runtime behavior; original
 project metadata, asset bytes and attribution remain unchanged.
+
+DX adds a native offline title screen, pause menu, and match HUD. Typed C++
+movement implements jumping, crouching, crawling, diving, door motion, and
+fall damage using the original project’s collision masks and tuning.
+
+Nunito is bundled for the DX interface. See [Nunito’s SIL Open Font License](assets/fonts/OFL.txt) and the [upstream font source](https://github.com/google/fonts/tree/main/ofl/nunito).
