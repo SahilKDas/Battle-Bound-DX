@@ -11,6 +11,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "input.hpp"
+#include "camera.hpp"
 
 namespace bb {
 using Fields = std::unordered_map<std::string, std::string>;
@@ -66,6 +68,7 @@ struct Task {
 struct CachedImage { Image image{}; Texture2D texture{}; };
 struct GameplayEvent {
     std::string kind, sprite, block, before, after;
+    bool operator==(const GameplayEvent&) const = default;
 };
 class Runtime {
 public:
@@ -81,8 +84,11 @@ public:
     bool stopped() const { return halted; }
     Value namedValue(const std::string& name) const;
     void setDeterministic(std::uint32_t seed, std::int64_t unixSeconds);
-    void applyInput(const std::set<std::string>& keys, bool fire, double aimX,
-                    double aimY, int wheel);
+    void applyInput(const InputFrame& frame);
+    void submitLiveInput(const RawInput& frame);
+    const PlayerInput& playerInput() const { return mappedInput; }
+    const CameraSystem& camera() const { return cameraSystem; }
+    void useLegacyCamera(bool legacy) { nativeCamera = !legacy; }
     double simulationTime() const { return now; }
     std::uint64_t randomDrawCount() const { return randomDraws; }
     std::size_t taskCount() const { return tasks.size(); }
@@ -92,19 +98,26 @@ public:
     std::size_t executed{};
     std::string username{"DX_Player"};
     bool mute{true};
-    bool scriptedInput{}, scriptedMouse{};
-    std::set<std::string> scriptedKeys;
-    std::set<std::string> previousScriptedKeys;
-    double scriptedAimX{}, scriptedAimY{};
-    int scriptedWheel{};
     std::vector<Definition> definitions;
     std::vector<std::shared_ptr<Actor>> actors;
     std::set<std::string> unsupported;
     std::set<std::string> executedOps;
 private:
     friend int selfTest();
+    friend int testCameraBridge(const std::filesystem::path& root);
     std::filesystem::path root;
     bool headless{}, halted{};
+    enum class InputOrigin { None, Live, Replay };
+    InputOrigin inputOrigin{InputOrigin::None};
+    InputSystem inputSystem;
+    PlayerInput mappedInput;
+    CameraSystem cameraSystem;
+    bool nativeCamera{true};
+    void updatePlayerInput();
+    void resetCameraFromLegacy();
+    void syncCameraField(const std::string& id, double value);
+    bool writeNativeCamera(Task& task, const Block& block, const std::string& id,
+                           std::string& result);
     double now{}, timerOrigin{};
     std::uint64_t nextTask{1};
     std::vector<std::shared_ptr<Task>> tasks;
@@ -142,4 +155,5 @@ private:
     void setNamed(const std::string& name, const Value& value);
 };
 int selfTest();
+int testCameraBridge(const std::filesystem::path& root);
 }

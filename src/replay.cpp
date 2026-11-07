@@ -163,28 +163,6 @@ void writeReplay(const std::filesystem::path& path, const ReplayTape& tape,
     if (!output) throw std::runtime_error("Cannot write replay");
 }
 
-InputFrame sampleInput() {
-    InputFrame frame;
-    for (int key = 33; key <= 126; ++key) {
-        if (key >= 'a' && key <= 'z') continue;
-        if (key == ';') continue;
-        if (gfx::keyDown(key)) {
-            char name = static_cast<char>(key >= 'A' && key <= 'Z' ? key + 32 : key);
-            frame.keys.insert(std::string(1, name));
-        }
-    }
-    for (auto [code, name] : {std::pair{KEY_SPACE, "space"}, {KEY_UP, "up arrow"},
-                             {KEY_DOWN, "down arrow"}, {KEY_LEFT, "left arrow"},
-                             {KEY_RIGHT, "right arrow"}, {KEY_ENTER, "enter"}}) {
-        if (gfx::keyDown(code)) frame.keys.insert(name);
-    }
-    frame.fire = gfx::mouseDown(MOUSE_BUTTON_LEFT);
-    frame.aimX = std::clamp(gfx::mouseX() * 640.0 / gfx::width() - 320, -320.0, 320.0);
-    frame.aimY = std::clamp(180 - gfx::mouseY() * 360.0 / gfx::height(), -180.0, 180.0);
-    frame.wheel = gfx::mouseWheel() > 0 ? 1 : gfx::mouseWheel() < 0 ? -1 : 0;
-    return frame;
-}
-
 TraceWriter::TraceWriter(const std::filesystem::path& path, const ReplayTape& tape,
                          const std::filesystem::path& workspace) {
     checkExtension(path, ".jsonl");
@@ -230,6 +208,27 @@ void TraceWriter::write(std::size_t tick, const InputFrame& input, const Runtime
         line << "{\"kind\":" << json(event.kind) << ",\"sprite\":" << json(event.sprite)
              << ",\"block\":" << json(event.block) << ",\"before\":" << json(event.before)
              << ",\"after\":" << json(event.after) << '}';
+    }
+    line << "]}";
+    append(line.str());
+}
+
+void TraceWriter::writeSystems(std::size_t tick, const Runtime& runtime) {
+    const auto& camera = runtime.camera().state();
+    const auto& input = runtime.playerInput();
+    std::ostringstream line;
+    line.imbue(std::locale::classic());
+    line << std::setprecision(17) << "{\"type\":\"systems-tick\",\"tick\":" << tick
+         << ",\"camera\":[" << camera.position.x << ',' << camera.position.y
+         << "],\"grid\":[" << camera.gridOrigin.x << ',' << camera.gridOrigin.y
+         << "],\"shake\":" << camera.shakeMagnitude << ",\"horizontal\":" << input.horizontal
+         << ",\"aimStage\":[" << input.aimStage.x << ',' << input.aimStage.y
+         << "],\"aimWorld\":[" << input.aimWorld.x << ',' << input.aimWorld.y << "],\"actions\":[";
+    bool first = true;
+    for (const auto& action : input.actions) {
+        if (!first) line << ',';
+        first = false;
+        line << '[' << action.held << ',' << action.pressed << ',' << action.released << ']';
     }
     line << "]}";
     append(line.str());

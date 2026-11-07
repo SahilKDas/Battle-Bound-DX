@@ -5,16 +5,10 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "input.hpp"
 
 namespace bb {
 class Runtime;
-
-struct InputFrame {
-    std::set<std::string> keys;
-    bool fire{};
-    double aimX{}, aimY{};
-    int wheel{};
-};
 
 struct ReplayTape {
     std::uint32_t seed{3005};
@@ -27,13 +21,13 @@ ReplayTape exerciseTape(int ticks, std::uint32_t seed, std::int64_t epoch);
 ReplayTape readReplay(const std::filesystem::path& path);
 void writeReplay(const std::filesystem::path& path, const ReplayTape& tape,
                  const std::filesystem::path& workspace);
-InputFrame sampleInput();
 
 class TraceWriter {
 public:
     TraceWriter(const std::filesystem::path& path, const ReplayTape& tape,
                 const std::filesystem::path& workspace);
     void write(std::size_t tick, const InputFrame& input, const Runtime& runtime);
+    void writeSystems(std::size_t tick, const Runtime& runtime);
 
 private:
     std::ofstream output;

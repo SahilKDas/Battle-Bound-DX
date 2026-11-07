@@ -2,6 +2,7 @@
 
 This milestone adds a deterministic reference harness around the compatibility
 runtime. It does not yet replace movement or combat with new typed simulation.
+Typed input and camera extraction is documented in `INPUT_AND_CAMERA.md`.
 
 ## Replay an input recording and compare traces
 

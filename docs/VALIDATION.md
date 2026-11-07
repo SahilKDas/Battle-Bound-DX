@@ -43,3 +43,15 @@ original Scratch MD5 identities; all 1044 sprite/asset aliases resolve. The
 typed catalog validates 26 item IDs and four match modes. Workspace usage after
 the milestone is approximately 99.84 MB. Trace/recording fixtures total 188,109
 bytes. See `REPLAY_AND_CONTENT.md` for commands, limits and remaining scope.
+
+## Typed input/camera extraction — November 6, 2026
+
+All seven CTest checks pass, with no golden trace refresh. The new parity test
+compares native and original camera calculations over 900 replay ticks and
+checks typed action edges and world aim. All 104 camera-expression comparisons
+pass, including retained RNG ordering. These tests revealed the compatibility
+VM's numeric-boolean quirk; the camera adapter preserves its observed behavior.
+
+The Vulkan and headless runs match both gameplay and input/camera system traces
+over 300 ticks. The isolated single-executable test passes. Workspace usage is
+approximately 100.7 MB. See `INPUT_AND_CAMERA.md` for coverage and boundaries.

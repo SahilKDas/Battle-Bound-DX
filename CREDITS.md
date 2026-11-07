@@ -96,3 +96,7 @@ The replay/content milestone renames imported media to descriptive sprite/asset
 paths under `assets/source/`, without changing their bytes. Original identities,
 checksums and shared aliases remain in `assets/manifest.json`. New typed item
 definitions and deterministic gameplay trace tools are local DX additions.
+
+Typed input and camera systems are additional local DX code. Camera source-block
+mapping and compatibility tuning preserve the current runtime behavior; original
+project metadata, asset bytes and attribution remain unchanged.

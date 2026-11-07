@@ -3,6 +3,7 @@
 #include "graphics.hpp"
 #include "content.hpp"
 #include "replay.hpp"
+#include "platform_input.hpp"
 #include <iostream>
 #include <fstream>
 #include <charconv>
@@ -28,7 +29,8 @@ int main(int argc, char** argv) {
         std::uint32_t seed = 3005;
         std::int64_t epoch = 1793966460;
         bool deterministic = false, clockOverride = false, showCredits = false;
-        std::filesystem::path replayPath, recordPath, tracePath;
+        bool legacyCamera = false, cameraCheck = false;
+        std::filesystem::path replayPath, recordPath, tracePath, systemsPath;
         std::string username = "DX_Player";
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -50,6 +52,9 @@ int main(int argc, char** argv) {
             else if (arg == "--trace" && i + 1 < argc) { tracePath = argv[++i]; game = true; deterministic = true; }
             else if (arg == "--username" && i + 1 < argc) username = argv[++i];
             else if (arg == "--credits") showCredits = true;
+            else if (arg == "--legacy-camera") legacyCamera = true;
+            else if (arg == "--camera-check") cameraCheck = true;
+            else if (arg == "--systems-trace" && i + 1 < argc) { systemsPath = argv[++i]; deterministic = true; game = true; }
             else throw std::runtime_error("Unknown or incomplete option: " + arg);
         }
         if (ticks < 1 || ticks > 10000) throw std::runtime_error("Ticks must be 1..10000");
@@ -69,9 +74,13 @@ int main(int argc, char** argv) {
         tape.seed = seed; tape.epoch = epoch; tape.username = username;
         if (tracePath == replayPath && !tracePath.empty()) throw std::runtime_error("Input and output paths must differ");
         if (recordPath == replayPath && !recordPath.empty()) throw std::runtime_error("Input and output paths must differ");
+        if (!systemsPath.empty() && (systemsPath == tracePath || systemsPath == replayPath || systemsPath == recordPath)) {
+            throw std::runtime_error("Trace outputs must have distinct paths");
+        }
         bb::content::validate();
         SetTraceLogLevel(LOG_WARNING);
         bb::openAssetPackage(root);
+        if (cameraCheck) return bb::testCameraBridge(root);
         if (showCredits) {
             auto credits = bb::readAsset("CREDITS.md");
             std::cout.write(reinterpret_cast<const char*>(credits.data()), static_cast<std::streamsize>(credits.size()));
@@ -88,12 +97,15 @@ int main(int argc, char** argv) {
             runtime.username = username;
             runtime.mute = !unmuted;
             runtime.load();
+            runtime.useLegacyCamera(legacyCamera);
             if (deterministic) runtime.setDeterministic(seed, epoch);
             runtime.captureEvents = !tracePath.empty();
             runtime.greenFlag();
             if (game) runtime.startGame();
             std::unique_ptr<bb::TraceWriter> trace;
             if (!tracePath.empty()) trace = std::make_unique<bb::TraceWriter>(tracePath, tape, root);
+            std::unique_ptr<bb::TraceWriter> systemsTrace;
+            if (!systemsPath.empty()) systemsTrace = std::make_unique<bb::TraceWriter>(systemsPath, tape, root);
             bb::ReplayTape recording;
             recording.seed = seed; recording.epoch = epoch; recording.username = username;
             if (headless || renderSmoke) {
@@ -101,9 +113,10 @@ int main(int argc, char** argv) {
                 for (int i = 0; i < ticks; ++i) {
                     bb::InputFrame frame;
                     if (!tape.frames.empty()) frame = tape.frames.at(i);
-                    if (deterministic) runtime.applyInput(frame.keys, frame.fire, frame.aimX, frame.aimY, frame.wheel);
+                    if (deterministic) runtime.applyInput(frame);
                     runtime.tick(1.0 / 30);
                     if (trace) trace->write(i, frame, runtime);
+                    if (systemsTrace) systemsTrace->writeSystems(i, runtime);
                     if (!recordPath.empty()) recording.frames.push_back(frame);
                     if (i > 5) { double x = runtime.namedValue("::Player X").number(); minimumX = std::min(minimumX, x); maximumX = std::max(maximumX, x); }
                     if (renderSmoke) { bb::gfx::beginFrame(); runtime.draw(); if (i == ticks - 1) bb::gfx::requestCapture(); bb::gfx::endFrame(); }
@@ -129,16 +142,19 @@ int main(int argc, char** argv) {
             } else {
                 std::size_t tick = 0;
                 while (!bb::gfx::shouldClose()) {
-                    if ((!recordPath.empty() || trace) && tick >= static_cast<std::size_t>(ticks)) break;
+                    if ((!recordPath.empty() || trace || systemsTrace) && tick >= static_cast<std::size_t>(ticks)) break;
                     bb::InputFrame frame;
-                    if (deterministic) {
-                        frame = bb::sampleInput();
-                        runtime.applyInput(frame.keys, frame.fire, frame.aimX, frame.aimY, frame.wheel);
-                    }
                     if (!deterministic && bb::gfx::keyPressed(KEY_F5)) runtime.greenFlag();
                     if (!deterministic && bb::gfx::keyPressed(KEY_F6)) runtime.startGame();
+                    const bb::Viewport viewport{static_cast<double>(bb::gfx::width()),
+                                                  static_cast<double>(bb::gfx::height())};
+                    const auto physical = bb::capturePlatformInput(viewport, deterministic);
+                    frame = bb::encodeInput(physical);
+                    if (deterministic) runtime.applyInput(frame);
+                    else runtime.submitLiveInput(physical);
                     runtime.tick(1.0 / 30);
                     if (trace) trace->write(tick, frame, runtime);
+                    if (systemsTrace) systemsTrace->writeSystems(tick, runtime);
                     if (!recordPath.empty()) recording.frames.push_back(frame);
                     ++tick;
                     bb::gfx::beginFrame();

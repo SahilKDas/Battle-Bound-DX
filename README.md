@@ -11,6 +11,7 @@ for the original scripts and assets. Current gameplay is offline.
 - [Build, single-EXE packaging, limitations and workspace budget](docs/NATIVE_PORT.md)
 - [Clean C++ migration brainstorm](docs/CPP_MIGRATION.md)
 - [Repeatable traces, typed content and named assets](docs/REPLAY_AND_CONTENT.md)
+- [Typed input and camera systems](docs/INPUT_AND_CAMERA.md)
 
 - [Original game architecture](docs/SCRATCH_ARCHITECTURE.md)
 - [Credits, licensing and provenance](CREDITS.md)

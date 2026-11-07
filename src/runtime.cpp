@@ -124,15 +124,26 @@ void Runtime::setDeterministic(std::uint32_t seed, std::int64_t unixSeconds) {
     randomSeed = seed;
     epochSeconds = unixSeconds;
 }
-void Runtime::applyInput(const std::set<std::string>& keys, bool fire, double aimX,
-                         double aimY, int wheel) {
-    scriptedInput = true;
-    previousScriptedKeys = scriptedKeys;
-    scriptedKeys = keys;
-    scriptedMouse = fire;
-    scriptedAimX = aimX;
-    scriptedAimY = aimY;
-    scriptedWheel = wheel;
+void Runtime::applyInput(const InputFrame& frame) {
+    inputSystem.submit(decodeInput(frame));
+    inputOrigin = InputOrigin::Replay;
+}
+void Runtime::submitLiveInput(const RawInput& frame) {
+    inputSystem.submit(frame);
+    inputOrigin = InputOrigin::Live;
+}
+void Runtime::updatePlayerInput() {
+    std::vector<std::string> controls;
+    if (!actors.empty()) {
+        for (const auto& [id, name] : definitions[0].listNames) {
+            if (name == ":CONTROLS:") {
+                for (const auto& value : actors[0]->lists[id]) controls.push_back(value.text);
+                break;
+            }
+        }
+    }
+    mappedInput = inputSystem.mapPlayer(ControlBindings::fromLegacy(controls),
+                                       cameraSystem.stageToWorld(inputSystem.raw().pointer));
 }
 double Runtime::randomUnit() {
     const auto high = random() >> 5;
@@ -148,8 +159,7 @@ void Runtime::greenFlag() {
     if (deterministic) {
         now = 0; timerOrigin = 0; nextTask = 1;
         random.seed(randomSeed); randomDraws = 0;
-        scriptedKeys.clear(); previousScriptedKeys.clear(); scriptedInput = false;
-        scriptedMouse = false; scriptedWheel = 0;
+        inputSystem.reset(); inputOrigin = InputOrigin::None;
         executed = 0; bulletClones = 0;
         unsupported.clear(); executedOps.clear(); gameplayEvents.clear();
     }
@@ -162,6 +172,7 @@ void Runtime::greenFlag() {
         a->rotation = d.rotation; a->variables = d.variables; a->lists = d.lists;
         actors.push_back(a);
     }
+    resetCameraFromLegacy();
     // Shared cloud snapshots in the supplied archive are stale sessions, not a server.
     for (auto& [id, name] : definitions[0].variableNames) if (name.starts_with("☁")) actors[0]->variables[id] = name == "☁ Online" ? "16" : "";
     for (auto& a : actors) for (std::size_t i = 0; i < definitions[a->type].blocks.size(); ++i)
@@ -219,30 +230,10 @@ int Runtime::listIndex(const Value& value, std::size_t size, bool insertion) {
     return static_cast<int>(n);
 }
 bool Runtime::key(const std::string& name, bool pressed) {
-    if (scriptedInput) {
-        const auto label = lower(name);
-        if (label == "any") {
-            if (!pressed) return !scriptedKeys.empty();
-            return std::any_of(scriptedKeys.begin(), scriptedKeys.end(), [&](const auto& key) {
-                return !previousScriptedKeys.contains(key);
-            });
-        }
-        return scriptedKeys.contains(label) && (!pressed || !previousScriptedKeys.contains(label));
-    }
-    if (headless) return false;
-    auto label = lower(name); int code = KEY_NULL;
-    if (label.size() == 1) code = std::toupper(static_cast<unsigned char>(label[0]));
-    else if (label == "space") code = KEY_SPACE;
-    else if (label == "up arrow") code = KEY_UP;
-    else if (label == "down arrow") code = KEY_DOWN;
-    else if (label == "left arrow") code = KEY_LEFT;
-    else if (label == "right arrow") code = KEY_RIGHT;
-    else if (label == "enter") code = KEY_ENTER;
-    else if (label == "any") { for (int k = 32; k < 350; ++k) if (pressed ? gfx::keyPressed(k) : gfx::keyDown(k)) return true; return false; }
-    return code != KEY_NULL && (pressed ? gfx::keyPressed(code) : gfx::keyDown(code));
+    return inputSystem.legacyKeyState(name, pressed);
 }
-double Runtime::mx() const { return scriptedInput ? scriptedAimX : headless ? 0 : gfx::mouseX() * 640.0 / gfx::width() - 320; }
-double Runtime::my() const { return scriptedInput ? scriptedAimY : headless ? 0 : 180 - gfx::mouseY() * 360.0 / gfx::height(); }
+double Runtime::mx() const { return inputSystem.raw().pointer.x; }
+double Runtime::my() const { return inputSystem.raw().pointer.y; }
 void Runtime::position(Actor& a, double x, double y) {
     if (!std::isfinite(x) || !std::isfinite(y)) return;
     // Scratch fencing keeps at least 15 pixels of the costume in view.
@@ -350,7 +341,7 @@ Value Runtime::eval(Task& task, int index, int depth) {
     if (op == "sensing_username") return username;
     if (op == "sensing_mousex") return mx();
     if (op == "sensing_mousey") return my();
-    if (op == "sensing_mousedown") return boolean(scriptedInput ? scriptedMouse : !headless && gfx::mouseDown(MOUSE_BUTTON_LEFT));
+    if (op == "sensing_mousedown") return boolean(inputSystem.primaryMouse().held);
     if (op == "sensing_keypressed") return boolean(key(v("KEY_OPTION").text));
     if (op == "sensing_touchingobject") return boolean(touching(a, v("TOUCHINGOBJECTMENU").text));
     if (op == "sensing_distanceto") { auto target = v("DISTANCETOMENU").text; double x = mx(), y = my(); for (auto& actor : actors) if (!actor->clone && definitions[actor->type].name == target) { x = actor->x; y = actor->y; break; } return std::hypot(x - a.x, y - a.y); }
@@ -435,10 +426,12 @@ void Runtime::run(Task& task) {
         if (op == "data_setvariableto" || op == "data_changevariableby") {
             auto id = field(b, "VARIABLE_ID");
             if (id.empty()) id = resolve(field(b, "VARIABLE"), false);
-            auto value = v("VALUE");
             auto& ref = variableRef(a, id);
+            if (writeNativeCamera(task, b, id, ref)) continue;
+            auto value = v("VALUE");
             auto before = ref;
             ref = op == "data_changevariableby" ? Value(Value(ref).number() + value.number()).text : value.text;
+            syncCameraField(id, Value(ref).number());
             if (captureEvents && before != ref && definitions[0].variableNames.contains(id)) {
                 const auto& name = definitions[0].variableNames.at(id);
                 if (name == "::Spiller-liv" || name == "::Ammonisjon" ||
@@ -499,18 +492,19 @@ void Runtime::run(Task& task) {
 void Runtime::tick(double dt) {
     gameplayEvents.clear();
     now += dt;
-    if (scriptedInput && scriptedWheel > 0) broadcast("scroll up");
-    if (scriptedInput && scriptedWheel < 0) broadcast("scroll down");
+    updatePlayerInput();
+    if (inputOrigin == InputOrigin::Replay && inputSystem.raw().wheel > 0) broadcast("scroll up");
+    if (inputOrigin == InputOrigin::Replay && inputSystem.raw().wheel < 0) broadcast("scroll down");
     if (halted) return;
-    if (!headless || scriptedInput) {
+    if (!headless || inputOrigin == InputOrigin::Replay) {
         if (asking && !headless) { int c; while ((c = gfx::nextCharacter()) > 0) if (c >= 32 && c < 127) answer += static_cast<char>(c); if (gfx::keyPressed(KEY_BACKSPACE) && !answer.empty()) answer.pop_back(); if (gfx::keyPressed(KEY_ENTER)) { for (auto& task : tasks) if (task->id == asking) task->wake = now; asking = 0; question.clear(); } }
         auto snapshot = actors;
         for (auto& a : snapshot) if (a->alive) {
             auto& blocks = definitions[a->type].blocks;
             for (std::size_t i = 0; i < blocks.size(); ++i) if (blocks[i].op == "event_whenkeypressed" && key(field(blocks[i], "KEY_OPTION"), true)) spawn(a, static_cast<int>(i));
         }
-        if (!scriptedInput && gfx::mouseWheel() > 0) broadcast("scroll up");
-        if (!scriptedInput && gfx::mouseWheel() < 0) broadcast("scroll down");
+        if (inputOrigin == InputOrigin::Live && inputSystem.raw().wheel > 0) broadcast("scroll up");
+        if (inputOrigin == InputOrigin::Live && inputSystem.raw().wheel < 0) broadcast("scroll down");
     }
     // Newly broadcast hats run this tick; loop yields resume on the next tick.
     // Bound task count as well as per-task work to avoid accidental infinite dispatch.
@@ -590,8 +584,9 @@ void Runtime::paint(Actor& a) {
     Color tint = WHITE;
     if (a.effects.contains("ghost")) tint.a = static_cast<unsigned char>(255 * (1 - std::clamp(a.effects["ghost"], 0.0, 100.0) / 100));
     float hue = static_cast<float>(a.effects["color"] / 200), brightness = static_cast<float>(std::clamp(a.effects["brightness"], -100.0, 100.0) / 100);
+    const auto logical = Viewport{}.stageToLogical({a.x, a.y});
     gfx::sprite(cached->texture, source,
-                {static_cast<float>(320 + a.x), static_cast<float>(180 - a.y),
+                {static_cast<float>(logical.x), static_cast<float>(logical.y),
                  cached->image.width * scale, cached->image.height * scale},
                 {cx * scale, static_cast<float>(asset.cy) * scale},
                 a.rotation == "all around" ? static_cast<float>(a.direction - 90) : 0,
@@ -617,6 +612,8 @@ std::string Runtime::diagnostics() const {
     return out.str();
 }
 int selfTest() {
+    testInputSystem();
+    testCameraSystem();
     auto require = [](bool pass, const char* message) { if (!pass) throw std::runtime_error(message); };
     content::validate();
     require(content::items().size() == 26 && content::matches().size() == 4,

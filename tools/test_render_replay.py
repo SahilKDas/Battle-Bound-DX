@@ -9,8 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 executable = Path(sys.argv[1]).resolve()
 with tempfile.TemporaryDirectory(prefix='bbdx-render-trace-') as directory:
     trace = Path(directory) / 'vulkan.jsonl'
+    systems = Path(directory) / 'vulkan-systems.jsonl'
     result = subprocess.run([str(executable), '--root', str(ROOT), '--exercise', '--render-smoke',
-                             '--ticks', '300', '--trace', str(trace)], cwd=directory,
+                             '--ticks', '300', '--trace', str(trace), '--systems-trace', str(systems)], cwd=directory,
                             capture_output=True, encoding='utf-8', timeout=60)
     if result.returncode:
         raise SystemExit(f'Vulkan replay failed: {result.returncode}\n{result.stdout}\n{result.stderr}')
@@ -19,4 +20,10 @@ with tempfile.TemporaryDirectory(prefix='bbdx-render-trace-') as directory:
     if mismatch:
         raise SystemExit('Vulkan/headless replay divergence: ' + mismatch)
     assert expected.read_bytes() == trace.read_bytes()
+    headless = Path(directory) / 'headless-systems.jsonl'
+    result = subprocess.run([str(executable), '--replay', str(ROOT / 'tests/fixtures/gameplay.replay'),
+                             '--systems-trace', str(headless)], cwd=directory,
+                            capture_output=True, encoding='utf-8', timeout=40)
+    assert result.returncode == 0, (result.stdout, result.stderr)
+    assert systems.read_bytes() == headless.read_bytes(), compare(headless, systems)
     print('Vulkan and headless traces match byte-for-byte over 300 gameplay ticks.')
