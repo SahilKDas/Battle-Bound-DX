@@ -217,6 +217,39 @@ Value Runtime::namedValue(const std::string& name) const {
     if (!actors.empty()) for (auto& [id, label] : definitions[0].variableNames) if (label == name) { auto it = actors[0]->variables.find(id); if (it != actors[0]->variables.end()) return it->second; }
     return "";
 }
+namespace {
+constexpr std::array loadoutLists{".Primary weapons", ".Secondary weapons", ".Gadgets"};
+const std::string* stageListId(const Definition& stage, std::string_view label) {
+    for (const auto& [id, name] : stage.listNames)
+        if (name == label) return &id;
+    return nullptr;
+}
+}
+
+std::string Runtime::loadoutCode(std::size_t slot) const {
+    const auto* choices = stageListId(definitions[0], loadoutLists.at(slot));
+    const auto* indices = stageListId(definitions[0], "# item in lists");
+    if (!choices || !indices) return {};
+    const auto& stage = *actors[0];
+    const auto& options = stage.lists.at(*choices);
+    const auto current = stage.lists.at(*indices).at(slot).number();
+    const auto index = loadoutSelection.at(slot).value_or(current >= 1 ? static_cast<std::size_t>(current - 1) : 0);
+    return index < options.size() ? options[index].text : std::string{};
+}
+
+void Runtime::cycleLoadout(std::size_t slot) {
+    const auto* id = stageListId(definitions[0], loadoutLists.at(slot));
+    if (!id) return;
+    const auto& options = actors[0]->lists.at(*id);
+    if (options.empty()) return;
+    const auto current = loadoutCode(slot);
+    const auto found = std::find_if(options.begin(), options.end(), [&](const Value& value) {
+        return value.text == current;
+    });
+    const auto next = found == options.end() ? 0 : (found - options.begin() + 1) % options.size();
+    loadoutSelection.at(slot) = next;
+}
+
 void Runtime::startGame() {
     // Explicit offline entry point; this bypasses the intro/menu only.
     for (auto& t : tasks) t->alive = false;
@@ -225,6 +258,11 @@ void Runtime::startGame() {
     for (int i = 0; i < 4; ++i) tick(1.0 / 30);
     setNamed(";SCENE", "game"); setNamed(";Spill-Modus", "4"); setNamed(";KART", "1");
     setNamed("&Screen Length x", "320"); setNamed("&Screen Length y", "180"); setNamed("Screen ratio", "16:9");
+    if (const auto* id = stageListId(definitions[0], "# item in lists")) {
+        auto& indices = actors[0]->lists.at(*id);
+        for (std::size_t slot = 0; slot < loadoutSelection.size() && slot < indices.size(); ++slot)
+            if (loadoutSelection[slot]) indices[slot] = static_cast<double>(*loadoutSelection[slot] + 1);
+    }
     broadcast("Start");
 }
 int Runtime::listIndex(const Value& value, std::size_t size, bool insertion) {
@@ -405,7 +443,7 @@ void Runtime::run(Task& task) {
             auto& definition = d.blocks[it->second]; auto& prototype = d.blocks.at(definition.inputs.at("custom_block").block);
             Frame call; call.pc = definition.next; call.warp = prototype.warp; call.procedure = true;
             for (auto& [id, name] : prototype.arguments) call.arguments[name] = v(id).text;
-            if (runNativeMovement(task, b, call)) continue;
+            if (runNativeMovement(task, b, call) || runNativeCombat(task, b, call)) continue;
             if (task.frames.size() > 512) throw std::runtime_error("Procedure stack limit");
             task.frames.push_back(std::move(call)); continue;
         }
@@ -439,7 +477,8 @@ void Runtime::run(Task& task) {
             if (id.empty()) id = resolve(field(b, "VARIABLE"), false);
             auto& ref = variableRef(a, id);
             if (writeNativeCamera(task, b, id, ref)) continue;
-            auto value = v("VALUE");
+            auto damage = nativeProjectileDamage(a, b);
+            auto value = damage ? *damage : v("VALUE");
             auto before = ref;
             ref = op == "data_changevariableby" ? Value(Value(ref).number() + value.number()).text : value.text;
             syncCameraField(id, Value(ref).number());
@@ -638,7 +677,30 @@ void Runtime::draw() {
     for (auto& stamp : stamps) if (worldArt(*stamp)) paint(*stamp);
     auto sorted = actors;
     std::stable_sort(sorted.begin(), sorted.end(), [](const auto& x, const auto& y) { return x->layer < y->layer; });
-    for (auto& actor : sorted) if (actor->type != 0 && actor->alive && actor->visible && worldArt(*actor)) { paint(*actor); if (!actor->bubble.empty()) gfx::text(actor->bubble.c_str(), static_cast<float>(actor->x + 320), static_cast<float>(160 - actor->y), 10, WHITE); }
+    for (auto& actor : sorted) {
+        if (actor->type == 0 || !actor->alive || !actor->visible || !worldArt(*actor)) continue;
+        const auto& definition = definitions[actor->type];
+        if (definition.name == "[GAME UI]") {
+            const auto fieldValue = [&](std::string_view label) {
+                for (const auto& [id, name] : definition.variableNames) {
+                    if (name != label) continue;
+                    const auto found = actor->variables.find(id);
+                    if (found != actor->variables.end()) return Value(found->second);
+                }
+                return Value("");
+            };
+            const auto role = fieldValue("_ID").text;
+            const auto info = fieldValue("_info").text;
+            const auto digit = static_cast<int>(fieldValue("_digit").number());
+            if (actor->costume >= 0 && static_cast<std::size_t>(actor->costume) < definition.costumes.size() &&
+                drawMatchPanel(*this, role, definition.costumes[actor->costume].name, info, digit,
+                               {actor->x, actor->y})) continue;
+        }
+        paint(*actor);
+        if (!actor->bubble.empty())
+            gfx::text(actor->bubble.c_str(), static_cast<float>(actor->x + 320),
+                      static_cast<float>(160 - actor->y), 10, WHITE);
+    }
     int row = 25;
     for (auto& id : shownLists) { std::string text; for (auto& actor : actors) if (actor->lists.contains(id)) for (auto& value : actor->lists[id]) text += value.text + "\n"; gfx::rectangle(8, row, 450, 70, {35, 40, 50, 230}); gfx::text(text.c_str(), 12, row + 5, 10, WHITE); row += 75; }
     if (asking) { gfx::rectangle(10, 280, 460, 70, DARKGRAY); gfx::text(question.c_str(), 15, 287, 10, WHITE); gfx::text(answer.c_str(), 15, 310, 12, WHITE); }
@@ -656,6 +718,7 @@ int selfTest() {
     testInputSystem();
     testCameraSystem();
     testMovement();
+    testCombat();
     auto require = [](bool pass, const char* message) { if (!pass) throw std::runtime_error(message); };
     content::validate();
     require(content::items().size() == 26 && content::matches().size() == 4,

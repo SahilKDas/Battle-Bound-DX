@@ -45,7 +45,7 @@ def main():
             for backend in ['native', 'legacy']:
                 traces[backend] = work / f'{name}-{backend}.jsonl'
                 systems[backend] = work / f'{name}-{backend}-systems.jsonl'
-                flags = ['--legacy-camera', '--legacy-movement'] if backend == 'legacy' else []
+                flags = ['--legacy-camera', '--legacy-movement', '--legacy-combat'] if backend == 'legacy' else []
                 run('--replay', tape, '--trace', traces[backend], '--systems-trace', systems[backend], *flags)
             for paths in [traces, systems]:
                 assert paths['native'].read_bytes() == paths['legacy'].read_bytes(), compare(paths['legacy'], paths['native'])

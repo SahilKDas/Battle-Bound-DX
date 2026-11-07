@@ -80,6 +80,8 @@ public:
     void draw();
     void broadcast(const std::string& message, Task* caller = nullptr, bool wait = false);
     void startGame();
+    std::string loadoutCode(std::size_t slot) const;
+    void cycleLoadout(std::size_t slot);
     std::string diagnostics() const;
     bool stopped() const { return halted; }
     Value namedValue(const std::string& name) const;
@@ -88,6 +90,7 @@ public:
     void submitLiveInput(const RawInput& frame);
     const PlayerInput& playerInput() const { return mappedInput; }
     const CameraSystem& camera() const { return cameraSystem; }
+    void useLegacyCombat(bool legacy) { nativeCombat = !legacy; }
     void useLegacyMovement(bool legacy) { nativeMovement = !legacy; }
     void useLegacyCamera(bool legacy) { nativeCamera = !legacy; }
     int matchSecondsRemaining() const;
@@ -137,6 +140,10 @@ private:
     std::uint64_t asking{};
     std::set<std::string> shownLists;
     std::shared_ptr<Task> spawn(std::shared_ptr<Actor> actor, int pc);
+    std::optional<Value> nativeProjectileDamage(Actor& actor, const Block& block);
+    std::array<std::optional<std::size_t>, 3> loadoutSelection;
+    bool nativeCombat{true};
+    bool runNativeCombat(Task& task, const Block& block, Frame& call);
     bool nativeMovement{true};
     bool runNativeMovement(Task& task, const Block& block, const Frame& frame);
     void playActorSound(Actor& actor, const Value& wanted);
@@ -159,6 +166,7 @@ private:
     double my() const;
     void setNamed(const std::string& name, const Value& value);
 };
+void testCombat();
 void testMovement();
 int selfTest();
 int testCameraBridge(const std::filesystem::path& root);

@@ -106,3 +106,6 @@ movement implements jumping, crouching, crawling, diving, door motion, and
 fall damage using the original project’s collision masks and tuning.
 
 Nunito is bundled for the DX interface. See [Nunito’s SIL Open Font License](assets/fonts/OFL.txt) and the [upstream font source](https://github.com/google/fonts/tree/main/ofl/nunito).
+
+DX also adds C++ combat timing, magazine handling, projectile movement and
+damage calculations, plus Nunito match panels based on the original UI.

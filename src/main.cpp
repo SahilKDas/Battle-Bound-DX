@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
         std::uint32_t seed = 3005;
         std::int64_t epoch = 1793966460;
         bool deterministic = false, clockOverride = false, showCredits = false;
-        bool legacyMovement = false, legacyCamera = false, cameraCheck = false;
+        bool legacyCombat = false, legacyMovement = false, legacyCamera = false, cameraCheck = false;
         std::filesystem::path replayPath, recordPath, tracePath, systemsPath;
         std::string username = "DX_Player";
         for (int i = 1; i < argc; ++i) {
@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
             else if (arg == "--trace" && i + 1 < argc) { tracePath = argv[++i]; game = true; deterministic = true; }
             else if (arg == "--username" && i + 1 < argc) username = argv[++i];
             else if (arg == "--credits") showCredits = true;
+            else if (arg == "--legacy-combat") legacyCombat = true;
             else if (arg == "--legacy-movement") legacyMovement = true;
             else if (arg == "--legacy-camera") legacyCamera = true;
             else if (arg == "--camera-check") cameraCheck = true;
@@ -100,6 +101,7 @@ int main(int argc, char** argv) {
             runtime.mute = !unmuted;
             runtime.load();
             runtime.useLegacyCamera(legacyCamera);
+            runtime.useLegacyCombat(legacyCombat);
             runtime.useLegacyMovement(legacyMovement);
             if (deterministic) runtime.setDeterministic(seed, epoch);
             runtime.captureEvents = !tracePath.empty();

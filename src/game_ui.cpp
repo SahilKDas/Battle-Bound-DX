@@ -14,6 +14,8 @@ constexpr Color surface{16, 27, 43, 245};
 constexpr Color track{52, 70, 90, 255};
 constexpr Rectangle primary{34, 233, 185, 39};
 constexpr Rectangle restart{34, 280, 185, 33};
+constexpr Rectangle loadoutBack{34, 285, 185, 33};
+constexpr Rectangle loadoutRow(int row) { return {34, static_cast<float>(95 + row * 59), 572, 48}; }
 
 void label(const std::string& value, float x, float y, float size, Color color = ink) {
     gfx::text(value.c_str(), x, y, size, color);
@@ -46,6 +48,20 @@ bool GameUi::update(Runtime& runtime, const RawInput& input) {
         else if (gfx::keyPressed(KEY_F5)) page = Page::Title;
         return page == Page::Playing;
     }
+    if (page == Page::Loadout) {
+        if (gfx::keyPressed(KEY_ESCAPE) || (clicked && over(pointer, loadoutBack))) {
+            page = Page::Title;
+        } else {
+            for (int slot = 0; slot < 3; ++slot)
+                if ((clicked && over(pointer, loadoutRow(slot))) || gfx::keyPressed(KEY_ONE + slot))
+                    runtime.cycleLoadout(slot);
+        }
+        return false;
+    }
+    if (page == Page::Title && clicked && over(pointer, restart)) {
+        page = Page::Loadout;
+        return false;
+    }
     if (page == Page::Paused && clicked && over(pointer, restart)) {
         runtime.greenFlag();
         runtime.startGame();
@@ -68,6 +84,22 @@ bool GameUi::update(Runtime& runtime, const RawInput& input) {
 }
 
 void GameUi::draw(Runtime& runtime) const {
+    if (page == Page::Loadout) {
+        gfx::rectangle(0, 0, 640, 360, {9, 16, 29, 255});
+        label("OFFLINE LOADOUT", 34, 32, 28);
+        label("Click a slot or press 1, 2 or 3 to cycle its gear.", 34, 68, 11, muted);
+        constexpr const char* labels[]{"PRIMARY", "SECONDARY", "GADGET"};
+        for (int slot = 0; slot < 3; ++slot) {
+            const auto row = loadoutRow(slot);
+            const auto item = content::findItem(runtime.loadoutCode(slot));
+            gfx::rectangle(row.x, row.y, row.width, row.height, over(pointer, row) ? track : surface);
+            label(labels[slot], row.x + 14, row.y + 6, 9, accent);
+            label(item ? std::string(content::item(*item).name) : "Empty", row.x + 14, row.y + 20, 15);
+            label("NEXT >", row.x + row.width - 66, row.y + 17, 12, muted);
+        }
+        button(loadoutBack, "Back  /  Esc", pointer, false);
+        return;
+    }
     if (page != Page::Title) runtime.draw();
     if (page == Page::Playing) return;
     gfx::rectangle(0, 0, 640, 360, page == Page::Title ? Color{9, 16, 29, 255} : Color{9, 16, 29, 237});
@@ -85,7 +117,49 @@ void GameUi::draw(Runtime& runtime) const {
         label(actions[row], 474, y, 13, muted);
     }
     button(primary, page == Page::Title ? "Play  /  Enter" : "Resume  /  Enter", pointer, true);
-    if (page == Page::Paused) button(restart, "Restart match", pointer, false);
+    button(restart, page == Page::Paused ? "Restart match" : "Loadout", pointer, false);
+}
+
+bool drawMatchPanel(const Runtime& runtime, std::string_view role, std::string_view costume,
+                    std::string_view info, int digit, StagePoint position) {
+    const auto x = static_cast<float>(320 + position.x);
+    const auto y = static_cast<float>(180 - position.y);
+    if (role == "chat" && costume.starts_with("Chat-")) {
+        constexpr const char* phrases[4][9] = {
+            {"Hello", "Hi", "I have to go", "Bye", "No problem", "Thanks!", "No", "Yes", "Okay"},
+            {"Follow me", "Heal me please", "Want to team?", "We are on the same team", "I go solo",
+             "Let's attack!", "Go defend!", "I'll cover you", "Don't attack"},
+            {"Hop in!", "Leave the helicopter", "Peace?", "Let me join", "Cool look",
+             "lol", "Nice", "Darn gosh", "You're good!"},
+            {"Vote TDM", "Vote GG", "Vote CTF", "Vote FFA", "Misclick, sorry", "Wrong chat",
+             "Melee only?", "1v1?", "You killed me"}
+        };
+        const int page = std::clamp(static_cast<int>(runtime.namedValue(":Chat.Page").number()), 1, 4);
+        gfx::rectangle(x - 60, y - 100, 120, 200, surface);
+        label("QUICK CHAT", x - 52, y - 94, 9, accent);
+        for (int row = 0; row < 9; ++row)
+            label(std::to_string(row + 1) + "  " + phrases[page - 1][row], x - 52, y - 75 + row * 16, 9);
+        label("CLICK TO PAGE  " + std::to_string(page) + "/4", x - 52, y + 76, 8, muted);
+        return true;
+    }
+    if (role == "vote" && digit >= 1 && digit <= 4) {
+        const auto& mode = content::matches()[digit - 1];
+        const bool selected = runtime.namedValue("::VALG").number() == digit;
+        gfx::rectangle(x - 48, y - 24, 96, 48, selected ? track : surface);
+        label(std::string(mode.name), x - 41, y - 16, 10);
+        label(selected ? "SELECTED" : "VOTE", x - 41, y + 3, 8, accent);
+        return true;
+    }
+    if (role == "game result") {
+        gfx::rectangle(208, 130, 224, 82, surface);
+        label("MATCH COMPLETE", 227, 144, 11, accent);
+        const char* result = info == "1w" ? "Team 1 wins" : info == "2w" ? "Team 2 wins" :
+                             info == "e" ? "Draw" : info == "mg" ? "Match ended" : "Round ended";
+        label(result, 227, 167, 16);
+        return true;
+    }
+    if (role == "gear") return true;
+    return false;
 }
 
 void drawGameHud(const Runtime& runtime) {
@@ -124,6 +198,21 @@ void drawGameHud(const Runtime& runtime) {
     label(number("#PlayersOnline") <= 1 ? "SOLO" : "PLAYERS  " +
           std::to_string(static_cast<int>(number("#PlayersOnline"))), 14, 15, 9, muted);
     label("ESC  PAUSE", 554, 15, 9, muted);
+
+    if (number(":Kart Åpent") > 0) {
+        gfx::rectangle(220, 55, 200, 22, surface);
+        label("TACTICAL MAP", 232, 58, 10, accent);
+        label("M  CLOSE", 361, 59, 8, muted);
+        return;
+    }
+    constexpr const char* slots[]{"PRIMARY", "SECONDARY", "GADGET"};
+    const int activeSlot = static_cast<int>(number("inventory scroll"));
+    for (int slot = 0; slot < 3; ++slot) {
+        const auto left = static_cast<float>(206 + slot * 77);
+        gfx::rectangle(left, 321, 73, 25, activeSlot == slot + 1 ? track : surface);
+        label(std::to_string(slot + 1) + "  " + slots[slot], left + 6, 326, 9,
+              activeSlot == slot + 1 ? accent : muted);
+    }
 
     const auto aim = runtime.playerInput().aimStage;
     const auto x = static_cast<float>(aim.x + 320);
