@@ -45,11 +45,13 @@ struct Definition {
     std::vector<Block> blocks;
     std::unordered_map<std::string, int> procedures;
 };
+enum class ProjectileContact { None, Terrain, Actor };
 struct Actor {
     int type{}, costume{}, layer{}; bool clone{}, alive{true}, visible{};
     double x{}, y{}, size{100}, direction{90}, volume{100};
     std::string rotation, bubble;
     Fields variables;
+    ProjectileContact projectileContact{};
     std::unordered_map<std::string, std::vector<Value>> lists;
     std::unordered_map<std::string, double> effects;
 };
@@ -109,6 +111,8 @@ public:
     std::set<std::string> executedOps;
 private:
     friend int selfTest();
+    friend int testArsenalCombat(const std::filesystem::path& root);
+    friend int testOpponentCombat(const std::filesystem::path& root);
     friend int testCameraBridge(const std::filesystem::path& root);
     std::filesystem::path root;
     bool headless{}, halted{};
@@ -134,15 +138,18 @@ private:
     std::int64_t epochSeconds{};
     std::uint64_t randomDraws{};
     double randomUnit();
+    double randomBetween(const Actor& actor, std::string_view source, double from, double to);
     double calendarSeconds() const;
     std::vector<std::shared_ptr<Actor>> stamps;
     std::string answer, question;
     std::uint64_t asking{};
     std::set<std::string> shownLists;
     std::shared_ptr<Task> spawn(std::shared_ptr<Actor> actor, int pc);
-    std::optional<Value> nativeProjectileDamage(Actor& actor, const Block& block);
     std::array<std::optional<std::size_t>, 3> loadoutSelection;
     bool nativeCombat{true};
+    void cloneActor(const Actor& source, const std::string& sprite, const std::string& block);
+    std::string& weaponVariable(Actor& actor, std::string_view name);
+    bool runNativeWeaponAction(Task& task, const Block& block);
     bool runNativeCombat(Task& task, const Block& block, Frame& call);
     bool nativeMovement{true};
     bool runNativeMovement(Task& task, const Block& block, const Frame& frame);
@@ -170,4 +177,6 @@ void testCombat();
 void testMovement();
 int selfTest();
 int testCameraBridge(const std::filesystem::path& root);
+int testOpponentCombat(const std::filesystem::path& root);
+int testArsenalCombat(const std::filesystem::path& root);
 }

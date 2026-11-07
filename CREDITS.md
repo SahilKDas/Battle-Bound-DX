@@ -109,3 +109,5 @@ Nunito is bundled for the DX interface. See [Nunito’s SIL Open Font License](a
 
 DX also adds C++ combat timing, magazine handling, projectile movement and
 damage calculations, plus Nunito match panels based on the original UI.
+
+DX ports the loadout attack dispatcher, projectile launch and flight, thrown-item bounce, explosions, and opponent bullet impact handling to C++. The port retains original weapon tuning, collision artwork, and recorded offline behavior.

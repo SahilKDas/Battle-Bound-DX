@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
         std::uint32_t seed = 3005;
         std::int64_t epoch = 1793966460;
         bool deterministic = false, clockOverride = false, showCredits = false;
-        bool legacyCombat = false, legacyMovement = false, legacyCamera = false, cameraCheck = false;
+        bool arsenalCheck = false, opponentCheck = false, legacyCombat = false, legacyMovement = false, legacyCamera = false, cameraCheck = false;
         std::filesystem::path replayPath, recordPath, tracePath, systemsPath;
         std::string username = "DX_Player";
         for (int i = 1; i < argc; ++i) {
@@ -56,6 +56,8 @@ int main(int argc, char** argv) {
             else if (arg == "--legacy-combat") legacyCombat = true;
             else if (arg == "--legacy-movement") legacyMovement = true;
             else if (arg == "--legacy-camera") legacyCamera = true;
+            else if (arg == "--arsenal-check") arsenalCheck = true;
+            else if (arg == "--opponent-check") opponentCheck = true;
             else if (arg == "--camera-check") cameraCheck = true;
             else if (arg == "--systems-trace" && i + 1 < argc) { systemsPath = argv[++i]; deterministic = true; game = true; }
             else throw std::runtime_error("Unknown or incomplete option: " + arg);
@@ -83,6 +85,8 @@ int main(int argc, char** argv) {
         bb::content::validate();
         SetTraceLogLevel(LOG_WARNING);
         bb::openAssetPackage(root);
+        if (arsenalCheck) return bb::testArsenalCombat(root);
+        if (opponentCheck) return bb::testOpponentCombat(root);
         if (cameraCheck) return bb::testCameraBridge(root);
         if (showCredits) {
             auto credits = bb::readAsset("CREDITS.md");

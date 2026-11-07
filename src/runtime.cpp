@@ -152,6 +152,18 @@ double Runtime::randomUnit() {
     randomDraws += 2;
     return (high * 67108864.0 + low) / 9007199254740992.0;
 }
+double Runtime::randomBetween(const Actor& actor, std::string_view source, double from, double to) {
+    if (from > to) std::swap(from, to);
+    if (!std::isfinite(from) || !std::isfinite(to)) return 0;
+    const bool integers = std::floor(from) == from && std::floor(to) == to;
+    double result;
+    if (deterministic) result = from + randomUnit() * (to - from + (integers ? 1 : 0));
+    else result = std::uniform_real_distribution<double>(from, integers ? to + 1 : to)(random);
+    if (integers) result = std::min(to, std::floor(result));
+    if (captureEvents)
+        gameplayEvents.push_back({"random", definitions[actor.type].name, std::string(source), "", Value(result).text});
+    return result;
+}
 double Runtime::calendarSeconds() const {
     if (deterministic) return static_cast<double>(epochSeconds) + now;
     return std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -189,6 +201,22 @@ void Runtime::greenFlag() {
 }
 std::shared_ptr<Task> Runtime::spawn(std::shared_ptr<Actor> actor, int pc) {
     auto task = std::make_shared<Task>(); task->id = nextTask++; task->actor = std::move(actor); Frame frame; frame.pc = pc; task->frames.push_back(frame); tasks.push_back(task); return task;
+}
+void Runtime::cloneActor(const Actor& source, const std::string& sprite, const std::string& block) {
+    auto clone = std::make_shared<Actor>(source);
+    clone->clone = true;
+    actors.push_back(clone);
+    const auto& definition = definitions[clone->type];
+    if (definition.name == "[Bullet]") {
+        for (const auto& [id, name] : definition.variableNames) {
+            if (name != "__ID" || clone->variables[id] != "bullet") continue;
+            ++bulletClones;
+            if (captureEvents) gameplayEvents.push_back({"shot", sprite, block, "", "bullet"});
+            break;
+        }
+    }
+    for (std::size_t i = 0; i < definition.blocks.size(); ++i)
+        if (definition.blocks[i].op == "control_start_as_clone") spawn(clone, static_cast<int>(i));
 }
 void Runtime::broadcast(const std::string& message, Task* caller, bool wait) {
     for (auto& a : actors) if (a->alive) {
@@ -338,17 +366,9 @@ Value Runtime::eval(Task& task, int index, int depth) {
     if (op == "operator_letter_of") { auto s = v("STRING").text; double i = std::floor(n("LETTER")) - 1; return i >= 0 && i < static_cast<double>(s.size()) ? s.substr(static_cast<std::size_t>(i), 1) : ""; }
     if (op == "operator_contains") return boolean(lower(v("STRING1").text).find(lower(v("STRING2").text)) != std::string::npos);
     if (op == "operator_random") {
-        double x = n("FROM");
-        double y = n("TO");
-        if (x > y) std::swap(x, y);
-        if (!std::isfinite(x) || !std::isfinite(y)) return 0.0;
-        const bool integers = std::floor(x) == x && std::floor(y) == y;
-        double result;
-        if (deterministic) result = x + randomUnit() * (y - x + (integers ? 1 : 0));
-        else result = std::uniform_real_distribution<double>(x, integers ? y + 1 : y)(random);
-        if (integers) result = std::min(y, std::floor(result));
-        if (captureEvents) gameplayEvents.push_back({"random", definitions[a.type].name, b.id, "", Value(result).text});
-        return result;
+        const auto from = n("FROM");
+        const auto to = n("TO");
+        return randomBetween(a, b.id, from, to);
     }
     if (op == "operator_mathop") {
         double x = n("NUM"); auto name = field(b, "OPERATOR");
@@ -429,7 +449,7 @@ void Runtime::run(Task& task) {
         auto n = [&](const std::string& name) { return v(name).number(); };
         auto body = [&](const std::string& name) { auto it = b.inputs.find(name); return it == b.inputs.end() ? -1 : it->second.block; };
         if (op.starts_with("event_when") || op == "control_start_as_clone") continue;
-        if (op != "procedures_call" && runNativeMovement(task, b, frame)) continue;
+        if (op != "procedures_call" && (runNativeMovement(task, b, frame) || runNativeWeaponAction(task, b))) continue;
         if (op == "control_if" || op == "control_if_else") { bool yes = v("CONDITION").truth(); if (yes || op == "control_if_else") push(body(yes ? "SUBSTACK" : "SUBSTACK2")); continue; }
         if (op == "control_repeat" || op == "control_forever" || op == "control_repeat_until") {
             Frame loop; loop.kind = op == "control_repeat" ? 1 : op == "control_forever" ? 2 : 3;
@@ -464,12 +484,7 @@ void Runtime::run(Task& task) {
             if (actors.size() >= 315) continue;
             auto name = v("CLONE_OPTION").text; auto source = task.actor;
             if (name != "_myself_") { source.reset(); for (auto& actor : actors) if (!actor->clone && definitions[actor->type].name == name) { source = actor; break; } }
-            if (source) {
-                auto clone = std::make_shared<Actor>(*source); clone->clone = true; actors.push_back(clone);
-                if (definitions[clone->type].name == "[Bullet]") for (auto& [id, name] : definitions[clone->type].variableNames) if (name == "__ID" && clone->variables[id] == "bullet") { ++bulletClones; if (captureEvents) gameplayEvents.push_back({"shot", d.name, b.id, "", "bullet"}); break; }
-                auto& blocks = definitions[clone->type].blocks;
-                for (std::size_t i = 0; i < blocks.size(); ++i) if (blocks[i].op == "control_start_as_clone") spawn(clone, static_cast<int>(i));
-            }
+            if (source) cloneActor(*source, d.name, b.id);
             continue;
         }
         if (op == "data_setvariableto" || op == "data_changevariableby") {
@@ -477,8 +492,7 @@ void Runtime::run(Task& task) {
             if (id.empty()) id = resolve(field(b, "VARIABLE"), false);
             auto& ref = variableRef(a, id);
             if (writeNativeCamera(task, b, id, ref)) continue;
-            auto damage = nativeProjectileDamage(a, b);
-            auto value = damage ? *damage : v("VALUE");
+            auto value = v("VALUE");
             auto before = ref;
             ref = op == "data_changevariableby" ? Value(Value(ref).number() + value.number()).text : value.text;
             syncCameraField(id, Value(ref).number());
