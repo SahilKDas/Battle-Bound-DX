@@ -206,6 +206,17 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
             costume(actor, "fire");
             layer(false);
         } else costume(actor, payload == "grenade" ? "Grenade" : "rock");
+        if (multiplayerEnabled) {
+            const auto kind = bullet ? RemoteAttack::Bullet : rocket ? RemoteAttack::Rocket :
+                arrow ? RemoteAttack::Arrow : shuriken ? RemoteAttack::Shuriken :
+                flame ? RemoteAttack::Flame : payload == "grenade" ? RemoteAttack::Grenade : RemoteAttack::Rock;
+            const WorldVelocity velocity = thrown ? WorldVelocity{readLocal("_grenade speed x"), readLocal("_grenade speed y")}
+                                                  : WorldVelocity{readLocal("_sin"), readLocal("_cos")};
+            const auto weapon = rocket && namedValue("::[Spiller-action]").text.find("heli") != std::string::npos
+                ? "heli" : bullet ? actor.networkWeapon : rocket ? "j" : arrow ? "e" : shuriken ? "k" :
+                  flame ? "y" : payload == "grenade" ? "f" : "i";
+            queueNetworkAttack(kind, origin, velocity, actor.direction, arrow ? readLocal("_arrow speed") : 0, weapon);
+        }
         return true;
     }
     const auto slot = [&](const Value& weapon) {
@@ -218,7 +229,13 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
         const auto index = slot(namedValue("::Våpen holdt"));
         if (index < magazines.size()) magazines[index] = magazines[index].number() - 1;
     };
+    Value held;
+    for (auto frame = task.frames.rbegin(); frame != task.frames.rend(); ++frame) {
+        const auto item = frame->arguments.find("item held");
+        if (item != frame->arguments.end()) { held = item->second; break; }
+    }
     const auto emit = [&](const char* kind) {
+        if (multiplayerEnabled) actor.networkWeapon = held.text;
         auto& cloneId = local("__ID");
         auto& direction = local("_direction");
         const auto aim = namedValue(".ARM Direction");
@@ -236,6 +253,7 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
             cloneActor(actor, definition.name, "uf");
         }
         cloneId.clear();
+        actor.networkWeapon.clear();
     };
     const auto releaseBow = [&] {
         if (number("Bow Load") <= 1) return;
@@ -245,11 +263,6 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
         emit("arrow");
     };
 
-    Value held;
-    for (auto frame = task.frames.rbegin(); frame != task.frames.rend(); ++frame) {
-        const auto item = frame->arguments.find("item held");
-        if (item != frame->arguments.end()) { held = item->second; break; }
-    }
     const auto mode = namedValue("::[Spiller-action]").text;
     const bool helicopter = mode.find("heli") != std::string::npos;
     const auto timer = now - timerOrigin;
@@ -282,6 +295,14 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
                                  : content::findItem(held.text.empty() ? "a" : held.text);
     const auto gun = std::find_if(std::begin(firearms), std::end(firearms),
                                   [&](const Firearm& profile) { return profile.item == item; });
+    const auto sendContactAttack = [&](RemoteAttack kind) {
+        const auto aim = number(".ARM Direction");
+        constexpr auto radians = std::numbers::pi / 180;
+        queueNetworkAttack(kind, {number(".Point arm X") + number(";CAM X"),
+                                  number(".Point arm Y") + number(";CAM Y")},
+                           {std::sin(aim * radians) * 3, std::cos(aim * radians) * 3},
+                           aim, 0, held.text.empty() ? "a" : held.text);
+    };
     if (gun != std::end(firearms)) {
         action(helicopter ? "helis" : "1", gun->actionBlock);
         if (ready(gun->cooldown)) {
@@ -310,7 +331,10 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
             if (offset) set("Player ARM Direction offset", offset * number("::Høyre/Venstre"));
             set("::Rekyl", 1.0);
             if (payload) emit(payload);
-            else playActorSound(actor, "Punch");
+            else {
+                playActorSound(actor, "Punch");
+                sendContactAttack(RemoteAttack::Melee);
+            }
         };
         switch (*item) {
         case ItemId::Hands: swing(distance > 15, "5o", "aKx", .3, -5, 0, nullptr); break;
@@ -341,6 +365,10 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
             set("crosshair grow", "1");
             set("::Rekyl", .1);
             playActorSound(actor, "taser boi");
+            if (multiplayerEnabled && ready(.3)) {
+                writeLocal("_timer", timer);
+                sendContactAttack(RemoteAttack::Taser);
+            }
             break;
         case ItemId::Medkit:
             action("0", "5)");
@@ -357,6 +385,10 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
             action("1", "5.");
             set("crosshair grow", "1");
             set("::Rekyl", .1);
+            if (multiplayerEnabled && ready(.25)) {
+                writeLocal("_timer", timer);
+                sendContactAttack(RemoteAttack::Melee);
+            }
             if (number("Nunchuks") < 50) set("Nunchuks", number("Nunchuks") + 2);
             break;
         case ItemId::SmokeBomb:
@@ -367,6 +399,7 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
                 set("crosshair grow", "1");
                 set("*Smoke X", namedValue("::Player X"));
                 set("*Smoke Y", namedValue("::Player Y"));
+                queueNetworkAttack(RemoteAttack::Smoke, {number("::Player X"), number("::Player Y")}, {}, 0, 0, "x");
             }
             break;
         case ItemId::Flamethrower:

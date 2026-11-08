@@ -111,3 +111,7 @@ DX also adds C++ combat timing, magazine handling, projectile movement and
 damage calculations, plus Nunito match panels based on the original UI.
 
 DX ports the loadout attack dispatcher, projectile launch and flight, thrown-item bounce, explosions, and opponent bullet impact handling to C++. The port retains original weapon tuning, collision artwork, and recorded offline behavior.
+
+The DX multiplayer path uses a native two-peer TCP session and reconstructs
+remote attacks from the firing player's launch data. Original game artwork,
+weapon identifiers, and Scratch attribution are retained.

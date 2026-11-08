@@ -33,3 +33,26 @@ Windows 10/11 x64 with a Vulkan-capable graphics driver. The developer build is 
 Rendering now uses Vulkan textured quads and embedded SPIR-V shaders. The
 Vulkan backend passes the native checks, isolated single-file gameplay test and
 1280×720 rendering/capture check. See `docs/VALIDATION.md` for the test scope.
+
+## Two-player LAN match
+
+Use the same DX build on both computers. On the host, run:
+
+```powershell
+./bin/battle_bound_dx.exe --host 37026 --username Host
+```
+
+On the guest, replace the address below with the host's IPv4 address:
+
+```powershell
+./bin/battle_bound_dx.exe --join 192.168.1.20 37026 --username Guest
+```
+
+Use 127.0.0.1 for two processes on the same computer. The host waits up to
+30 seconds for one guest. Both processes enter the match on connection.
+The direct TCP connection is intended for trusted peers on a local network.
+It uses no Scratch cloud service or matchmaking.
+
+Run the integration check with `python tools/test_multiplayer.py bin/battle_bound_dx.exe`.
+For CTest, configure with `-DBBDX_NETWORK_TESTS=ON`. The check starts two
+processes and requires permission to bind and connect on localhost.

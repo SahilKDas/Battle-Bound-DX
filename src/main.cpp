@@ -33,12 +33,26 @@ int main(int argc, char** argv) {
         bool arsenalCheck = false, opponentCheck = false, legacyCombat = false, legacyMovement = false, legacyCamera = false, cameraCheck = false;
         std::filesystem::path replayPath, recordPath, tracePath, systemsPath;
         std::string username = "DX_Player";
+        std::string peerHost, equip;
+        unsigned peerPort = 0;
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
             if (arg == "--self-test") return bb::selfTest();
             if (arg == "--root" && i + 1 < argc) root = argv[++i];
             else if (arg == "--headless") headless = true;
             else if (arg == "--game") game = true;
+            else if ((arg == "--host" || arg == "--join") && i + 1 < argc) {
+                if (peerPort) throw std::runtime_error("Choose one multiplayer endpoint");
+                if (arg == "--join") {
+                    if (i + 2 >= argc) throw std::runtime_error("Join requires an IPv4 address and port");
+                    peerHost = argv[++i];
+                    if (peerHost.empty()) throw std::runtime_error("Missing multiplayer host");
+                }
+                peerPort = parseInteger<unsigned>(argv[++i]);
+                if (!peerPort || peerPort > 65535) throw std::runtime_error("Invalid multiplayer port");
+                game = true;
+            }
+            else if (arg == "--equip" && i + 1 < argc) equip = argv[++i];
             else if (arg == "--audio") unmuted = true;
             else if (arg == "--render-smoke") renderSmoke = true;
             else if (arg == "--exercise") { exercise = true; game = true; }
@@ -93,6 +107,9 @@ int main(int argc, char** argv) {
             std::cout.write(reinterpret_cast<const char*>(credits.data()), static_cast<std::streamsize>(credits.size()));
             return 0;
         }
+        if (peerPort && legacyCombat) throw std::runtime_error("Multiplayer requires native combat");
+        std::unique_ptr<bb::PeerConnection> connection;
+        if (peerPort) connection = std::make_unique<bb::PeerConnection>(peerPort, peerHost);
         if (!headless) {
             bb::gfx::initialize(1280, 720, "Battle Bound DX | Vulkan", renderSmoke);
             bb::gfx::setFrameRate(renderSmoke ? 0 : 30);
@@ -108,9 +125,26 @@ int main(int argc, char** argv) {
             runtime.useLegacyCombat(legacyCombat);
             runtime.useLegacyMovement(legacyMovement);
             if (deterministic) runtime.setDeterministic(seed, epoch);
+            else if (connection) runtime.setDeterministic(
+                static_cast<std::uint32_t>(connection->epoch()) ^ (peerHost.empty() ? 3005u : 9001u),
+                connection->epoch());
             runtime.captureEvents = !tracePath.empty();
             runtime.greenFlag();
+            if (!equip.empty()) {
+                const auto id = bb::content::findItem(equip);
+                if (!id || bb::content::item(*id).category == bb::content::ItemCategory::Vehicle)
+                    throw std::runtime_error("Unknown loadout item");
+                const auto slot = static_cast<std::size_t>(bb::content::item(*id).category);
+                for (int attempt = 0; attempt < 26 && runtime.loadoutCode(slot) != equip; ++attempt)
+                    runtime.cycleLoadout(slot);
+                if (runtime.loadoutCode(slot) != equip) throw std::runtime_error("Item is missing from loadout");
+            }
             if (game) runtime.startGame();
+            if (connection) runtime.enableMultiplayer();
+            const auto advance = [&] {
+                if (connection) runtime.receiveNetworkFrame(connection->exchange(runtime.takeNetworkFrame()));
+                runtime.tick(1.0 / 30);
+            };
             std::unique_ptr<bb::TraceWriter> trace;
             if (!tracePath.empty()) trace = std::make_unique<bb::TraceWriter>(tracePath, tape, root);
             std::unique_ptr<bb::TraceWriter> systemsTrace;
@@ -124,7 +158,7 @@ int main(int argc, char** argv) {
                     bb::InputFrame frame;
                     if (!tape.frames.empty()) frame = tape.frames.at(i);
                     if (deterministic) runtime.applyInput(frame);
-                    runtime.tick(1.0 / 30);
+                    advance();
                     if (trace) trace->write(i, frame, runtime);
                     if (systemsTrace) systemsTrace->writeSystems(i, runtime);
                     if (!recordPath.empty()) recording.frames.push_back(frame);
@@ -163,7 +197,7 @@ int main(int argc, char** argv) {
                     const bb::Viewport viewport{static_cast<double>(bb::gfx::width()),
                                                   static_cast<double>(bb::gfx::height())};
                     const auto physical = bb::capturePlatformInput(viewport, deterministic);
-                    if (!deterministic && !ui.update(runtime, physical)) {
+                    if (!connection && !deterministic && !ui.update(runtime, physical)) {
                         bb::gfx::beginFrame();
                         ui.draw(runtime);
                         bb::gfx::endFrame();
@@ -172,7 +206,7 @@ int main(int argc, char** argv) {
                     frame = bb::encodeInput(physical);
                     if (deterministic) runtime.applyInput(frame);
                     else runtime.submitLiveInput(physical);
-                    runtime.tick(1.0 / 30);
+                    advance();
                     if (trace) trace->write(tick, frame, runtime);
                     if (systemsTrace) systemsTrace->writeSystems(tick, runtime);
                     if (!recordPath.empty()) recording.frames.push_back(frame);

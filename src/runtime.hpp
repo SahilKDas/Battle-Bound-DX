@@ -13,6 +13,7 @@
 #include <vector>
 #include "input.hpp"
 #include "camera.hpp"
+#include "multiplayer.hpp"
 
 namespace bb {
 using Fields = std::unordered_map<std::string, std::string>;
@@ -49,9 +50,10 @@ enum class ProjectileContact { None, Terrain, Actor };
 struct Actor {
     int type{}, costume{}, layer{}; bool clone{}, alive{true}, visible{};
     double x{}, y{}, size{100}, direction{90}, volume{100};
-    std::string rotation, bubble;
+    std::string rotation, bubble, networkWeapon;
     Fields variables;
     ProjectileContact projectileContact{};
+    bool networkReplica{};
     std::unordered_map<std::string, std::vector<Value>> lists;
     std::unordered_map<std::string, double> effects;
 };
@@ -82,6 +84,9 @@ public:
     void draw();
     void broadcast(const std::string& message, Task* caller = nullptr, bool wait = false);
     void startGame();
+    void enableMultiplayer();
+    NetworkFrame takeNetworkFrame();
+    void receiveNetworkFrame(NetworkFrame frame);
     std::string loadoutCode(std::size_t slot) const;
     void cycleLoadout(std::size_t slot);
     std::string diagnostics() const;
@@ -147,6 +152,20 @@ private:
     std::shared_ptr<Task> spawn(std::shared_ptr<Actor> actor, int pc);
     std::array<std::optional<std::size_t>, 3> loadoutSelection;
     bool nativeCombat{true};
+    bool multiplayerEnabled{};
+    struct PeerProjectile {
+        NetworkAttack attack;
+        std::shared_ptr<Actor> sprite;
+        int age{};
+        double gravity{};
+    };
+    std::vector<NetworkAttack> outgoingAttacks;
+    std::vector<PeerProjectile> peerProjectiles;
+    std::optional<NetworkFrame> peerFrame;
+    std::shared_ptr<Actor> peerAvatar;
+    void simulateNetworkCombat();
+    void queueNetworkAttack(RemoteAttack kind, WorldPoint origin, WorldVelocity velocity,
+                            double direction, double charge, std::string_view weapon);
     void cloneActor(const Actor& source, const std::string& sprite, const std::string& block);
     std::string& weaponVariable(Actor& actor, std::string_view name);
     bool runNativeWeaponAction(Task& task, const Block& block);

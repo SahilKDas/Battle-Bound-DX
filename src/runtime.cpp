@@ -184,6 +184,7 @@ void Runtime::greenFlag() {
         executed = 0; bulletClones = 0;
         unsupported.clear(); executedOps.clear(); gameplayEvents.clear();
     }
+    peerAvatar.reset(); peerFrame.reset(); peerProjectiles.clear(); outgoingAttacks.clear();
     tasks.clear(); actors.clear(); stamps.clear(); shownLists.clear(); halted = false; asking = 0; question.clear(); timerOrigin = now;
     for (std::size_t index = 0; index < definitions.size(); ++index) {
         auto& d = definitions[index];
@@ -219,7 +220,8 @@ void Runtime::cloneActor(const Actor& source, const std::string& sprite, const s
         if (definition.blocks[i].op == "control_start_as_clone") spawn(clone, static_cast<int>(i));
 }
 void Runtime::broadcast(const std::string& message, Task* caller, bool wait) {
-    for (auto& a : actors) if (a->alive) {
+    for (auto& a : actors) if (a->alive && !a->networkReplica) {
+        if (multiplayerEnabled && definitions[a->type].name == "☁") continue;
         auto& blocks = definitions[a->type].blocks;
         for (std::size_t i = 0; i < blocks.size(); ++i) if (blocks[i].op == "event_whenbroadcastreceived" && equal(field(blocks[i], "BROADCAST_OPTION"), message)) {
             // Scratch restarts an already-running receive hat for the same actor.
@@ -568,7 +570,7 @@ void Runtime::tick(double dt) {
     if (!headless || inputOrigin == InputOrigin::Replay) {
         if (asking && !headless) { int c; while ((c = gfx::nextCharacter()) > 0) if (c >= 32 && c < 127) answer += static_cast<char>(c); if (gfx::keyPressed(KEY_BACKSPACE) && !answer.empty()) answer.pop_back(); if (gfx::keyPressed(KEY_ENTER)) { for (auto& task : tasks) if (task->id == asking) task->wake = now; asking = 0; question.clear(); } }
         auto snapshot = actors;
-        for (auto& a : snapshot) if (a->alive) {
+        for (auto& a : snapshot) if (a->alive && !a->networkReplica) {
             auto& blocks = definitions[a->type].blocks;
             for (std::size_t i = 0; i < blocks.size(); ++i) if (blocks[i].op == "event_whenkeypressed" && key(field(blocks[i], "KEY_OPTION"), true)) spawn(a, static_cast<int>(i));
         }
@@ -584,6 +586,7 @@ void Runtime::tick(double dt) {
         if (!task->waiting.empty()) continue;
         run(*task);
     }
+    if (multiplayerEnabled) simulateNetworkCombat();
     std::erase_if(tasks, [](auto& task) { return !task->alive || !task->actor->alive; });
     std::erase_if(actors, [](auto& actor) { return !actor->alive; });
     if (tasks.size() > 10000) throw std::runtime_error("Task dispatch limit");
@@ -634,7 +637,7 @@ bool Runtime::touching(Actor& a, const std::string& target) {
     if (target == "_mouse_") return opaque(a, mx(), -my());
     auto box = bounds(a);
     if (target == "_edge_") return box.x <= -320 || box.x + box.width >= 320 || box.y <= -180 || box.y + box.height >= 180;
-    for (auto& other : actors) if (other.get() != &a && other->alive && other->visible && definitions[other->type].name == target) {
+    for (auto& other : actors) if (other.get() != &a && other->alive && other->visible && (other == peerAvatar ? target == "[Opponents]" : !other->networkReplica && definitions[other->type].name == target)) {
         auto otherBox = bounds(*other); if (!CheckCollisionRecs(box, otherBox)) continue;
         auto overlap = GetCollisionRec(box, otherBox);
         // Sample at native stage pixel centers, matching costume alpha masks.
