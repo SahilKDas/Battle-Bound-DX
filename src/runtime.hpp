@@ -82,6 +82,8 @@ public:
     void greenFlag();
     void tick(double dt);
     void draw();
+    void snapshotRenderPositions();
+    void setRenderBlend(double blend) { renderBlend = blend; }
     void broadcast(const std::string& message, Task* caller = nullptr, bool wait = false);
     void startGame();
     void enableMultiplayer();
@@ -187,7 +189,10 @@ private:
     CachedImage* image(Actor& actor);
     Rectangle bounds(Actor& actor);
     bool opaque(Actor& actor, double x, double y);
-    void paint(Actor& actor);
+    struct RenderPosition { std::shared_ptr<Actor> owner; StagePoint point; bool visible; };
+    std::unordered_map<const Actor*, RenderPosition> previousRenderPositions;
+    double renderBlend{1};
+    void paint(Actor& actor, bool interpolate = false);
     double mx() const;
     double my() const;
     void setNamed(const std::string& name, const Value& value);

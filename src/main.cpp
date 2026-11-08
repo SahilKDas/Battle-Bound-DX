@@ -1,3 +1,5 @@
+#include <chrono>
+#include <array>
 #include "game_ui.hpp"
 #include "runtime.hpp"
 #include "assets.hpp"
@@ -26,7 +28,8 @@ int main(int argc, char** argv) {
     try {
         std::filesystem::path root = std::filesystem::current_path();
         bool headless = false, game = false, unmuted = false, renderSmoke = false, exercise = false;
-        int ticks = 300;
+        int ticks = 300, fps = 60;
+        bool vsync = false;
         std::uint32_t seed = 3005;
         std::int64_t epoch = 1793966460;
         bool deterministic = false, clockOverride = false, showCredits = false;
@@ -53,6 +56,8 @@ int main(int argc, char** argv) {
                 game = true;
             }
             else if (arg == "--equip" && i + 1 < argc) equip = argv[++i];
+            else if (arg == "--fps" && i + 1 < argc) fps = parseInteger<int>(argv[++i]);
+            else if (arg == "--vsync") vsync = true;
             else if (arg == "--audio") unmuted = true;
             else if (arg == "--render-smoke") renderSmoke = true;
             else if (arg == "--exercise") { exercise = true; game = true; }
@@ -76,6 +81,8 @@ int main(int argc, char** argv) {
             else if (arg == "--systems-trace" && i + 1 < argc) { systemsPath = argv[++i]; deterministic = true; game = true; }
             else throw std::runtime_error("Unknown or incomplete option: " + arg);
         }
+        if (renderSmoke) headless = false;
+        if (fps < 0 || fps > 1000) throw std::runtime_error("FPS must be 0..1000");
         if (ticks < 1 || ticks > 10000) throw std::runtime_error("Ticks must be 1..10000");
         if (username.empty() || username.size() > 128 || username.find_first_of("\r\n") != std::string::npos) {
             throw std::runtime_error("Invalid replay username");
@@ -111,8 +118,9 @@ int main(int argc, char** argv) {
         std::unique_ptr<bb::PeerConnection> connection;
         if (peerPort) connection = std::make_unique<bb::PeerConnection>(peerPort, peerHost);
         if (!headless) {
+            bb::gfx::setVsync(vsync);
             bb::gfx::initialize(1280, 720, "Battle Bound DX | Vulkan", renderSmoke);
-            bb::gfx::setFrameRate(renderSmoke ? 0 : 30);
+            bb::gfx::setFrameRate(renderSmoke ? 0 : fps);
             if (unmuted) InitAudioDevice();
         }
         int result = 0;
@@ -142,6 +150,7 @@ int main(int argc, char** argv) {
             if (game) runtime.startGame();
             if (connection) runtime.enableMultiplayer();
             const auto advance = [&] {
+                if (!headless) runtime.snapshotRenderPositions();
                 if (connection) runtime.receiveNetworkFrame(connection->exchange(runtime.takeNetworkFrame()));
                 runtime.tick(1.0 / 30);
             };
@@ -153,6 +162,7 @@ int main(int argc, char** argv) {
             recording.seed = seed; recording.epoch = epoch; recording.username = username;
             if (headless || renderSmoke) {
                 const bb::GameUi previewUi(game);
+                int renderedFrames = 0;
                 double minimumX = 1e30, maximumX = -1e30;
                 for (int i = 0; i < ticks; ++i) {
                     bb::InputFrame frame;
@@ -164,13 +174,20 @@ int main(int argc, char** argv) {
                     if (!recordPath.empty()) recording.frames.push_back(frame);
                     if (i > 5) { double x = runtime.namedValue("::Player X").number(); minimumX = std::min(minimumX, x); maximumX = std::max(maximumX, x); }
                     if (renderSmoke) {
-                        bb::gfx::beginFrame();
-                        previewUi.draw(runtime);
-                        if (i == ticks - 1) bb::gfx::requestCapture();
-                        bb::gfx::endFrame();
+                        const int target = (i + 1) * std::max(30, fps) / 30;
+                        const int frames = target - renderedFrames;
+                        for (int frame = 0; frame < frames; ++frame) {
+                            runtime.setRenderBlend(i == ticks - 1 ? 1.0 : (frame + 1.0) / frames);
+                            bb::gfx::beginFrame();
+                            previewUi.draw(runtime);
+                            if (i == ticks - 1 && frame == frames - 1) bb::gfx::requestCapture();
+                            bb::gfx::endFrame();
+                            ++renderedFrames;
+                        }
                     }
                 }
                 if (renderSmoke) {
+                    std::cout << "Rendered frames: " << renderedFrames << '\n';
                     Image screenshot = bb::gfx::capture();
                     if (!screenshot.data) throw std::runtime_error("Native framebuffer capture failed");
                     ImageFormat(&screenshot, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
@@ -191,28 +208,66 @@ int main(int argc, char** argv) {
             } else {
                 bb::GameUi ui(game || deterministic);
                 std::size_t tick = 0;
+                using Clock = std::chrono::steady_clock;
+                constexpr double step = 1.0 / 30;
+                double accumulator = step;
+                auto previous = Clock::now();
+                bb::RawInput buffered;
+                constexpr std::array caps{30, 60, 120, 144, 0};
+                const auto drawSettings = [&](float y) {
+                    const auto display = "F7 " + (fps ? std::to_string(fps) : "Unlimited") +
+                        (vsync ? " FPS / F8 VSync on" : " FPS / F8 VSync off");
+                    bb::gfx::text(display.c_str(), 14, y, 8, WHITE);
+                };
                 while (!bb::gfx::shouldClose()) {
                     if ((!recordPath.empty() || trace || systemsTrace) && tick >= static_cast<std::size_t>(ticks)) break;
-                    bb::InputFrame frame;
+                    const auto now = Clock::now();
+                    accumulator = std::min(accumulator + std::chrono::duration<double>(now - previous).count(),
+                                           step * 5);
+                    previous = now;
+                    if (bb::gfx::keyPressed(KEY_F7)) {
+                        const auto current = std::find(caps.begin(), caps.end(), fps);
+                        fps = current == caps.end() || current + 1 == caps.end() ? caps.front() : *(current + 1);
+                        bb::gfx::setFrameRate(fps);
+                    }
+                    if (bb::gfx::keyPressed(KEY_F8)) bb::gfx::setVsync(vsync = !vsync);
                     const bb::Viewport viewport{static_cast<double>(bb::gfx::width()),
                                                   static_cast<double>(bb::gfx::height())};
                     const auto physical = bb::capturePlatformInput(viewport, deterministic);
                     if (!connection && !deterministic && !ui.update(runtime, physical)) {
+                        accumulator = step;
+                        buffered = {};
+                        runtime.setRenderBlend(1);
                         bb::gfx::beginFrame();
                         ui.draw(runtime);
+                        drawSettings(346);
                         bb::gfx::endFrame();
                         continue;
                     }
-                    frame = bb::encodeInput(physical);
-                    if (deterministic) runtime.applyInput(frame);
-                    else runtime.submitLiveInput(physical);
-                    advance();
-                    if (trace) trace->write(tick, frame, runtime);
-                    if (systemsTrace) systemsTrace->writeSystems(tick, runtime);
-                    if (!recordPath.empty()) recording.frames.push_back(frame);
-                    ++tick;
+                    buffered.keys |= physical.keys;
+                    buffered.primaryMouse |= physical.primaryMouse;
+                    buffered.anyKeyHeld |= physical.anyKeyHeld;
+                    buffered.anyKeyPressed |= physical.anyKeyPressed;
+                    buffered.wheel = std::clamp(buffered.wheel + physical.wheel, -1, 1);
+                    buffered.pointer = physical.pointer;
+                    while (accumulator >= step) {
+                        if ((trace || systemsTrace || !recordPath.empty()) && tick >= static_cast<std::size_t>(ticks)) break;
+                        const auto frame = bb::encodeInput(buffered);
+                        if (deterministic) runtime.applyInput(frame);
+                        else runtime.submitLiveInput(buffered);
+                        advance();
+                        if (trace) trace->write(tick, frame, runtime);
+                        if (systemsTrace) systemsTrace->writeSystems(tick, runtime);
+                        if (!recordPath.empty()) recording.frames.push_back(frame);
+                        ++tick;
+                        accumulator -= step;
+                        buffered = {};
+                        if (accumulator >= step) buffered = bb::capturePlatformInput(viewport, deterministic, false);
+                    }
+                    runtime.setRenderBlend(std::clamp(accumulator / step, 0.0, 1.0));
                     bb::gfx::beginFrame();
                     ui.draw(runtime);
+                    drawSettings(30);
                     bb::gfx::endFrame();
                 }
                 std::cout << runtime.diagnostics() << '\n';

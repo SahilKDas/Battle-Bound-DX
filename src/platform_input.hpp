@@ -3,5 +3,5 @@
 #include "input.hpp"
 
 namespace bb {
-RawInput capturePlatformInput(const Viewport& viewport, bool recording);
+RawInput capturePlatformInput(const Viewport& viewport, bool recording, bool edges = true);
 }

@@ -48,8 +48,13 @@ def play(exe, folder, name, mode):
                    'melee': 'l', 'hands': 'a', 'axe': 'c', 'katana': 'q', 'nunchaku': 'w',
                    'taser': 't', 'smoke': 'x', 'rock': 'i'}.get(mode)
         equip = ['--equip', loadout] if side == 0 and loadout else []
+        render = []
+        if mode == 'bullet':
+            client_root = folder / username
+            (client_root / 'scratch').mkdir(parents=True)
+            render = ['--root', str(client_root), '--render-smoke', '--fps', str(60 if side == 0 else 144)]
         process = subprocess.Popen([str(exe), '--headless', '--replay', str(replay), '--trace',
-                                    str(trace), *endpoint, *equip],
+                                    str(trace), *endpoint, *equip, *render],
                                    cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                    text=True, encoding='utf-8')
         return process, trace
@@ -61,6 +66,9 @@ def play(exe, folder, name, mode):
         guest, guest_trace = launch(1)
         results = [(*process.communicate(timeout=40), process.returncode) for process in (guest, host)]
         assert all(code == 0 for _, _, code in results), results
+        if mode == 'bullet':
+            assert f'Rendered frames: {TICKS * 144 // 30}' in results[0][0]
+            assert f'Rendered frames: {TICKS * 60 // 30}' in results[1][0]
     finally:
         for process in (host, guest):
             if process and process.poll() is None:

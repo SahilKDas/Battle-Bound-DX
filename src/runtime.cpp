@@ -184,6 +184,7 @@ void Runtime::greenFlag() {
         executed = 0; bulletClones = 0;
         unsupported.clear(); executedOps.clear(); gameplayEvents.clear();
     }
+    previousRenderPositions.clear();
     peerAvatar.reset(); peerFrame.reset(); peerProjectiles.clear(); outgoingAttacks.clear();
     tasks.clear(); actors.clear(); stamps.clear(); shownLists.clear(); halted = false; asking = 0; question.clear(); timerOrigin = now;
     for (std::size_t index = 0; index < definitions.size(); ++index) {
@@ -655,7 +656,12 @@ bool Runtime::touching(Actor& a, const std::string& target) {
     }
     return false;
 }
-void Runtime::paint(Actor& a) {
+void Runtime::snapshotRenderPositions() {
+    previousRenderPositions.clear();
+    for (const auto& actor : actors)
+        previousRenderPositions.emplace(actor.get(), RenderPosition{actor, {actor->x, actor->y}, actor->visible});
+}
+void Runtime::paint(Actor& a, bool interpolate) {
     auto* cached = image(a); if (!cached || !cached->texture.id) return;
     auto& asset = definitions[a.type].costumes[a.costume]; float scale = static_cast<float>(a.size / 100 / asset.resolution);
     Rectangle source{0, 0, static_cast<float>(cached->image.width), static_cast<float>(cached->image.height)};
@@ -664,7 +670,16 @@ void Runtime::paint(Actor& a) {
     Color tint = WHITE;
     if (a.effects.contains("ghost")) tint.a = static_cast<unsigned char>(255 * (1 - std::clamp(a.effects["ghost"], 0.0, 100.0) / 100));
     float hue = static_cast<float>(a.effects["color"] / 200), brightness = static_cast<float>(std::clamp(a.effects["brightness"], -100.0, 100.0) / 100);
-    const auto logical = Viewport{}.stageToLogical({a.x, a.y});
+    StagePoint stage{a.x, a.y};
+    if (interpolate && renderBlend < 1) {
+        const auto prior = previousRenderPositions.find(&a);
+        if (prior != previousRenderPositions.end() && prior->second.visible &&
+            std::hypot(a.x - prior->second.point.x, a.y - prior->second.point.y) < 120) {
+            stage.x = std::lerp(prior->second.point.x, a.x, renderBlend);
+            stage.y = std::lerp(prior->second.point.y, a.y, renderBlend);
+        }
+    }
+    const auto logical = Viewport{}.stageToLogical(stage);
     gfx::sprite(cached->texture, source,
                 {static_cast<float>(logical.x), static_cast<float>(logical.y),
                  cached->image.width * scale, cached->image.height * scale},
@@ -721,7 +736,7 @@ void Runtime::draw() {
                 drawMatchPanel(*this, role, definition.costumes[actor->costume].name, info, digit,
                                {actor->x, actor->y})) continue;
         }
-        paint(*actor);
+        paint(*actor, definition.name != "[GAME UI]" && definition.name != "[UI]");
         if (!actor->bubble.empty())
             gfx::text(actor->bubble.c_str(), static_cast<float>(actor->x + 320),
                       static_cast<float>(160 - actor->y), 10, WHITE);

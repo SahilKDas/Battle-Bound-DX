@@ -21,7 +21,7 @@ namespace {
 #define INSTANCE_FUNCTIONS(X) \
     X(vkDestroyInstance) X(vkEnumeratePhysicalDevices) X(vkGetPhysicalDeviceProperties) \
     X(vkGetPhysicalDeviceQueueFamilyProperties) X(vkGetPhysicalDeviceSurfaceSupportKHR) \
-    X(vkGetPhysicalDeviceSurfaceCapabilitiesKHR) X(vkGetPhysicalDeviceSurfaceFormatsKHR) \
+    X(vkGetPhysicalDeviceSurfaceCapabilitiesKHR) X(vkGetPhysicalDeviceSurfaceFormatsKHR) X(vkGetPhysicalDeviceSurfacePresentModesKHR) \
     X(vkGetPhysicalDeviceMemoryProperties) X(vkCreateDevice) X(vkGetDeviceProcAddr) \
     X(vkDestroySurfaceKHR)
 #define DEVICE_FUNCTIONS(X) \
@@ -91,14 +91,16 @@ struct State {
     unsigned int nextTexture{1};
     Texture2D white{}, font{};
     std::vector<int> advances;
-    std::array<bool, 512> keys{}, previous{};
+    std::array<bool, 512> keys{}, pressed{};
+    bool primaryPressed{};
     std::deque<int> characters;
     float wheel{};
     bool recording{}, captureWanted{};
     VkBuffer readback{};
     VkDeviceMemory readbackMemory{};
     std::vector<unsigned char> screenshot;
-    int fps{30};
+    int fps{60};
+    bool vsync{}, presentModeChanged{};
     std::chrono::steady_clock::time_point frameStart;
 } state;
 
@@ -210,6 +212,20 @@ void createSwapchain() {
         }
     }
     info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    if (!state.vsync) {
+        uint32_t count{};
+        check(vkGetPhysicalDeviceSurfacePresentModesKHR(state.physical, state.surface, &count, nullptr),
+              "query present mode count");
+        std::vector<VkPresentModeKHR> modes(count);
+        check(vkGetPhysicalDeviceSurfacePresentModesKHR(state.physical, state.surface, &count, modes.data()),
+              "query present modes");
+        for (const auto mode : {VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR}) {
+            if (std::find(modes.begin(), modes.end(), mode) == modes.end()) continue;
+            info.presentMode = mode;
+            break;
+        }
+    }
+    state.presentModeChanged = false;
     info.clipped = VK_TRUE;
     check(vkCreateSwapchainKHR(state.device, &info, nullptr, &state.swapchain), "create swapchain");
     check(vkGetSwapchainImagesKHR(state.device, state.swapchain, &images, nullptr), "query swap images");
@@ -341,7 +357,11 @@ void initialize(int w, int h, const char* title, bool hidden) {
         glfwSetKeyCallback(state.window, [](GLFWwindow*, int key, int, int action, int) {
             if (key >= 0 && key < static_cast<int>(state.keys.size())) {
                 state.keys[key] = action != GLFW_RELEASE;
+                if (action == GLFW_PRESS) state.pressed[key] = true;
             }
+        });
+        glfwSetMouseButtonCallback(state.window, [](GLFWwindow*, int button, int action, int) {
+            if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) state.primaryPressed = true;
         });
         auto createInstance = reinterpret_cast<PFN_vkCreateInstance>(glfwGetInstanceProcAddress(nullptr, "vkCreateInstance"));
         if (!createInstance) throw std::runtime_error("Cannot load Vulkan entry point");
@@ -552,13 +572,20 @@ void shutdown() {
 }
 
 bool shouldClose() {
-    state.previous = state.keys; state.wheel = 0;
+    state.frameStart = std::chrono::steady_clock::now();
+    state.pressed.fill(false); state.primaryPressed = false; state.wheel = 0;
     glfwPollEvents();
     return glfwWindowShouldClose(state.window);
 }
 void setFrameRate(int fps) { state.fps = fps; }
+void setVsync(bool enabled) {
+    if (state.vsync == enabled) return;
+    state.vsync = enabled;
+    state.presentModeChanged = true;
+}
 bool keyDown(int key) { return key >= 0 && key < 512 && state.keys[key]; }
-bool keyPressed(int key) { return keyDown(key) && !state.previous[key]; }
+bool keyPressed(int key) { return key >= 0 && key < 512 && state.pressed[key]; }
+bool mousePressed(int button) { return button == MOUSE_BUTTON_LEFT && state.primaryPressed; }
 bool mouseDown(int button) { return glfwGetMouseButton(state.window, button) == GLFW_PRESS; }
 float mouseX() { double x{}, y{}; glfwGetCursorPos(state.window, &x, &y); return static_cast<float>(x); }
 float mouseY() { double x{}, y{}; glfwGetCursorPos(state.window, &x, &y); return static_cast<float>(y); }
@@ -568,10 +595,15 @@ int width() { int w{}, h{}; glfwGetWindowSize(state.window, &w, &h); return w; }
 int height() { int w{}, h{}; glfwGetWindowSize(state.window, &w, &h); return h; }
 
 void beginFrame() {
-    state.frameStart = std::chrono::steady_clock::now();
     check(vkWaitForFences(state.device, 1, &state.completed, VK_TRUE, UINT64_MAX), "wait for frame");
     int w{}, h{}; glfwGetFramebufferSize(state.window, &w, &h);
     if (!w || !h) return;
+    if (state.presentModeChanged) {
+        check(vkDeviceWaitIdle(state.device), "wait before changing VSync");
+        destroySwapchain();
+        createSwapchain();
+        createFramebuffers();
+    }
     auto result = vkAcquireNextImageKHR(state.device, state.swapchain, UINT64_MAX, state.acquired,
                                         VK_NULL_HANDLE, &state.imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {

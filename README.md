@@ -56,3 +56,11 @@ It uses no Scratch cloud service or matchmaking.
 Run the integration check with `python tools/test_multiplayer.py bin/battle_bound_dx.exe`.
 For CTest, configure with `-DBBDX_NETWORK_TESTS=ON`. The check starts two
 processes and requires permission to bind and connect on localhost.
+
+## Frame rate
+
+The simulation runs at 30 ticks per second. Press **F7** to cycle the render
+cap through 30, 60, 120, 144, and Unlimited. Press **F8** to toggle VSync.
+The game starts at a 60 FPS cap. Use `--fps 144` to set a launch cap or
+`--fps 0` for Unlimited. Add `--vsync` to start with VSync enabled.
+The Vulkan device can fall back to FIFO when it offers no other present mode.
