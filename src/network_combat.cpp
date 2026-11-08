@@ -110,13 +110,15 @@ void Runtime::simulateNetworkCombat() {
         const auto health = helicopter ? "::Helicopter HP" : "::Spiller-liv";
         const auto maximum = helicopter ? 500.0 : 100.0;
         const auto kind = std::string_view(source);
-        if (helicopter && kind == "flame") return;
+        const bool contact = kind == "melee" || kind == "taser";
+        if (helicopter && (kind == "flame" || contact)) return;
         const auto before = namedValue(health);
         if (before.number() <= 0) return;
         if (damage > 0) {
             const auto aim = namedValue(".ARM Direction").number();
             const auto shieldArc = kind == "explosion" ? 80 : 40;
-            const bool shield = !helicopter && namedValue("::Våpen holdt").text == "m" &&
+            const auto weapon = namedValue("::Våpen holdt").text;
+            const bool shield = !helicopter && (weapon == "m" || (contact && weapon == "q")) &&
                 namedValue("::Animation").number() < 7 &&
                 std::abs(std::remainder(aim - angle - 180, 360)) < shieldArc;
             const auto crouch = namedValue("::Krypegå").number();
@@ -126,7 +128,7 @@ void Runtime::simulateNetworkCombat() {
                 std::abs(headY - impact.y) < 6 &&
                 std::abs(namedValue("::Player X").number() - impact.x) < 7;
             if (shield) {
-                if (kind == "flame") return;
+                if (kind == "flame" || contact) return;
                 damage = kind == "explosion" ? damage * .5 : -std::floor(-damage / 3 + .5);
             }
             else if (headshot) damage *= 2;
@@ -146,8 +148,15 @@ void Runtime::simulateNetworkCombat() {
 
     for (const auto& attack : peerFrame->attacks) {
         if (attack.kind == RemoteAttack::Smoke) {
-            setNamed("*Smoke X", attack.origin.x);
-            setNamed("*Smoke Y", attack.origin.y);
+            auto smoke = *findActor("[Particles]");
+            const auto& definition = definitions[smoke.type];
+            for (const auto& [id, name] : definition.variableNames) {
+                if (id == "o=?mfRl2n4uLEcMh!~:N") smoke.variables[id] = "smokebomb";
+                else if (name == "_x") smoke.variables[id] = Value(attack.origin.x).text;
+                else if (name == "_y") smoke.variables[id] = Value(attack.origin.y).text;
+            }
+            smoke.networkSmoke = true;
+            cloneActor(smoke, "[Network Peer]", "smoke");
             continue;
         }
         if (peerProjectiles.size() >= 256) throw std::runtime_error("Multiplayer projectile limit exceeded");
@@ -162,7 +171,9 @@ void Runtime::simulateNetworkCombat() {
         costume(*sprite, rule.costume);
         project(*sprite, attack.origin);
         actors.push_back(sprite);
-        peerProjectiles.push_back({attack, std::move(sprite)});
+        const bool thrown = attack.kind == RemoteAttack::Grenade || attack.kind == RemoteAttack::Rock;
+        const int age = thrown ? static_cast<int>(std::clamp(attack.charge, 0.0, 50.0)) : 0;
+        peerProjectiles.push_back({attack, std::move(sprite), age});
     }
     peerFrame->attacks.clear();
 
@@ -181,6 +192,10 @@ void Runtime::simulateNetworkCombat() {
             const auto scale = kind == RemoteAttack::Rocket ? (helicopter ? 1 : dive ? .5 : .7)
                                                             : (helicopter ? .5 : dive ? .8 : 1);
             dealDamage(force * scale, "explosion", attack.angle, false, attack.origin);
+            if (captureEvents)
+                gameplayEvents.push_back({"effect", "[Network Peer]",
+                    kind == RemoteAttack::Grenade ? "grenade-blast" : "rocket-blast",
+                    Value(attack.origin.x).text, Value(attack.origin.y).text});
             setNamed("*Explosion X", attack.origin.x);
             setNamed("*Explosion Y", attack.origin.y);
         };
@@ -188,16 +203,20 @@ void Runtime::simulateNetworkCombat() {
             auto& point = attack.origin;
             auto& velocity = attack.velocity;
             costume(*sprite, "Grenade HITBOX");
-            const auto old = point;
+            if (point.y < -570) { velocity.x *= .8; velocity.y *= .5; }
             point.x += velocity.x;
             project(*sprite, point);
-            if (touching(*sprite, "[PLATFORM]")) { point.x = old.x; velocity.x *= -.8; }
+            if (touching(*sprite, "[PLATFORM]")) {
+                velocity.x *= -.8;
+                point.x += velocity.x * 1.4;
+                project(*sprite, point);
+            }
             velocity.y += namedValue("G").number();
             point.y += velocity.y;
             project(*sprite, point);
             if (touching(*sprite, "[PLATFORM]")) {
-                point.y = old.y;
                 velocity.y *= -.5;
+                point.y += velocity.y * 2;
                 velocity.x *= .75;
             } else if (kind == RemoteAttack::Rock && touching(*sprite, "[Player]")) {
                 dealDamage(15, "rock", attack.angle, true, point);
@@ -245,7 +264,8 @@ void Runtime::simulateNetworkCombat() {
                 else if (kind == RemoteAttack::Arrow) dealDamage(attack.charge * 3, "arrow", attack.angle, true, attack.origin);
                 else if (kind == RemoteAttack::Shuriken) dealDamage(15, "shuriken", attack.angle, true, attack.origin);
                 else if (kind == RemoteAttack::Taser) dealDamage(2.5, "taser", attack.angle, false, attack.origin);
-                else dealDamage(meleeDamage(item), "melee", attack.angle, true, attack.origin);
+                else dealDamage(meleeDamage(item), "melee", attack.angle,
+                                item != content::ItemId::Axe, attack.origin);
                 sprite->alive = false;
                 break;
             }

@@ -413,6 +413,9 @@ bool Runtime::runNativeCombat(Task& task, const Block& block, Frame& call) {
             }
             setNamed(";Skjerm-risting", 15.0);
             cameraSystem.setShakeMagnitude(15);
+            if (multiplayerEnabled && captureEvents && grenadePayload)
+                gameplayEvents.push_back({"effect", definition.name, "grenade-blast",
+                                          Value(point.x).text, Value(point.y).text});
             setNamed("*Explosion X", point.x);
             setNamed("*Explosion Y", point.y);
         }

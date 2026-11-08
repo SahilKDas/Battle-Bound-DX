@@ -215,7 +215,8 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
             const auto weapon = rocket && namedValue("::[Spiller-action]").text.find("heli") != std::string::npos
                 ? "heli" : bullet ? actor.networkWeapon : rocket ? "j" : arrow ? "e" : shuriken ? "k" :
                   flame ? "y" : payload == "grenade" ? "f" : "i";
-            queueNetworkAttack(kind, origin, velocity, actor.direction, arrow ? readLocal("_arrow speed") : 0, weapon);
+            const auto charge = arrow ? readLocal("_arrow speed") : thrown ? readLocal("_bullet.hit") : 0;
+            queueNetworkAttack(kind, origin, velocity, actor.direction, charge, weapon);
         }
         return true;
     }
@@ -365,10 +366,7 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
             set("crosshair grow", "1");
             set("::Rekyl", .1);
             playActorSound(actor, "taser boi");
-            if (multiplayerEnabled && ready(.3)) {
-                writeLocal("_timer", timer);
-                sendContactAttack(RemoteAttack::Taser);
-            }
+            sendContactAttack(RemoteAttack::Taser);
             break;
         case ItemId::Medkit:
             action("0", "5)");
@@ -385,11 +383,8 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
             action("1", "5.");
             set("crosshair grow", "1");
             set("::Rekyl", .1);
-            if (multiplayerEnabled && ready(.25)) {
-                writeLocal("_timer", timer);
-                sendContactAttack(RemoteAttack::Melee);
-            }
             if (number("Nunchuks") < 50) set("Nunchuks", number("Nunchuks") + 2);
+            if (number("Nunchuks") >= 50) sendContactAttack(RemoteAttack::Melee);
             break;
         case ItemId::SmokeBomb:
             action("1", "5=");

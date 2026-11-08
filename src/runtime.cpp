@@ -526,7 +526,15 @@ void Runtime::run(Task& task) {
         if (op == "motion_pointindirection" || op == "motion_turnright") { double direction = op == "motion_pointindirection" ? n("DIRECTION") : a.direction + n("DEGREES"); if (std::isfinite(direction)) a.direction = std::remainder(direction, 360); continue; }
         if (op == "motion_setrotationstyle") { a.rotation = field(b, "STYLE"); continue; }
         if (op == "looks_show" || op == "looks_hide") { a.visible = op == "looks_show"; continue; }
-        if (op == "looks_switchcostumeto") { costume(a, v("COSTUME")); continue; }
+        if (op == "looks_switchcostumeto") {
+            costume(a, v("COSTUME"));
+            if (a.networkSmoke && d.name == "[Particles]" && b.id == "`I") {
+                a.networkSmoke = false;
+                if (captureEvents) gameplayEvents.push_back({"effect", "[Network Peer]", "smoke",
+                    Value(a.x).text, Value(a.y).text});
+            }
+            continue;
+        }
         if (op == "looks_nextcostume") { costume(a, a.costume + 2.0); continue; }
         if (op == "looks_switchbackdropto") { costume(*actors[0], v("BACKDROP")); continue; }
         if (op == "looks_setsizeto" || op == "looks_changesizeby") { double size = op == "looks_setsizeto" ? n("SIZE") : a.size + n("CHANGE"); if (std::isfinite(size)) a.size = std::clamp(size, 0.01, 10000.0); continue; }

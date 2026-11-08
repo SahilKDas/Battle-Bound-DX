@@ -53,7 +53,7 @@ struct Actor {
     std::string rotation, bubble, networkWeapon;
     Fields variables;
     ProjectileContact projectileContact{};
-    bool networkReplica{};
+    bool networkReplica{}, networkSmoke{};
     std::unordered_map<std::string, std::vector<Value>> lists;
     std::unordered_map<std::string, double> effects;
 };
