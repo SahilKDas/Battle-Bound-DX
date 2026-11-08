@@ -169,6 +169,7 @@ double Runtime::calendarSeconds() const {
     return std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 int Runtime::matchSecondsRemaining() const {
+    if (multiplayerEnabled) return static_cast<int>((matchView.ticksLeft + 29) / 30);
     const auto minutes = static_cast<int>(namedValue("&Spill-lengde").number());
     if (minutes <= 0) return 0;
     const auto seconds = static_cast<std::time_t>(calendarSeconds());
@@ -460,7 +461,15 @@ void Runtime::run(Task& task) {
         }
         if (op == "control_wait") { task.wake = now + std::max(0.0, n("DURATION")); return; }
         if (op == "event_broadcast" || op == "event_broadcastandwait") { broadcast(v("BROADCAST_INPUT").text, &task, op == "event_broadcastandwait"); if (!task.waiting.empty()) return; continue; }
+        if (multiplayerEnabled && d.name == "[Player]" && (b.id == "Y" || b.id == "bV")) {
+            push(body("SUBSTACK"));
+            continue;
+        }
         if (op == "procedures_call") {
+            if (multiplayerEnabled && d.name == "[Player]" &&
+                (b.procedure == "Bestem kart" || b.procedure == "Kalkuler riktig spill modus" ||
+                 (b.procedure == "Spill Kontroll" && namedValue("Gamemode Tick").number() == 1)))
+                continue;
             auto it = d.procedures.find(b.procedure);
             if (it == d.procedures.end()) throw std::runtime_error("Missing procedure: " + b.procedure);
             auto& definition = d.blocks[it->second]; auto& prototype = d.blocks.at(definition.inputs.at("custom_block").block);

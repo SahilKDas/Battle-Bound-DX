@@ -70,3 +70,9 @@ The host opens a port and the guest enters the host's IPv4 address and port.
 Once connected, both players choose **Ready up**. The match starts when both
 are ready. Connection errors appear in the lobby, where you can retry or go
 back. The command-line options above still support direct sessions.
+
+The host runs a two-player free-for-all on map 1. Each round starts with a
+three-second countdown and lasts three minutes by default. The host publishes
+the clock, scores, and result to both players. After the result, both players
+press **Enter** to ready for a rematch. A command-line host can set a different
+round length with `--round-seconds`.

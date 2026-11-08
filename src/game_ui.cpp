@@ -287,14 +287,35 @@ void drawGameHud(const Runtime& runtime) {
     const auto mode = number(";Spill-Modus");
     for (const auto& match : content::matches())
         if (mode == static_cast<int>(match.id)) label(std::string(match.name), 262, 17, 11);
-    label("KILLS  " + std::to_string(static_cast<int>(number("::draphehe"))), 262, 31, 9, accent);
+    label(runtime.networkMatch() ? "LAN MATCH" : "KILLS  " +
+          std::to_string(static_cast<int>(number("::draphehe"))), 262, 31, 9, accent);
     const auto time = runtime.matchSecondsRemaining();
     const auto seconds = time % 60;
     label(std::to_string(time / 60) + ":" + (seconds < 10 ? "0" : "") +
           std::to_string(seconds), 350, 31, 9, muted);
     label(number("#PlayersOnline") <= 1 ? "SOLO" : "PLAYERS  " +
           std::to_string(static_cast<int>(number("#PlayersOnline"))), 14, 15, 9, muted);
-    label("ESC  PAUSE", 554, 15, 9, muted);
+    if (const auto* match = runtime.networkMatch()) {
+        gfx::rectangle(478, 14, 148, 33, surface);
+        label("ROUND " + std::to_string(match->round) + "  /  MAP " + std::to_string(match->map), 488, 17, 10, muted);
+        label("HOST " + std::to_string(match->hostScore) + "   GUEST " + std::to_string(match->guestScore),
+              488, 31, 10, accent);
+        if (match->phase == MatchPhase::Countdown) {
+            gfx::rectangle(250, 74, 140, 40, surface);
+            label("MATCH STARTS IN " + std::to_string(runtime.matchSecondsRemaining()), 263, 83, 13, accent);
+        } else if (match->phase == MatchPhase::Finished) {
+            const auto winner = match->hostScore == match->guestScore ? "Draw" :
+                match->hostScore > match->guestScore ? "Host wins" : "Guest wins";
+            gfx::rectangle(189, 104, 262, 136, surface);
+            label(winner, 208, 119, 24, accent);
+            label("Enter to ready for a rematch", 208, 159, 14);
+            label(std::string("Host ") + (match->hostReady ? "ready" : "waiting") +
+                  "   /   Guest " + (match->guestReady ? "ready" : "waiting"), 208, 194, 12, muted);
+            return;
+        }
+    } else {
+        label("ESC  PAUSE", 554, 15, 9, muted);
+    }
 
     if (number(":Kart Åpent") > 0) {
         gfx::rectangle(220, 55, 200, 22, surface);

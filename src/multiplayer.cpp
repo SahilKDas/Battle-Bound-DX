@@ -116,7 +116,7 @@ PeerConnection::PeerConnection(unsigned port, const std::string& host, bool lobb
         setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout)) ||
         setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&yes), sizeof(yes)))
         throw std::runtime_error("Cannot configure multiplayer socket");
-    const unsigned long protocol = lobby ? 0x42424432 : 0x42424431;
+    const unsigned long protocol = lobby ? 0x42424434 : 0x42424433;
     std::array<unsigned long, 2> hello{};
     if (host.empty()) {
         const auto now = std::chrono::system_clock::now().time_since_epoch();
@@ -154,7 +154,7 @@ LobbyPeer PeerConnection::exchangeLobby(const LobbyPeer& local) {
 NetworkFrame PeerConnection::exchange(const NetworkFrame& local) {
     std::ostringstream out;
     out.imbue(std::locale::classic());
-    out << std::setprecision(17) << "BBDX1 " << local.position.x << ' ' << local.position.y << ' '
+    out << std::setprecision(17) << "BBDX2 " << local.position.x << ' ' << local.position.y << ' '
         << local.direction << ' ' << local.size << ' ' << local.costume << ' ' << local.visible
         << ' ' << std::quoted(local.name) << ' ' << local.attacks.size();
     for (const auto& attack : local.attacks) {
@@ -162,6 +162,11 @@ NetworkFrame PeerConnection::exchange(const NetworkFrame& local) {
             << attack.origin.x << ' ' << attack.origin.y << ' ' << attack.velocity.x << ' '
             << attack.velocity.y << ' ' << attack.angle << ' ' << attack.charge;
     }
+    const auto& outgoing = local.match;
+    out << ' ' << outgoing.round << ' ' << outgoing.map << ' ' << static_cast<unsigned>(outgoing.phase)
+        << ' ' << outgoing.ticksLeft << ' ' << outgoing.hostScore << ' ' << outgoing.guestScore
+        << ' ' << outgoing.hostReady << ' ' << outgoing.guestReady << ' '
+        << local.reportedRound << ' ' << local.deaths << ' ' << local.rematch;
     if (local.attacks.size() > maxAttacks) throw std::runtime_error("Outgoing attack count exceeds limits");
     std::istringstream in(exchangePayload(connection->value, out.str()));
     in.imbue(std::locale::classic());
@@ -170,7 +175,7 @@ NetworkFrame PeerConnection::exchange(const NetworkFrame& local) {
     std::size_t count{};
     if (!(in >> protocol >> remote.position.x >> remote.position.y >> remote.direction >> remote.size
           >> remote.costume >> remote.visible >> std::quoted(remote.name) >> count) ||
-        protocol != "BBDX1" || !bounded(remote.position.x, 50000) || !bounded(remote.position.y, 50000) ||
+        protocol != "BBDX2" || !bounded(remote.position.x, 50000) || !bounded(remote.position.y, 50000) ||
         !bounded(remote.direction, 360) || remote.size <= 0 || !bounded(remote.size, 10000) ||
         remote.costume < 0 || remote.name.empty() || remote.name.size() > 128 ||
         remote.name.find_first_of("\r\n") != std::string::npos || count > maxAttacks)
@@ -188,6 +193,15 @@ NetworkFrame PeerConnection::exchange(const NetworkFrame& local) {
         attack.kind = static_cast<RemoteAttack>(kind);
         remote.attacks.push_back(attack);
     }
+    auto& match = remote.match;
+    unsigned phase{};
+    if (!(in >> match.round >> match.map >> phase >> match.ticksLeft >> match.hostScore >> match.guestScore
+          >> match.hostReady >> match.guestReady >> remote.reportedRound >> remote.deaths >> remote.rematch) ||
+        !match.round || match.map != 1 || phase > static_cast<unsigned>(MatchPhase::Finished) ||
+        match.ticksLeft > 18000 || match.hostScore > 18000 || match.guestScore > 18000 ||
+        !remote.reportedRound || remote.deaths > 18000)
+        throw std::runtime_error("Invalid multiplayer match state");
+    match.phase = static_cast<MatchPhase>(phase);
     in >> std::ws;
     if (!in.eof()) throw std::runtime_error("Trailing multiplayer frame data");
     return remote;

@@ -196,6 +196,16 @@ void TraceWriter::write(std::size_t tick, const InputFrame& input, const Runtime
              {"mode", ";Spill-Modus"}, {"team", ";Ditt Lag"}, {"points", "::Player game-points"}}) {
         line << ',' << json(label) << ':' << json(runtime.namedValue(original).text);
     }
+    if (const auto* match = runtime.networkMatch()) {
+        const char* winner = match->phase != MatchPhase::Finished ? "" :
+            match->hostScore == match->guestScore ? "draw" : match->hostScore > match->guestScore ? "host" : "guest";
+        line << ",\"match\":{\"round\":" << match->round << ",\"map\":" << match->map
+             << ",\"phase\":" << static_cast<unsigned>(match->phase) << ",\"ticksLeft\":" << match->ticksLeft
+             << ",\"hostScore\":" << match->hostScore << ",\"guestScore\":" << match->guestScore
+             << ",\"hostReady\":" << (match->hostReady ? "true" : "false")
+             << ",\"guestReady\":" << (match->guestReady ? "true" : "false")
+             << ",\"winner\":" << json(winner) << '}';
+    }
     auto item = content::findItem(runtime.namedValue("::Våpen holdt").text);
     line << ",\"itemName\":" << json(item ? content::item(*item).name : "unknown")
          << ",\"rngDraws\":" << runtime.randomDrawCount() << ",\"bulletClones\":"

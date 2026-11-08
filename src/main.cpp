@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
         std::filesystem::path replayPath, recordPath, tracePath, systemsPath;
         std::string username = "DX_Player";
         std::string peerHost, equip;
-        unsigned peerPort = 0;
+        unsigned peerPort = 0, roundSeconds = 180;
         int lobbyDelay = -1;
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
                 if (!peerPort || peerPort > 65535) throw std::runtime_error("Invalid multiplayer port");
                 game = true;
             }
+            else if (arg == "--round-seconds" && i + 1 < argc) roundSeconds = parseInteger<unsigned>(argv[++i]);
             else if (arg == "--lobby-test" && i + 1 < argc) lobbyDelay = parseInteger<int>(argv[++i]);
             else if (arg == "--equip" && i + 1 < argc) equip = argv[++i];
             else if (arg == "--fps" && i + 1 < argc) fps = parseInteger<int>(argv[++i]);
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
             else throw std::runtime_error("Unknown or incomplete option: " + arg);
         }
         if (renderSmoke) headless = false;
+        if (!roundSeconds || roundSeconds > 600) throw std::runtime_error("Round duration must be 1..600 seconds");
         if (fps < 0 || fps > 1000) throw std::runtime_error("FPS must be 0..1000");
         if (ticks < 1 || ticks > 10000) throw std::runtime_error("Ticks must be 1..10000");
         if (username.empty() || username.size() > 128 || username.find_first_of("\r\n") != std::string::npos) {
@@ -175,7 +177,7 @@ int main(int argc, char** argv) {
                 if (runtime.loadoutCode(slot) != equip) throw std::runtime_error("Item is missing from loadout");
             }
             if (game) runtime.startGame();
-            if (connection) runtime.enableMultiplayer();
+            if (connection) runtime.enableMultiplayer(peerHost.empty(), roundSeconds);
             const auto advance = [&] {
                 if (!headless) runtime.snapshotRenderPositions();
                 if (connection) runtime.receiveNetworkFrame(connection->exchange(runtime.takeNetworkFrame()));
@@ -275,7 +277,7 @@ int main(int argc, char** argv) {
                                 (ui.hosting() ? 3005u : 9001u), connection->epoch());
                             runtime.greenFlag();
                             runtime.startGame();
-                            runtime.enableMultiplayer();
+                            runtime.enableMultiplayer(ui.hosting(), roundSeconds);
                         }
                         accumulator = step;
                         buffered = {};

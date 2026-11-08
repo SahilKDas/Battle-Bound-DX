@@ -276,7 +276,8 @@ bool Runtime::runNativeWeaponAction(Task& task, const Block& block) {
     const bool trigger = binding == "mouse" ? inputSystem.raw().primaryMouse :
         binding.find("scroll") == std::string::npos && key(binding);
     const auto animation = number("::Animation");
-    if ((number(":Kart Åpent") >= 1 && !helicopter) || namedValue(";SCENE").text != "game" ||
+    if ((multiplayerEnabled && (matchView.phase != MatchPhase::Playing || !matchView.ticksLeft)) ||
+        (number(":Kart Åpent") >= 1 && !helicopter) || namedValue(";SCENE").text != "game" ||
         number("Mouse over chat.page") >= 1 || mode == "spectator" || !trigger ||
         animation >= 7 || (!ammo.text.empty() && ammo.number() <= 0)) {
         writeLocal("_medkit", 0);

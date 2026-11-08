@@ -17,6 +17,13 @@ struct NetworkAttack {
     double angle{}, charge{};
     unsigned item{};
 };
+enum class MatchPhase : unsigned { Countdown, Playing, Finished };
+struct MatchState {
+    unsigned round{1}, map{1};
+    MatchPhase phase{MatchPhase::Countdown};
+    unsigned ticksLeft{90}, hostScore{}, guestScore{};
+    bool hostReady{}, guestReady{};
+};
 struct NetworkFrame {
     WorldPoint position;
     double direction{}, size{};
@@ -24,6 +31,9 @@ struct NetworkFrame {
     bool visible{};
     std::string name;
     std::vector<NetworkAttack> attacks;
+    MatchState match;
+    unsigned reportedRound{1}, deaths{};
+    bool rematch{};
 };
 
 struct LobbyPeer { std::string name; bool ready{}; };

@@ -86,7 +86,8 @@ public:
     void setRenderBlend(double blend) { renderBlend = blend; }
     void broadcast(const std::string& message, Task* caller = nullptr, bool wait = false);
     void startGame();
-    void enableMultiplayer();
+    void enableMultiplayer(bool host, unsigned roundSeconds = 180);
+    const MatchState* networkMatch() const { return multiplayerEnabled ? &matchView : nullptr; }
     void disableMultiplayer() { multiplayerEnabled = false; }
     NetworkFrame takeNetworkFrame();
     void receiveNetworkFrame(NetworkFrame frame);
@@ -155,7 +156,10 @@ private:
     std::shared_ptr<Task> spawn(std::shared_ptr<Actor> actor, int pc);
     std::array<std::optional<std::size_t>, 3> loadoutSelection;
     bool nativeCombat{true};
-    bool multiplayerEnabled{};
+    bool multiplayerEnabled{}, matchHost{};
+    unsigned roundLength{5400}, localDeaths{};
+    bool localRematch{};
+    MatchState matchView, nextMatch;
     struct PeerProjectile {
         NetworkAttack attack;
         std::shared_ptr<Actor> sprite;

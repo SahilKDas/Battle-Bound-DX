@@ -41,7 +41,12 @@ double meleeDamage(content::ItemId item) {
 }
 }
 
-void Runtime::enableMultiplayer() {
+void Runtime::enableMultiplayer(bool host, unsigned roundSeconds) {
+    matchHost = host;
+    roundLength = roundSeconds * 30;
+    matchView = nextMatch = {};
+    localDeaths = 0;
+    localRematch = false;
     multiplayerEnabled = true;
     for (const auto& task : tasks)
         if (definitions[task->actor->type].name == "☁") task->alive = false;
@@ -49,7 +54,7 @@ void Runtime::enableMultiplayer() {
 
 void Runtime::queueNetworkAttack(RemoteAttack kind, WorldPoint origin, WorldVelocity velocity,
                                  double direction, double charge, std::string_view weapon) {
-    if (!multiplayerEnabled) return;
+    if (!multiplayerEnabled || matchView.phase != MatchPhase::Playing || !matchView.ticksLeft) return;
     if (const auto item = content::findItem(weapon))
         outgoingAttacks.push_back({kind, origin, velocity, direction, charge, static_cast<unsigned>(*item)});
 }
@@ -59,7 +64,8 @@ NetworkFrame Runtime::takeNetworkFrame() {
         if (!actor->clone && definitions[actor->type].name == "[Player]") {
             return {{namedValue("::Player X").number(), namedValue("::Player Y").number()},
                     actor->direction, actor->size, actor->costume, actor->visible, username,
-                    std::exchange(outgoingAttacks, {})};
+                    std::exchange(outgoingAttacks, {}), matchHost ? nextMatch : MatchState{},
+                    matchView.round, localDeaths, localRematch};
         }
     }
     throw std::runtime_error("Missing multiplayer player actor");
@@ -67,11 +73,58 @@ NetworkFrame Runtime::takeNetworkFrame() {
 
 void Runtime::receiveNetworkFrame(NetworkFrame frame) {
     if (peerFrame && peerFrame->name != frame.name) throw std::runtime_error("Multiplayer peer identity changed");
+    const auto shared = matchHost ? nextMatch : frame.match;
+    if (shared.round != matchView.round) {
+        if (shared.round != matchView.round + 1 || shared.phase != MatchPhase::Countdown)
+            throw std::runtime_error("Unexpected multiplayer round transition");
+        multiplayerEnabled = false;
+        greenFlag();
+        startGame();
+        multiplayerEnabled = true;
+        for (const auto& task : tasks)
+            if (definitions[task->actor->type].name == "☁") task->alive = false;
+        localDeaths = 0;
+        localRematch = false;
+        frame.attacks.clear();
+    }
+    matchView = shared;
+    setNamed(";KART", static_cast<double>(matchView.map));
+    if (matchHost) {
+        if (nextMatch.phase == MatchPhase::Playing) {
+            nextMatch.guestScore = localDeaths;
+            if (frame.reportedRound == nextMatch.round) nextMatch.hostScore = frame.deaths;
+            // Exchange one final report after the last combat tick before publishing the winner.
+            if (nextMatch.ticksLeft) --nextMatch.ticksLeft;
+            else nextMatch.phase = MatchPhase::Finished;
+        } else if (nextMatch.phase == MatchPhase::Countdown) {
+            if (--nextMatch.ticksLeft == 0) {
+                nextMatch.phase = MatchPhase::Playing;
+                nextMatch.ticksLeft = roundLength;
+            }
+        } else {
+            nextMatch.hostReady = localRematch;
+            nextMatch.guestReady = frame.reportedRound == nextMatch.round && frame.rematch;
+            if (nextMatch.hostReady && nextMatch.guestReady) {
+                const auto round = nextMatch.round + 1;
+                nextMatch = {};
+                nextMatch.round = round;
+            }
+        }
+    }
+    if (frame.reportedRound != matchView.round) frame.attacks.clear();
     peerFrame = std::move(frame);
 }
 
 void Runtime::simulateNetworkCombat() {
     if (!peerFrame) return;
+    if (matchView.phase == MatchPhase::Finished && inputSystem.key(Key::Enter).pressed)
+        localRematch = true;
+    if (matchView.phase != MatchPhase::Playing || !matchView.ticksLeft) {
+        peerFrame->attacks.clear();
+        outgoingAttacks.clear();
+        for (auto& projectile : peerProjectiles) projectile.sprite->alive = false;
+        peerProjectiles.clear();
+    }
     const auto findActor = [&](std::string_view name) -> std::shared_ptr<Actor> {
         for (const auto& actor : actors)
             if (!actor->clone && definitions[actor->type].name == name) return actor;
@@ -142,6 +195,7 @@ void Runtime::simulateNetworkCombat() {
         }
         const Value after(std::clamp(before.number() - damage, 0.0, maximum));
         setNamed(health, after);
+        if (after.number() == 0 && before.number() > 0) ++localDeaths;
         if (captureEvents && before.text != after.text)
             gameplayEvents.push_back({health, "[Network Peer]", source, before.text, after.text});
     };
