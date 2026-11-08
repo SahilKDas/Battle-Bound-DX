@@ -4,6 +4,7 @@
 #include "runtime.hpp"
 #include <algorithm>
 #include <cmath>
+#include <charconv>
 
 namespace bb {
 namespace {
@@ -14,6 +15,10 @@ constexpr Color surface{16, 27, 43, 245};
 constexpr Color track{52, 70, 90, 255};
 constexpr Rectangle primary{34, 233, 185, 39};
 constexpr Rectangle restart{34, 280, 185, 33};
+constexpr Rectangle hostButton{34, 182, 116, 37};
+constexpr Rectangle joinButton{161, 182, 116, 37};
+constexpr Rectangle lobbyAction{34, 259, 190, 38};
+constexpr Rectangle lobbyBack{237, 259, 130, 38};
 constexpr Rectangle loadoutBack{34, 285, 185, 33};
 constexpr Rectangle loadoutRow(int row) { return {34, static_cast<float>(95 + row * 59), 572, 48}; }
 
@@ -37,10 +42,76 @@ void button(Rectangle box, const char* title, StagePoint pointer, bool main) {
 
 GameUi::GameUi(bool startInGame) : page(startInGame ? Page::Playing : Page::Title) {}
 
+std::unique_ptr<PeerConnection> GameUi::takeLobbyConnection() {
+    if (!lobby) return {};
+    auto connection = lobby->takeConnection();
+    if (connection) {
+        lobby.reset();
+        page = Page::Playing;
+        waitForMouseRelease = mouseHeld;
+    }
+    return connection;
+}
+
+void GameUi::showConnectionError(std::string message) {
+    lobby.reset();
+    lobbyError = std::move(message);
+    page = Page::Lobby;
+}
+
 bool GameUi::update(Runtime& runtime, const RawInput& input) {
     pointer = input.pointer;
     const bool clicked = input.primaryMouse && !mouseHeld;
     mouseHeld = input.primaryMouse;
+    if (page == Page::Title && clicked && (over(pointer, hostButton) || over(pointer, joinButton))) {
+        hostLobby = over(pointer, hostButton);
+        endpoint = hostLobby ? "37026" : "127.0.0.1:37026";
+        lobbyError.clear();
+        while (gfx::nextCharacter() > 0) {}
+        page = Page::Lobby;
+        return false;
+    }
+    if (page == Page::Lobby) {
+        if (gfx::keyPressed(KEY_ESCAPE) || (clicked && over(pointer, lobbyBack))) {
+            lobby.reset();
+            page = Page::Title;
+            return false;
+        }
+        if (lobby) {
+            const auto state = lobby->status();
+            if (!state.error.empty()) showConnectionError(state.error);
+            else if (!state.peer.empty() && (gfx::keyPressed(KEY_ENTER) || (clicked && over(pointer, lobbyAction))))
+                lobby->ready();
+            return false;
+        }
+        for (int character; (character = gfx::nextCharacter()) > 0;) {
+            if (endpoint.size() < 21 && ((character >= '0' && character <= '9') ||
+                                        (!hostLobby && (character == '.' || character == ':'))))
+                endpoint += static_cast<char>(character);
+        }
+        if (gfx::keyPressed(KEY_BACKSPACE) && !endpoint.empty()) endpoint.pop_back();
+        if (gfx::keyPressed(KEY_DELETE)) endpoint.clear();
+        if (gfx::keyPressed(KEY_ENTER) || (clicked && over(pointer, lobbyAction))) {
+            const auto colon = endpoint.find(':');
+            const std::string_view value(endpoint);
+            const auto portText = hostLobby ? value : colon == std::string::npos ? std::string_view{} : value.substr(colon + 1);
+            unsigned port{};
+            if (portText.empty()) {
+                lobbyError = hostLobby ? "Enter a port from 1 to 65535." : "Enter an IPv4 address and port, like 192.168.1.20:37026.";
+                return false;
+            }
+            const auto parsed = std::from_chars(portText.data(), portText.data() + portText.size(), port);
+            if (parsed.ec != std::errc{} || parsed.ptr != portText.data() + portText.size() ||
+                !port || port > 65535 || (!hostLobby && colon == 0)) {
+                lobbyError = "Enter a valid address and a port from 1 to 65535.";
+                return false;
+            }
+            lobbyError.clear();
+            const auto name = runtime.username == "DX_Player" ? (hostLobby ? "Host" : "Guest") : runtime.username;
+            lobby = std::make_unique<LobbySession>(port, hostLobby ? "" : endpoint.substr(0, colon), name);
+        }
+        return false;
+    }
     if (page == Page::Playing) {
         if (waitForMouseRelease && mouseHeld) return false;
         waitForMouseRelease = false;
@@ -84,6 +155,28 @@ bool GameUi::update(Runtime& runtime, const RawInput& input) {
 }
 
 void GameUi::draw(Runtime& runtime) const {
+    if (page == Page::Lobby) {
+        gfx::rectangle(0, 0, 640, 360, {9, 16, 29, 255});
+        label("MULTIPLAYER / LAN", 34, 35, 11, accent);
+        label(hostLobby ? "Host a match" : "Join a match", 34, 53, 32);
+        const auto state = lobby ? lobby->status() : LobbyStatus{};
+        gfx::rectangle(34, 107, 572, 128, surface);
+        label(hostLobby ? "LISTEN PORT" : "HOST IPV4 ADDRESS AND PORT", 49, 116, 10, muted);
+        label(endpoint.empty() ? "_" : endpoint, 49, 135, 18);
+        if (!lobbyError.empty()) label(lobbyError, 49, 183, 13, {255, 149, 149, 255});
+        else if (!lobby) label("Type to edit. Delete clears the field.", 49, 183, 12, muted);
+        else if (state.peer.empty())
+            label(hostLobby ? "Waiting for a guest to join..." : "Connecting to host...", 49, 183, 14);
+        else {
+            label(lobby->isReady() ? "YOU  Ready" : "YOU  Waiting to ready up", 49, 177, 13, accent);
+            label("PEER  " + state.peer.substr(0, 28) + (state.peerReady ? "  Ready" : "  Waiting"), 49, 200, 13);
+        }
+        const auto action = !lobby ? (hostLobby ? "Open lobby" : "Connect") :
+            state.peer.empty() ? "Waiting..." : lobby->isReady() ? "Ready" : "Ready up";
+        button(lobbyAction, action, pointer, !lobby || (!state.peer.empty() && !lobby->isReady()));
+        button(lobbyBack, "Back  /  Esc", pointer, false);
+        return;
+    }
     if (page == Page::Loadout) {
         gfx::rectangle(0, 0, 640, 360, {9, 16, 29, 255});
         label("OFFLINE LOADOUT", 34, 32, 28);
@@ -106,7 +199,7 @@ void GameUi::draw(Runtime& runtime) const {
     gfx::rectangle(34, 42, 24, 3, accent);
     label("BATTLE BOUND / DX", 34, 55, 12, accent);
     label(page == Page::Title ? "Battle Bound" : "Paused", 31, 77, 44);
-    label(page == Page::Title ? "Offline arena" : "Your match is on hold.", 34, 141, 17, muted);
+    label(page == Page::Title ? "Solo or two-player LAN" : "Your match is on hold.", 34, 141, 17, muted);
     gfx::rectangle(354, 50, 252, 262, surface);
     label("CONTROLS", 374, 67, 12, accent);
     constexpr const char* keys[]{"A / D", "W", "S", "Space", "Left click", "R", "Esc"};
@@ -115,6 +208,10 @@ void GameUi::draw(Runtime& runtime) const {
         const auto y = static_cast<float>(99 + row * 27);
         label(keys[row], 374, y, 13);
         label(actions[row], 474, y, 13, muted);
+    }
+    if (page == Page::Title) {
+        button(hostButton, "Host", pointer, false);
+        button(joinButton, "Join", pointer, false);
     }
     button(primary, page == Page::Title ? "Play  /  Enter" : "Resume  /  Enter", pointer, true);
     button(restart, page == Page::Paused ? "Restart match" : "Loadout", pointer, false);

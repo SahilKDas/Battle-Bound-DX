@@ -1,5 +1,6 @@
 #pragma once
 #include "input.hpp"
+#include "lobby.hpp"
 
 namespace bb {
 class Runtime;
@@ -9,11 +10,17 @@ public:
     explicit GameUi(bool startInGame);
     bool update(Runtime& runtime, const RawInput& input);
     void draw(Runtime& runtime) const;
+    std::unique_ptr<PeerConnection> takeLobbyConnection();
+    bool hosting() const { return hostLobby; }
+    void showConnectionError(std::string message);
 
 private:
-    enum class Page { Title, Loadout, Playing, Paused };
+    enum class Page { Title, Loadout, Lobby, Playing, Paused };
     Page page;
     StagePoint pointer;
+    bool hostLobby{};
+    std::string endpoint, lobbyError;
+    std::unique_ptr<LobbySession> lobby;
     bool mouseHeld{}, waitForMouseRelease{};
 };
 

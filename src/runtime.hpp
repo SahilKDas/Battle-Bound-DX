@@ -87,6 +87,7 @@ public:
     void broadcast(const std::string& message, Task* caller = nullptr, bool wait = false);
     void startGame();
     void enableMultiplayer();
+    void disableMultiplayer() { multiplayerEnabled = false; }
     NetworkFrame takeNetworkFrame();
     void receiveNetworkFrame(NetworkFrame frame);
     std::string loadoutCode(std::size_t slot) const;

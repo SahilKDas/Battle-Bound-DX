@@ -1,4 +1,5 @@
 #include <chrono>
+#include <thread>
 #include <array>
 #include "game_ui.hpp"
 #include "runtime.hpp"
@@ -38,6 +39,7 @@ int main(int argc, char** argv) {
         std::string username = "DX_Player";
         std::string peerHost, equip;
         unsigned peerPort = 0;
+        int lobbyDelay = -1;
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
             if (arg == "--self-test") return bb::selfTest();
@@ -55,6 +57,7 @@ int main(int argc, char** argv) {
                 if (!peerPort || peerPort > 65535) throw std::runtime_error("Invalid multiplayer port");
                 game = true;
             }
+            else if (arg == "--lobby-test" && i + 1 < argc) lobbyDelay = parseInteger<int>(argv[++i]);
             else if (arg == "--equip" && i + 1 < argc) equip = argv[++i];
             else if (arg == "--fps" && i + 1 < argc) fps = parseInteger<int>(argv[++i]);
             else if (arg == "--vsync") vsync = true;
@@ -116,7 +119,31 @@ int main(int argc, char** argv) {
         }
         if (peerPort && legacyCombat) throw std::runtime_error("Multiplayer requires native combat");
         std::unique_ptr<bb::PeerConnection> connection;
-        if (peerPort) connection = std::make_unique<bb::PeerConnection>(peerPort, peerHost);
+        if (lobbyDelay >= 0) {
+            if (!peerPort || (!headless && !renderSmoke) || lobbyDelay > 10000) throw std::runtime_error("Invalid lobby test configuration");
+            bb::LobbySession lobby(peerPort, peerHost, username);
+            auto connected = std::chrono::steady_clock::time_point{};
+            const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(40);
+            while (!connection && std::chrono::steady_clock::now() < deadline) {
+                const auto status = lobby.status();
+                if (!status.error.empty()) throw std::runtime_error(status.error);
+                if (!status.peer.empty()) {
+                    if (connected == std::chrono::steady_clock::time_point{}) {
+                        connected = std::chrono::steady_clock::now();
+                        std::cout << "Lobby peer " << status.peer << '\n';
+                    }
+                    if (!lobby.isReady() && std::chrono::steady_clock::now() - connected >= std::chrono::milliseconds(lobbyDelay)) {
+                        std::cout << "Local ready\n";
+                        if (!status.peerReady) std::cout << "Waiting for peer readiness\n";
+                        lobby.ready();
+                    }
+                }
+                connection = lobby.takeConnection();
+                if (!connection) std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            if (!connection) throw std::runtime_error("Lobby ready-up timed out");
+            std::cout << "Both players ready\n";
+        } else if (peerPort) connection = std::make_unique<bb::PeerConnection>(peerPort, peerHost);
         if (!headless) {
             bb::gfx::setVsync(vsync);
             bb::gfx::initialize(1280, 720, "Battle Bound DX | Vulkan", renderSmoke);
@@ -213,6 +240,7 @@ int main(int argc, char** argv) {
                 double accumulator = step;
                 auto previous = Clock::now();
                 bb::RawInput buffered;
+                bool suppressReadyClick = false;
                 constexpr std::array caps{30, 60, 120, 144, 0};
                 const auto drawSettings = [&](float y) {
                     const auto display = "F7 " + (fps ? std::to_string(fps) : "Unlimited") +
@@ -233,8 +261,22 @@ int main(int argc, char** argv) {
                     if (bb::gfx::keyPressed(KEY_F8)) bb::gfx::setVsync(vsync = !vsync);
                     const bb::Viewport viewport{static_cast<double>(bb::gfx::width()),
                                                   static_cast<double>(bb::gfx::height())};
-                    const auto physical = bb::capturePlatformInput(viewport, deterministic);
+                    auto physical = bb::capturePlatformInput(viewport, deterministic);
+                    if (suppressReadyClick) {
+                        suppressReadyClick = physical.primaryMouse;
+                        physical.primaryMouse = false;
+                    }
                     if (!connection && !deterministic && !ui.update(runtime, physical)) {
+                        if (auto joined = ui.takeLobbyConnection()) {
+                            connection = std::move(joined);
+                            suppressReadyClick = physical.primaryMouse;
+                            if (runtime.username == "DX_Player") runtime.username = ui.hosting() ? "Host" : "Guest";
+                            runtime.setDeterministic(static_cast<std::uint32_t>(connection->epoch()) ^
+                                (ui.hosting() ? 3005u : 9001u), connection->epoch());
+                            runtime.greenFlag();
+                            runtime.startGame();
+                            runtime.enableMultiplayer();
+                        }
                         accumulator = step;
                         buffered = {};
                         runtime.setRenderBlend(1);
@@ -255,14 +297,27 @@ int main(int argc, char** argv) {
                         const auto frame = bb::encodeInput(buffered);
                         if (deterministic) runtime.applyInput(frame);
                         else runtime.submitLiveInput(buffered);
-                        advance();
+                        try {
+                            advance();
+                        } catch (const std::exception& error) {
+                            if (!connection) throw;
+                            connection.reset();
+                            runtime.disableMultiplayer();
+                            ui.showConnectionError(error.what());
+                            accumulator = 0;
+                            buffered = {};
+                            break;
+                        }
                         if (trace) trace->write(tick, frame, runtime);
                         if (systemsTrace) systemsTrace->writeSystems(tick, runtime);
                         if (!recordPath.empty()) recording.frames.push_back(frame);
                         ++tick;
                         accumulator -= step;
                         buffered = {};
-                        if (accumulator >= step) buffered = bb::capturePlatformInput(viewport, deterministic, false);
+                        if (accumulator >= step) {
+                            buffered = bb::capturePlatformInput(viewport, deterministic, false);
+                            if (suppressReadyClick) buffered.primaryMouse = false;
+                        }
                     }
                     runtime.setRenderBlend(std::clamp(accumulator / step, 0.0, 1.0));
                     bb::gfx::beginFrame();

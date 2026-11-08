@@ -30,6 +30,35 @@ void receiveAll(SOCKET socket, char* bytes, int size) {
         bytes += read;
     }
 }
+std::string exchangePayload(SOCKET socket, const std::string& payload) {
+    if (payload.empty() || payload.size() > maxFrame) throw std::runtime_error("Outgoing multiplayer frame exceeds limits");
+    auto length = htonl(static_cast<unsigned long>(payload.size()));
+    sendAll(socket, reinterpret_cast<const char*>(&length), sizeof(length));
+    sendAll(socket, payload.data(), static_cast<int>(payload.size()));
+    receiveAll(socket, reinterpret_cast<char*>(&length), sizeof(length));
+    length = ntohl(length);
+    if (!length || length > maxFrame) throw std::runtime_error("Invalid multiplayer frame size");
+    std::string bytes(length, '\0');
+    receiveAll(socket, bytes.data(), static_cast<int>(length));
+    return bytes;
+}
+bool waitSocket(SOCKET socket, bool connecting, std::stop_token stop, int seconds) {
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(seconds);
+    while (!stop.stop_requested() && std::chrono::steady_clock::now() < deadline) {
+        fd_set ready, failed;
+        FD_ZERO(&ready);
+        FD_ZERO(&failed);
+        FD_SET(socket, &ready);
+        FD_SET(socket, &failed);
+        timeval slice{0, 50000};
+        const auto result = select(0, connecting ? nullptr : &ready, connecting ? &ready : nullptr,
+                                   connecting ? &failed : nullptr, &slice);
+        if (result == SOCKET_ERROR) throw std::runtime_error("Network socket wait failed");
+        if (result > 0) return true;
+    }
+    if (stop.stop_requested()) throw std::runtime_error("Connection cancelled");
+    return false;
+}
 bool bounded(double value, double limit) { return std::isfinite(value) && std::abs(value) <= limit; }
 }
 
@@ -43,7 +72,7 @@ struct PeerConnection::Socket {
     }
 };
 
-PeerConnection::PeerConnection(unsigned port, const std::string& host)
+PeerConnection::PeerConnection(unsigned port, const std::string& host, bool lobby, std::stop_token stop)
     : connection(std::make_unique<Socket>()) {
     if (!port || port > 65535) throw std::runtime_error("Invalid multiplayer port");
     WSADATA startup{};
@@ -59,12 +88,8 @@ PeerConnection::PeerConnection(unsigned port, const std::string& host)
         address.sin_addr.s_addr = htonl(INADDR_ANY);
         if (bind(socket, reinterpret_cast<const sockaddr*>(&address), sizeof(address)) || listen(socket, 1))
             throw std::runtime_error("Cannot listen on multiplayer port");
-        fd_set pending;
-        FD_ZERO(&pending);
-        FD_SET(socket, &pending);
-        timeval timeout{30, 0};
-        if (select(0, &pending, nullptr, nullptr, &timeout) != 1)
-            throw std::runtime_error("No multiplayer peer connected within 30 seconds");
+        if (!waitSocket(socket, false, stop, 30))
+            throw std::runtime_error("No guest connected within 30 seconds.");
         const auto accepted = accept(socket, nullptr, nullptr);
         if (accepted == INVALID_SOCKET) throw std::runtime_error("Cannot accept multiplayer peer");
         closesocket(socket);
@@ -72,8 +97,18 @@ PeerConnection::PeerConnection(unsigned port, const std::string& host)
     } else {
         if (inet_pton(AF_INET, host.c_str(), &address.sin_addr) != 1)
             throw std::runtime_error("Join requires a numeric IPv4 address");
-        if (connect(socket, reinterpret_cast<const sockaddr*>(&address), sizeof(address)))
-            throw std::runtime_error("Cannot connect to multiplayer host");
+        unsigned long nonblocking = 1;
+        if (ioctlsocket(socket, FIONBIO, &nonblocking)) throw std::runtime_error("Cannot configure connection");
+        if (connect(socket, reinterpret_cast<const sockaddr*>(&address), sizeof(address))) {
+            if (WSAGetLastError() != WSAEWOULDBLOCK || !waitSocket(socket, true, stop, 5))
+                throw std::runtime_error("Cannot reach host. Check the address and port.");
+            int error{};
+            int size = sizeof(error);
+            if (getsockopt(socket, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &size) || error)
+                throw std::runtime_error("Connection refused. Check that the host is waiting.");
+        }
+        nonblocking = 0;
+        if (ioctlsocket(socket, FIONBIO, &nonblocking)) throw std::runtime_error("Cannot configure connection");
     }
     DWORD timeout = 5000;
     int yes = 1;
@@ -81,20 +116,40 @@ PeerConnection::PeerConnection(unsigned port, const std::string& host)
         setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout)) ||
         setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&yes), sizeof(yes)))
         throw std::runtime_error("Cannot configure multiplayer socket");
+    const unsigned long protocol = lobby ? 0x42424432 : 0x42424431;
     std::array<unsigned long, 2> hello{};
     if (host.empty()) {
         const auto now = std::chrono::system_clock::now().time_since_epoch();
         connection->epoch = static_cast<std::uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(now).count());
-        hello = {htonl(0x42424431), htonl(connection->epoch)};
+        hello = {htonl(protocol), htonl(connection->epoch)};
         sendAll(socket, reinterpret_cast<const char*>(hello.data()), sizeof(hello));
+        unsigned long reply{};
+        receiveAll(socket, reinterpret_cast<char*>(&reply), sizeof(reply));
+        if (ntohl(reply) != protocol) throw std::runtime_error("Peer uses a different connection mode or game version.");
     } else {
         receiveAll(socket, reinterpret_cast<char*>(hello.data()), sizeof(hello));
-        if (ntohl(hello[0]) != 0x42424431) throw std::runtime_error("Incompatible multiplayer protocol");
+        const auto reply = htonl(protocol);
+        sendAll(socket, reinterpret_cast<const char*>(&reply), sizeof(reply));
+        if (ntohl(hello[0]) != protocol) throw std::runtime_error("Peer uses a different connection mode or game version.");
         connection->epoch = ntohl(hello[1]);
     }
 }
 PeerConnection::~PeerConnection() = default;
 std::int64_t PeerConnection::epoch() const { return connection->epoch; }
+
+LobbyPeer PeerConnection::exchangeLobby(const LobbyPeer& local) {
+    std::ostringstream out;
+    out << "BBDL1 " << std::quoted(local.name) << ' ' << local.ready;
+    std::istringstream in(exchangePayload(connection->value, out.str()));
+    std::string protocol;
+    LobbyPeer peer;
+    if (!(in >> protocol >> std::quoted(peer.name) >> peer.ready) || protocol != "BBDL1" ||
+        peer.name.empty() || peer.name.size() > 128 || peer.name.find_first_of("\r\n") != std::string::npos)
+        throw std::runtime_error("Invalid lobby message. Check that both players use the same build.");
+    in >> std::ws;
+    if (!in.eof()) throw std::runtime_error("Unexpected data in lobby message.");
+    return peer;
+}
 
 NetworkFrame PeerConnection::exchange(const NetworkFrame& local) {
     std::ostringstream out;
@@ -107,19 +162,8 @@ NetworkFrame PeerConnection::exchange(const NetworkFrame& local) {
             << attack.origin.x << ' ' << attack.origin.y << ' ' << attack.velocity.x << ' '
             << attack.velocity.y << ' ' << attack.angle << ' ' << attack.charge;
     }
-    const auto payload = out.str();
-    if (payload.size() > maxFrame || local.attacks.size() > maxAttacks)
-        throw std::runtime_error("Outgoing multiplayer frame exceeds limits");
-    auto length = htonl(static_cast<unsigned long>(payload.size()));
-    sendAll(connection->value, reinterpret_cast<const char*>(&length), sizeof(length));
-    sendAll(connection->value, payload.data(), static_cast<int>(payload.size()));
-    receiveAll(connection->value, reinterpret_cast<char*>(&length), sizeof(length));
-    length = ntohl(length);
-    if (!length || length > maxFrame) throw std::runtime_error("Invalid multiplayer frame size");
-    std::string bytes(length, '\0');
-    receiveAll(connection->value, bytes.data(), static_cast<int>(length));
-
-    std::istringstream in(bytes);
+    if (local.attacks.size() > maxAttacks) throw std::runtime_error("Outgoing attack count exceeds limits");
+    std::istringstream in(exchangePayload(connection->value, out.str()));
     in.imbue(std::locale::classic());
     NetworkFrame remote;
     std::string protocol;
