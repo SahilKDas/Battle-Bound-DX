@@ -9,6 +9,8 @@ void beginFrame();
 void endFrame();
 void setFrameRate(int fps);
 void setVsync(bool enabled);
+void setAntialiasing(int samples);
+void setMaximized(bool maximized);
 bool keyDown(int key);
 bool keyPressed(int key);
 bool mouseDown(int button);

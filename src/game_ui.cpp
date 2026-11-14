@@ -15,6 +15,18 @@ constexpr Color background{12, 16, 31, 255};
 constexpr Color surface{24, 33, 55, 255};
 constexpr Color track{51, 66, 97, 255};
 constexpr Color outline{65, 81, 116, 255};
+constexpr Rectangle settingsButton{48, 286, 135, 33};
+constexpr Rectangle settingsBackButton{24, 61, 100, 28};
+constexpr Rectangle controlsButton{450, 61, 166, 28};
+constexpr Rectangle settingRow(int row) { return {152, static_cast<float>(101 + row * 41), 464, 34}; }
+constexpr std::array bindingSlots{0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14};
+constexpr std::array bindingLabels{
+    "Jump", "Move left", "Move right", "Crouch", "Fire", "Crawl / dive",
+    "Reload", "Quick chat", "Map", "Primary", "Secondary", "Gadget", "Action"
+};
+constexpr Rectangle bindingBox(int row) {
+    return {24.0f + (row / 7) * 300, 101.0f + (row % 7) * 32, 292, 28};
+}
 constexpr Rectangle primary{48, 222, 135, 33};
 constexpr Rectangle restart{193, 222, 134, 33};
 constexpr Rectangle hostButton{362, 155, 105, 33};
@@ -57,7 +69,8 @@ void pageHeader(const char* section) {
 
 }
 
-GameUi::GameUi(bool startInGame) : page(startInGame ? Page::Playing : Page::Title) {}
+GameUi::GameUi(bool startInGame, Preferences* values)
+    : page(startInGame ? Page::Playing : Page::Title), preferences(values) {}
 
 std::unique_ptr<PeerConnection> GameUi::takeLobbyConnection() {
     if (!lobby) return {};
@@ -80,6 +93,56 @@ bool GameUi::update(Runtime& runtime, const RawInput& input) {
     pointer = input.pointer;
     const bool clicked = input.primaryMouse && !mouseHeld;
     mouseHeld = input.primaryMouse;
+    if (preferences && (page == Page::Title || page == Page::Paused) &&
+        clicked && over(pointer, settingsButton)) {
+        settingsBack = page;
+        page = Page::Settings;
+        return false;
+    }
+    if (page == Page::Settings || page == Page::Controls) {
+        if (gfx::keyPressed(KEY_ESCAPE) || (clicked && over(pointer, settingsBackButton))) {
+            if (bindingSlot >= 0) bindingSlot = -1;
+            else page = page == Page::Controls ? Page::Settings : settingsBack;
+            return false;
+        }
+        if (page == Page::Controls) {
+            if (bindingSlot >= 0) {
+                const auto keys = encodeInput(input).keys;
+                if (!keys.empty() || (bindingSlot == 4 && clicked)) {
+                    auto& bindings = preferences->controls;
+                    const std::string key = keys.empty() ? "mouse" : *keys.begin();
+                    const auto existing = std::find(bindings.begin(), bindings.end(), key);
+                    if (existing == bindings.end()) bindings[bindingSlot] = key;
+                    else if (bindings[bindingSlot] != "mouse") std::swap(bindings[bindingSlot], *existing);
+                    else if (*existing != "mouse") {
+                        settingsError = "Choose an unused key for Fire.";
+                        return false;
+                    }
+                    bindingSlot = -1;
+                    settingsError.clear();
+                }
+            } else if (clicked) {
+                if (over(pointer, controlsButton)) preferences->controls = Preferences{}.controls;
+                else for (std::size_t i = 0; i < bindingSlots.size(); ++i)
+                    if (over(pointer, bindingBox(static_cast<int>(i)))) bindingSlot = bindingSlots[i];
+            }
+            return false;
+        }
+        if (clicked && over(pointer, controlsButton)) page = Page::Controls;
+        if (clicked && over(pointer, settingRow(0))) {
+            constexpr std::array caps{30, 60, 120, 144, 0};
+            const auto current = std::find(caps.begin(), caps.end(), preferences->fps);
+            preferences->fps = current == caps.end() || current + 1 == caps.end() ? caps.front() : *(current + 1);
+        }
+        if (clicked && over(pointer, settingRow(1))) preferences->vsync = !preferences->vsync;
+        if (clicked && over(pointer, settingRow(2))) preferences->samples = preferences->samples == 4 ? 1 : preferences->samples * 2;
+        if (clicked && over(pointer, settingRow(3))) preferences->maximized = !preferences->maximized;
+        if (clicked && over(pointer, settingRow(4))) {
+            const int delta = pointer.x + 320 < 384 ? -10 : 10;
+            preferences->volume = std::clamp(preferences->volume + delta, 0, 100);
+        }
+        return false;
+    }
     if (page == Page::Title && clicked && (over(pointer, hostButton) || over(pointer, joinButton))) {
         hostLobby = over(pointer, hostButton);
         endpoint = hostLobby ? "37026" : "127.0.0.1:37026";
@@ -179,6 +242,46 @@ void GameUi::draw(Runtime& runtime) const {
     if (page == Page::Paused) runtime.draw();
     gfx::rectangle(0, 0, 640, 360, page == Page::Paused ? Color{12, 16, 31, 215} : background);
 
+    if (page == Page::Settings || page == Page::Controls) {
+        const bool controls = page == Page::Controls;
+        pageHeader(controls ? "Key bindings" : "Settings");
+        button(settingsBackButton, "<  Back", pointer, false);
+        button(controlsButton, controls ? "Reset bindings" : "Key bindings  >", pointer, false);
+        if (controls) {
+            for (std::size_t i = 0; i < bindingSlots.size(); ++i) {
+                const auto box = bindingBox(static_cast<int>(i));
+                const auto slot = bindingSlots[i];
+                card(box, over(pointer, box) ? track : surface);
+                label(bindingLabels[i], box.x + 10, box.y + 5, 12);
+                label(bindingSlot == slot ? "Press a key" : preferences->controls[slot],
+                      box.x + 144, box.y + 5, 12, accent);
+            }
+            if (bindingSlot < 0) label("Choose an action to change its binding.", 24, 331, 10, muted);
+            else label(bindingSlot == 4 ? "Press a key or click for mouse fire. Esc cancels." :
+                       "Press a key. Esc cancels.", 24, 331, 10, muted);
+            if (!settingsError.empty()) label(settingsError, 350, 331, 10, ink);
+        } else {
+            constexpr std::array names{"FPS cap", "VSync", "Anti-aliasing", "Window mode", "Volume"};
+            const std::array<std::string, 5> values{
+                preferences->fps ? std::to_string(preferences->fps) + " FPS" : "Unlimited",
+                preferences->vsync ? "On" : "Off",
+                preferences->samples == 1 ? "Off" : std::to_string(preferences->samples) + "x MSAA (if supported)",
+                preferences->maximized ? "Maximized" : "Windowed",
+                "-      " + std::to_string(preferences->volume) + "%      +"
+            };
+            label("Display", 24, 111, 18);
+            label("Audio", 24, 275, 18);
+            for (int row = 0; row < 5; ++row) {
+                const auto box = settingRow(row);
+                card(box, over(pointer, box) ? track : surface);
+                label(names[row], box.x + 12, box.y + 8, 13);
+                label(values[row], box.x + 234, box.y + 8, 13, accent);
+            }
+            if (!settingsError.empty()) label(settingsError, 24, 331, 11, ink);
+        }
+        return;
+    }
+
     if (page == Page::Lobby) {
         pageHeader("Multiplayer");
         label(hostLobby ? "Host a match" : "Join a match", 24, 88, 30);
@@ -233,6 +336,7 @@ void GameUi::draw(Runtime& runtime) const {
     label(title ? "Play offline or start a two-player LAN match." : "Resume play or restart the match.", 48, 153, 12, muted);
     button(primary, title ? "Play offline" : "Resume", pointer, true);
     button(restart, title ? "Loadout" : "Restart match", pointer, false);
+    if (preferences) button(settingsButton, "Settings", pointer, false);
     if (title) {
         card({350, 67, 266, 141});
         label("Multiplayer", 362, 82, 21);
@@ -244,14 +348,22 @@ void GameUi::draw(Runtime& runtime) const {
     card({350, controlsY, 266, title ? 64.0f : 215.0f});
     label("Controls", 362, controlsY + 8, 13);
     if (title) {
-        label("A / D  Move     W  Jump     Left click  Fire", 362, controlsY + 32, 11, muted);
+        if (preferences) label("View or change bindings in Settings.", 362, controlsY + 32, 11, muted);
+        else label("A / D  Move     W  Jump     Left click  Fire", 362, controlsY + 32, 11, muted);
     } else {
         constexpr const char* keys[]{"A / D", "W", "S", "Space", "Left click", "R", "Esc"};
         constexpr const char* actions[]{"Move", "Jump", "Crouch", "Crawl / Dive", "Fire", "Reload", "Resume"};
         for (int row = 0; row < 7; ++row) {
             const auto y = controlsY + 36 + row * 23;
-            label(keys[row], 362, y, 12, accent);
-            label(actions[row], 470, y, 12, muted);
+            constexpr std::array slots{1, 0, 3, 5, 4, 6};
+            std::string binding = keys[row];
+            if (preferences && row < static_cast<int>(slots.size())) {
+                binding = preferences->controls[slots[row]];
+                if (row == 0) binding += " / " + preferences->controls[2];
+                if (binding == "mouse") binding = "Left click";
+            }
+            label(binding, 362, y, 12, accent);
+            label(actions[row], 504, y, 12, muted);
         }
     }
 }

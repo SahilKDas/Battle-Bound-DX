@@ -86,6 +86,7 @@ public:
     void setRenderBlend(double blend) { renderBlend = blend; }
     void broadcast(const std::string& message, Task* caller = nullptr, bool wait = false);
     void startGame();
+    void setControls(const std::array<std::string, 15>& controls);
     void enableMultiplayer(bool host, unsigned roundSeconds = 180);
     const MatchState* networkMatch() const { return multiplayerEnabled ? &matchView : nullptr; }
     void disableMultiplayer() { multiplayerEnabled = false; }
@@ -120,6 +121,7 @@ public:
     std::set<std::string> unsupported;
     std::set<std::string> executedOps;
 private:
+    std::optional<std::array<std::string, 15>> savedControls;
     friend int selfTest();
     friend int testArsenalCombat(const std::filesystem::path& root);
     friend int testOpponentCombat(const std::filesystem::path& root);

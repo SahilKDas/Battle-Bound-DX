@@ -29,8 +29,8 @@ int main(int argc, char** argv) {
     try {
         std::filesystem::path root = std::filesystem::current_path();
         bool headless = false, game = false, unmuted = false, renderSmoke = false, exercise = false;
-        int ticks = 300, fps = 60;
-        bool vsync = false;
+        int ticks = 300, fps = 60, sampleOverride = 0;
+        bool vsync = false, fpsOverride = false;
         std::uint32_t seed = 3005;
         std::int64_t epoch = 1793966460;
         bool deterministic = false, clockOverride = false, showCredits = false;
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
         int lobbyDelay = -1;
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
-            if (arg == "--self-test") return bb::selfTest();
+            if (arg == "--self-test") { bb::testPreferences(); return bb::selfTest(); }
             if (arg == "--root" && i + 1 < argc) root = argv[++i];
             else if (arg == "--headless") headless = true;
             else if (arg == "--game") game = true;
@@ -61,7 +61,12 @@ int main(int argc, char** argv) {
             else if (arg == "--round-seconds" && i + 1 < argc) roundSeconds = parseInteger<unsigned>(argv[++i]);
             else if (arg == "--lobby-test" && i + 1 < argc) lobbyDelay = parseInteger<int>(argv[++i]);
             else if (arg == "--equip" && i + 1 < argc) equip = argv[++i];
-            else if (arg == "--fps" && i + 1 < argc) fps = parseInteger<int>(argv[++i]);
+            else if (arg == "--fps" && i + 1 < argc) { fps = parseInteger<int>(argv[++i]); fpsOverride = true; }
+            else if (arg == "--msaa" && i + 1 < argc) {
+                sampleOverride = parseInteger<int>(argv[++i]);
+                if (sampleOverride != 1 && sampleOverride != 2 && sampleOverride != 4)
+                    throw std::runtime_error("MSAA must be 1, 2 or 4 samples");
+            }
             else if (arg == "--vsync") vsync = true;
             else if (arg == "--audio") unmuted = true;
             else if (arg == "--render-smoke") renderSmoke = true;
@@ -148,11 +153,28 @@ int main(int argc, char** argv) {
             if (!connection) throw std::runtime_error("Lobby ready-up timed out");
             std::cout << "Both players ready\n";
         } else if (peerPort) connection = std::make_unique<bb::PeerConnection>(peerPort, peerHost);
+        const bool usePreferences = !headless && !renderSmoke && !deterministic;
+        const auto settingsPath = usePreferences ? bb::preferencesPath() : std::filesystem::path{};
+        auto preferences = usePreferences ? bb::loadPreferences(settingsPath) : bb::Preferences{};
+        if (sampleOverride) preferences.samples = sampleOverride;
+        if (usePreferences) {
+            if (fpsOverride) preferences.fps = fps;
+            if (vsync) preferences.vsync = true;
+            if (unmuted && !preferences.volume) preferences.volume = 100;
+            fps = preferences.fps;
+            vsync = preferences.vsync;
+            unmuted = preferences.volume > 0;
+        }
         if (!headless) {
             bb::gfx::setVsync(vsync);
+            bb::gfx::setAntialiasing(preferences.samples);
             bb::gfx::initialize(1920, 1080, "Battle Bound DX | Vulkan", renderSmoke);
             bb::gfx::setFrameRate(renderSmoke ? 0 : fps);
-            if (unmuted) InitAudioDevice();
+            if (preferences.maximized) bb::gfx::setMaximized(true);
+            if (unmuted) {
+                InitAudioDevice();
+                if (IsAudioDeviceReady()) SetMasterVolume(usePreferences ? preferences.volume / 100.0f : 1.0f);
+            }
         }
         int result = 0;
         {
@@ -160,6 +182,7 @@ int main(int argc, char** argv) {
             runtime.username = username;
             runtime.mute = !unmuted;
             runtime.load();
+            if (usePreferences) runtime.setControls(preferences.controls);
             runtime.useLegacyCamera(legacyCamera);
             runtime.useLegacyCombat(legacyCombat);
             runtime.useClassicControls(classicControls);
@@ -238,7 +261,28 @@ int main(int argc, char** argv) {
                     if (maximumX - minimumX < 10 || runtime.bulletClones == 0) throw std::runtime_error("Scripted movement/shooting did not exercise the original gameplay");
                 }
             } else {
-                bb::GameUi ui(game || deterministic);
+                bb::GameUi ui(game || deterministic, usePreferences ? &preferences : nullptr);
+                auto applied = preferences;
+                const auto applyPreferences = [&] {
+                    if (preferences == applied) return;
+                    if (preferences.fps != applied.fps) bb::gfx::setFrameRate(fps = preferences.fps);
+                    if (preferences.vsync != applied.vsync) bb::gfx::setVsync(vsync = preferences.vsync);
+                    if (preferences.samples != applied.samples) bb::gfx::setAntialiasing(preferences.samples);
+                    if (preferences.maximized != applied.maximized) bb::gfx::setMaximized(preferences.maximized);
+                    if (preferences.controls != applied.controls) runtime.setControls(preferences.controls);
+                    if (preferences.volume != applied.volume) {
+                        if (preferences.volume && !IsAudioDeviceReady()) InitAudioDevice();
+                        runtime.mute = preferences.volume == 0;
+                        if (IsAudioDeviceReady()) SetMasterVolume(preferences.volume / 100.0f);
+                    }
+                    applied = preferences;
+                    try {
+                        bb::savePreferences(settingsPath, preferences);
+                        ui.setSettingsError(IsAudioDeviceReady() || !preferences.volume ? "" : "Audio device is unavailable.");
+                    } catch (const std::exception&) {
+                        ui.setSettingsError("Settings could not be saved.");
+                    }
+                };
                 std::size_t tick = 0;
                 using Clock = std::chrono::steady_clock;
                 constexpr double step = 1.0 / 30;
@@ -262,8 +306,12 @@ int main(int argc, char** argv) {
                         const auto current = std::find(caps.begin(), caps.end(), fps);
                         fps = current == caps.end() || current + 1 == caps.end() ? caps.front() : *(current + 1);
                         bb::gfx::setFrameRate(fps);
+                        if (usePreferences) preferences.fps = fps;
                     }
-                    if (bb::gfx::keyPressed(KEY_F8)) bb::gfx::setVsync(vsync = !vsync);
+                    if (bb::gfx::keyPressed(KEY_F8)) {
+                        bb::gfx::setVsync(vsync = !vsync);
+                        if (usePreferences) preferences.vsync = vsync;
+                    }
                     const bb::Viewport viewport{static_cast<double>(bb::gfx::width()),
                                                   static_cast<double>(bb::gfx::height())};
                     auto physical = bb::capturePlatformInput(viewport, deterministic);
@@ -271,7 +319,9 @@ int main(int argc, char** argv) {
                         suppressReadyClick = physical.primaryMouse;
                         physical.primaryMouse = false;
                     }
-                    if (!connection && !deterministic && !ui.update(runtime, physical)) {
+                    const bool advanceGameplay = connection || deterministic || ui.update(runtime, physical);
+                    if (usePreferences) applyPreferences();
+                    if (!advanceGameplay) {
                         if (auto joined = ui.takeLobbyConnection()) {
                             connection = std::move(joined);
                             suppressReadyClick = physical.primaryMouse;
@@ -287,7 +337,6 @@ int main(int argc, char** argv) {
                         runtime.setRenderBlend(1);
                         bb::gfx::beginFrame();
                         ui.draw(runtime);
-                        drawSettings(346);
                         bb::gfx::endFrame();
                         continue;
                     }

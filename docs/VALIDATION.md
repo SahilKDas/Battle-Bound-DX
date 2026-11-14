@@ -55,3 +55,13 @@ VM's numeric-boolean quirk; the camera adapter preserves its observed behavior.
 The Vulkan and headless runs match both gameplay and input/camera system traces
 over 300 ticks. The isolated single-executable test passes. Workspace usage is
 approximately 100.7 MB. See `INPUT_AND_CAMERA.md` for coverage and boundaries.
+
+## Map visuals
+
+[Map 1 Vulkan captures](map-1-visual-check.jpg) cover all five spawn areas. The
+captures show the restored wall shading and light beams. Thin vertical seams
+remain at some tile boundaries.
+
+Map 2 could not be visually verified. The archived Scratch scripts reference
+it, but the project contains no Map 2 scenery or collision tiles. DX currently
+supports Map 1.

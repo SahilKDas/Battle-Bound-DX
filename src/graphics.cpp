@@ -77,6 +77,8 @@ struct State {
     std::vector<VkImage> swapImages;
     bool captureSupported{};
     std::vector<VkFramebuffer> framebuffers;
+    int requestedSamples{4};
+    bool samplesChanged{};
     VkSampleCountFlagBits samples{VK_SAMPLE_COUNT_1_BIT};
     VkImage multisampleImage{};
     VkDeviceMemory multisampleMemory{};
@@ -280,12 +282,13 @@ void createFramebuffers() {
 }
 
 void createPipeline() {
+    state.samples = VK_SAMPLE_COUNT_1_BIT;
     VkImageFormatProperties supported{};
     if (vkGetPhysicalDeviceImageFormatProperties(state.physical, state.format, VK_IMAGE_TYPE_2D,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
         0, &supported) == VK_SUCCESS) {
         for (const auto samples : {VK_SAMPLE_COUNT_4_BIT, VK_SAMPLE_COUNT_2_BIT}) {
-            if (supported.sampleCounts & samples) {
+            if (static_cast<int>(samples) <= state.requestedSamples && (supported.sampleCounts & samples)) {
                 state.samples = samples;
                 break;
             }
@@ -498,6 +501,7 @@ void initialize(int w, int h, const char* title, bool hidden) {
         fence.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         check(vkCreateFence(state.device, &fence, nullptr, &state.completed), "create frame fence");
         createSwapchain(); createPipeline(); createFramebuffers();
+        state.samplesChanged = false;
         Color white = WHITE;
         state.white = upload(Image{&white, 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8});
         const auto uploadFont = [](int size) {
@@ -639,6 +643,14 @@ void setVsync(bool enabled) {
     state.vsync = enabled;
     state.presentModeChanged = true;
 }
+void setAntialiasing(int samples) {
+    state.samplesChanged = state.requestedSamples != samples;
+    state.requestedSamples = samples;
+}
+void setMaximized(bool maximized) {
+    if (maximized) glfwMaximizeWindow(state.window);
+    else glfwRestoreWindow(state.window);
+}
 bool keyDown(int key) { return key >= 0 && key < 512 && state.keys[key]; }
 bool keyPressed(int key) { return key >= 0 && key < 512 && state.pressed[key]; }
 bool mousePressed(int button) { return button == MOUSE_BUTTON_LEFT && state.primaryPressed; }
@@ -654,11 +666,21 @@ void beginFrame() {
     check(vkWaitForFences(state.device, 1, &state.completed, VK_TRUE, UINT64_MAX), "wait for frame");
     int w{}, h{}; glfwGetFramebufferSize(state.window, &w, &h);
     if (!w || !h) return;
-    if (state.presentModeChanged || state.extent.width != static_cast<unsigned>(w) ||
+    if (state.samplesChanged || state.presentModeChanged || state.extent.width != static_cast<unsigned>(w) ||
         state.extent.height != static_cast<unsigned>(h)) {
         check(vkDeviceWaitIdle(state.device), "wait before updating swapchain");
         destroySwapchain();
         createSwapchain();
+        if (state.samplesChanged) {
+            vkDestroyPipeline(state.device, state.pipeline, nullptr);
+            vkDestroyPipelineLayout(state.device, state.layout, nullptr);
+            vkDestroyRenderPass(state.device, state.renderPass, nullptr);
+            state.pipeline = VK_NULL_HANDLE;
+            state.layout = VK_NULL_HANDLE;
+            state.renderPass = VK_NULL_HANDLE;
+            createPipeline();
+            state.samplesChanged = false;
+        }
         createFramebuffers();
     }
     auto result = vkAcquireNextImageKHR(state.device, state.swapchain, UINT64_MAX, state.acquired,

@@ -133,12 +133,19 @@ void Runtime::submitLiveInput(const RawInput& frame) {
     inputSystem.submit(frame);
     inputOrigin = InputOrigin::Live;
 }
+void Runtime::setControls(const std::array<std::string, 15>& controls) {
+    savedControls = controls;
+}
 void Runtime::updatePlayerInput() {
     std::vector<std::string> controls;
     if (!actors.empty()) {
         for (const auto& [id, name] : definitions[0].listNames) {
             if (name == ":CONTROLS:") {
-                for (const auto& value : actors[0]->lists[id]) controls.push_back(value.text);
+                auto& bindings = actors[0]->lists[id];
+                if (savedControls && bindings.size() == savedControls->size()) {
+                    for (std::size_t i = 0; i < bindings.size(); ++i) bindings[i] = (*savedControls)[i];
+                }
+                for (const auto& value : bindings) controls.push_back(value.text);
                 break;
             }
         }

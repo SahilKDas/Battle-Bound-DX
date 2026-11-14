@@ -37,6 +37,13 @@ framebuffer capture check. See `docs/VALIDATION.md` for the test scope.
 The checked-in textures are ready to build. To regenerate scenery textures from
 the original SVGs, install `resvg-py==0.5.0` in the build Python environment.
 
+## Settings
+
+Open Settings from the title or offline pause menu. Choose an FPS cap, VSync,
+MSAA, window mode, volume, and key bindings. Changes save automatically in
+`%LOCALAPPDATA%/Battle Bound DX/settings.txt`. Esc returns to the previous
+screen. F7 and F8 also change the saved FPS cap and VSync setting during play.
+
 ## Two-player LAN match
 
 Use the same DX build on both computers. On the host, run:
