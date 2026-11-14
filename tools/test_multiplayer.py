@@ -60,7 +60,7 @@ def play(exe, folder, name, mode):
             (client_root / 'scratch').mkdir(parents=True)
             render = ['--root', str(client_root), '--render-smoke', '--fps', str(30 if full_match else 60 if side == 0 else 144),
                       '--lobby-test', str(0 if side == 0 else 750)]
-        process = subprocess.Popen([str(exe), '--headless', '--replay', str(replay), '--trace',
+        process = subprocess.Popen([str(exe), '--classic-controls', '--headless', '--replay', str(replay), '--trace',
                                     str(trace), *endpoint, *equip, *render,
                                     *(['--round-seconds', '15'] if full_match and side == 0 else [])],
                                    cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -106,7 +106,7 @@ def check_lobby_errors(exe):
         reserved.bind(('127.0.0.1', 0))
         port = str(reserved.getsockname()[1])
         for address, expected in [('bad-address', 'numeric IPv4'), ('127.0.0.1', 'Connection refused')]:
-            result = subprocess.run([str(exe), '--headless', '--lobby-test', '0', '--join', address, port],
+            result = subprocess.run([str(exe), '--classic-controls', '--headless', '--lobby-test', '0', '--join', address, port],
                                     capture_output=True, text=True, encoding='utf-8', timeout=10)
             assert result.returncode == 1 and expected in result.stderr, (result.stdout, result.stderr)
 

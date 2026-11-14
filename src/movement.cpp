@@ -24,7 +24,7 @@ struct Movement {
     }
 
     void steer(const PlayerInput& input, double run, double jumpSpeed,
-               auto selectHitbox, auto blocked) {
+               auto selectHitbox, auto blocked, bool classic = false) {
         if (animation >= 13) return;
         const auto held = [&](Action action) { return input.action(action).held; };
         if (held(Action::MoveRight)) { vx += run; facing = 1; }
@@ -57,6 +57,10 @@ struct Movement {
                 beginDive();
             }
         }
+        if (!classic && !crouch && !crawl && ladder <= 0) {
+            if (held(Action::MoveRight)) vx += 2 * run;
+            if (held(Action::MoveLeft)) vx -= 2 * run;
+        }
         if (held(Action::Jump) && !crawl) {
             if (grounded && !crouch) { vy = jumpSpeed; jump = 1; }
             if (jump == 0 && vy > -20) { jump = 2; animation = 8; vy = jumpSpeed; }
@@ -88,6 +92,21 @@ void testMovement() {
     const auto hold = [&](Action action, bool held) {
         input.actions[static_cast<std::size_t>(action)].held = held;
     };
+
+    hold(Action::MoveRight, true);
+    auto walking = state;
+    auto crouching = state;
+    auto crawling = state;
+    walking.steer(input, 0.5, 10, select, clear);
+    hold(Action::Crouch, true);
+    crouching.steer(input, 0.5, 10, select, clear);
+    hold(Action::Crouch, false);
+    hold(Action::CrawlDive, true);
+    crawling.steer(input, 0.5, 10, select, clear);
+    require(walking.vx == 3 * crouching.vx && crouching.vx == crawling.vx &&
+            crouching.crouch && crawling.crawl, "Walking is three times crouch and crawl speed");
+    hold(Action::MoveRight, false);
+    hold(Action::CrawlDive, false);
 
     hold(Action::Jump, true);
     state.steer(input, 0.5, 10, select, clear);
@@ -174,7 +193,11 @@ bool Runtime::runNativeMovement(Task& task, const Block& block, const Frame& fra
         put("double jump", move.jump);
     };
     if (stance) { select(move.hitbox()); return true; }
-    if (steer) { move.steer(playerInput(), argument("run"), argument("jump"), select, blocked); save(); return true; }
+    if (steer) {
+        move.steer(playerInput(), argument("run"), argument("jump"), select, blocked, classicControls);
+        save();
+        return true;
+    }
     if (friction) { setNamed("::sx", move.vx * argument("friction")); return true; }
     if (gravity) {
         // Preserve the observed ladder and terminal-speed rules of the original port.

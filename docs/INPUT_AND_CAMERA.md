@@ -58,7 +58,7 @@ World coordinates retain upward-positive Y. World/stage conversion subtracts or
 adds the camera; viewport conversion handles centered stage coordinates and
 downward-positive pixels. Fractional coordinates are preserved. Camera easing
 and grid snapping use `floor(value + 0.5)`, retaining Scratch-style negative-half
-rounding. The window remains 1280×720 with a 640×360 logical stage.
+rounding. The window defaults to 1920×1080 with a 640×360 logical stage.
 
 ### Preserved compatibility quirk
 

@@ -70,8 +70,9 @@ std::vector<unsigned char> readAsset(const std::string& name) {
 }
 std::size_t packagedAssetCount() { return entries.size(); }
 void showStartupError(const std::string& message) { MessageBoxA(nullptr, message.c_str(), "Battle Bound DX", MB_OK | MB_ICONERROR); }
-FontAtlas makeFontAtlas() {
-    FontAtlas atlas;
+FontAtlas makeFontAtlas(int glyphSize) {
+    const int cell = fontAtlasCell(glyphSize);
+    FontAtlas atlas{fontAtlasColumns * cell, 6 * cell, {}, {}};
     auto fontBytes = readAsset("assets/fonts/Nunito.ttf");
     DWORD fontCount = 0;
     const auto installedFont = AddFontMemResourceEx(fontBytes.data(), static_cast<DWORD>(fontBytes.size()), nullptr, &fontCount);
@@ -88,7 +89,7 @@ FontAtlas makeFontAtlas() {
     HBITMAP bitmap = CreateDIBSection(dc, &info, DIB_RGB_COLORS, &pixels, nullptr, 0);
     if (!dc || !bitmap || !pixels) throw std::runtime_error("Cannot create font atlas");
     auto previousBitmap = SelectObject(dc, bitmap);
-    HFONT font = CreateFontW(-48, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+    HFONT font = CreateFontW(-glyphSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                             ANTIALIASED_QUALITY, DEFAULT_PITCH, L"Nunito");
     auto previousFont = SelectObject(dc, font);
@@ -97,7 +98,8 @@ FontAtlas makeFontAtlas() {
     std::fill_n(static_cast<unsigned char*>(pixels), atlas.width * atlas.height * 4, 0);
     for (wchar_t c = 32; c < 127; ++c) {
         int index = c - 32;
-        TextOutW(dc, index % 16 * 64, index / 16 * 64, &c, 1);
+        TextOutW(dc, index % fontAtlasColumns * cell + fontAtlasPadding,
+                 index / fontAtlasColumns * cell + fontAtlasPadding, &c, 1);
         SIZE size{}; GetTextExtentPoint32W(dc, &c, 1, &size);
         atlas.advances.push_back(size.cx);
     }

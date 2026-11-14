@@ -22,7 +22,7 @@ namespace {
     X(vkDestroyInstance) X(vkEnumeratePhysicalDevices) X(vkGetPhysicalDeviceProperties) \
     X(vkGetPhysicalDeviceQueueFamilyProperties) X(vkGetPhysicalDeviceSurfaceSupportKHR) \
     X(vkGetPhysicalDeviceSurfaceCapabilitiesKHR) X(vkGetPhysicalDeviceSurfaceFormatsKHR) X(vkGetPhysicalDeviceSurfacePresentModesKHR) \
-    X(vkGetPhysicalDeviceMemoryProperties) X(vkCreateDevice) X(vkGetDeviceProcAddr) \
+    X(vkGetPhysicalDeviceImageFormatProperties) X(vkGetPhysicalDeviceMemoryProperties) X(vkCreateDevice) X(vkGetDeviceProcAddr) \
     X(vkDestroySurfaceKHR)
 #define DEVICE_FUNCTIONS(X) \
     X(vkDestroyDevice) X(vkGetDeviceQueue) X(vkDeviceWaitIdle) X(vkQueueWaitIdle) \
@@ -77,6 +77,10 @@ struct State {
     std::vector<VkImage> swapImages;
     bool captureSupported{};
     std::vector<VkFramebuffer> framebuffers;
+    VkSampleCountFlagBits samples{VK_SAMPLE_COUNT_1_BIT};
+    VkImage multisampleImage{};
+    VkDeviceMemory multisampleMemory{};
+    VkImageView multisampleView{};
     VkRenderPass renderPass{};
     VkPipelineLayout layout{};
     VkPipeline pipeline{};
@@ -89,12 +93,12 @@ struct State {
     VkSampler sampler{};
     std::map<unsigned int, Texture> textures;
     unsigned int nextTexture{1};
-    Texture2D white{}, font{};
+    Texture2D white{}, font{}, smallFont{}, largeFont{};
     std::vector<int> advances;
     std::array<bool, 512> keys{}, pressed{};
     bool primaryPressed{};
     std::deque<int> characters;
-    float wheel{};
+    float wheel{}, viewportScale{3};
     bool recording{}, captureWanted{};
     VkBuffer readback{};
     VkDeviceMemory readbackMemory{};
@@ -158,6 +162,12 @@ void destroySwapchain() {
     for (auto framebuffer : state.framebuffers) vkDestroyFramebuffer(state.device, framebuffer, nullptr);
     for (auto view : state.views) vkDestroyImageView(state.device, view, nullptr);
     state.framebuffers.clear(); state.views.clear();
+    if (state.multisampleView) vkDestroyImageView(state.device, state.multisampleView, nullptr);
+    if (state.multisampleImage) vkDestroyImage(state.device, state.multisampleImage, nullptr);
+    if (state.multisampleMemory) vkFreeMemory(state.device, state.multisampleMemory, nullptr);
+    state.multisampleView = VK_NULL_HANDLE;
+    state.multisampleImage = VK_NULL_HANDLE;
+    state.multisampleMemory = VK_NULL_HANDLE;
     if (state.swapchain) vkDestroySwapchainKHR(state.device, state.swapchain, nullptr);
     state.swapchain = VK_NULL_HANDLE;
 }
@@ -236,12 +246,32 @@ void createSwapchain() {
 }
 
 void createFramebuffers() {
+    const bool multisampled = state.samples != VK_SAMPLE_COUNT_1_BIT;
+    if (multisampled) {
+        VkImageCreateInfo image{};
+        image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image.imageType = VK_IMAGE_TYPE_2D;
+        image.format = state.format;
+        image.extent = {state.extent.width, state.extent.height, 1};
+        image.mipLevels = image.arrayLayers = 1;
+        image.samples = state.samples;
+        image.tiling = VK_IMAGE_TILING_OPTIMAL;
+        image.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+        check(vkCreateImage(state.device, &image, nullptr, &state.multisampleImage), "create multisample image");
+        VkMemoryRequirements requirements{};
+        vkGetImageMemoryRequirements(state.device, state.multisampleImage, &requirements);
+        state.multisampleMemory = allocate(requirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        check(vkBindImageMemory(state.device, state.multisampleImage, state.multisampleMemory, 0),
+              "bind multisample memory");
+        state.multisampleView = imageView(state.multisampleImage, state.format);
+    }
     for (auto view : state.views) {
         VkFramebufferCreateInfo info{};
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         info.renderPass = state.renderPass;
-        info.attachmentCount = 1;
-        info.pAttachments = &view;
+        const std::array attachments{multisampled ? state.multisampleView : view, view};
+        info.attachmentCount = multisampled ? 2 : 1;
+        info.pAttachments = attachments.data();
         info.width = state.extent.width; info.height = state.extent.height; info.layers = 1;
         VkFramebuffer framebuffer{};
         check(vkCreateFramebuffer(state.device, &info, nullptr, &framebuffer), "create framebuffer");
@@ -250,6 +280,18 @@ void createFramebuffers() {
 }
 
 void createPipeline() {
+    VkImageFormatProperties supported{};
+    if (vkGetPhysicalDeviceImageFormatProperties(state.physical, state.format, VK_IMAGE_TYPE_2D,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+        0, &supported) == VK_SUCCESS) {
+        for (const auto samples : {VK_SAMPLE_COUNT_4_BIT, VK_SAMPLE_COUNT_2_BIT}) {
+            if (supported.sampleCounts & samples) {
+                state.samples = samples;
+                break;
+            }
+        }
+    }
+    const bool multisampled = state.samples != VK_SAMPLE_COUNT_1_BIT;
     VkAttachmentDescription color{};
     color.format = state.format; color.samples = VK_SAMPLE_COUNT_1_BIT;
     color.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; color.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -257,10 +299,19 @@ void createPipeline() {
     color.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     color.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     color.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    auto attachments = std::array{color, color};
+    if (multisampled) {
+        attachments[0].samples = state.samples;
+        attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    }
     VkAttachmentReference reference{0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+    VkAttachmentReference resolve{1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1; subpass.pColorAttachments = &reference;
+    subpass.pResolveAttachments = multisampled ? &resolve : nullptr;
     VkSubpassDependency dependency{};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL; dependency.dstSubpass = 0;
     dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -268,7 +319,7 @@ void createPipeline() {
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     VkRenderPassCreateInfo pass{};
     pass.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    pass.attachmentCount = 1; pass.pAttachments = &color;
+    pass.attachmentCount = multisampled ? 2 : 1; pass.pAttachments = attachments.data();
     pass.subpassCount = 1; pass.pSubpasses = &subpass;
     pass.dependencyCount = 1; pass.pDependencies = &dependency;
     check(vkCreateRenderPass(state.device, &pass, nullptr, &state.renderPass), "create render pass");
@@ -307,7 +358,7 @@ void createPipeline() {
     raster.cullMode = VK_CULL_MODE_NONE; raster.frontFace = VK_FRONT_FACE_CLOCKWISE;
     VkPipelineMultisampleStateCreateInfo multisample{};
     multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisample.rasterizationSamples = state.samples;
     VkPipelineColorBlendAttachmentState blend{};
     blend.blendEnable = VK_TRUE;
     blend.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
@@ -349,7 +400,7 @@ void initialize(int w, int h, const char* title, bool hidden) {
         if (!glfwVulkanSupported()) throw std::runtime_error("Vulkan is unavailable. Install a Vulkan-capable graphics driver.");
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_VISIBLE, hidden ? GLFW_FALSE : GLFW_TRUE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         state.window = glfwCreateWindow(w, h, title, nullptr, nullptr);
         if (!state.window) throw std::runtime_error("Cannot create Vulkan window");
         glfwSetScrollCallback(state.window, [](GLFWwindow*, double, double y) { state.wheel += static_cast<float>(y); });
@@ -449,10 +500,15 @@ void initialize(int w, int h, const char* title, bool hidden) {
         createSwapchain(); createPipeline(); createFramebuffers();
         Color white = WHITE;
         state.white = upload(Image{&white, 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8});
-        auto atlas = makeFontAtlas();
-        state.font = upload(Image{atlas.pixels.data(), atlas.width, atlas.height, 1,
-                                   PIXELFORMAT_UNCOMPRESSED_R8G8B8A8});
-        state.advances = std::move(atlas.advances);
+        const auto uploadFont = [](int size) {
+            auto atlas = makeFontAtlas(size);
+            if (size == 48) state.advances = std::move(atlas.advances);
+            return upload(Image{atlas.pixels.data(), atlas.width, atlas.height, 1,
+                                PIXELFORMAT_UNCOMPRESSED_R8G8B8A8});
+        };
+        state.smallFont = uploadFont(24);
+        state.font = uploadFont(48);
+        state.largeFont = uploadFont(96);
     } catch (...) {
         shutdown();
         throw;
@@ -598,8 +654,9 @@ void beginFrame() {
     check(vkWaitForFences(state.device, 1, &state.completed, VK_TRUE, UINT64_MAX), "wait for frame");
     int w{}, h{}; glfwGetFramebufferSize(state.window, &w, &h);
     if (!w || !h) return;
-    if (state.presentModeChanged) {
-        check(vkDeviceWaitIdle(state.device), "wait before changing VSync");
+    if (state.presentModeChanged || state.extent.width != static_cast<unsigned>(w) ||
+        state.extent.height != static_cast<unsigned>(h)) {
+        check(vkDeviceWaitIdle(state.device), "wait before updating swapchain");
         destroySwapchain();
         createSwapchain();
         createFramebuffers();
@@ -620,8 +677,14 @@ void beginFrame() {
     pass.renderArea.extent = state.extent; pass.clearValueCount = 1; pass.pClearValues = &clear;
     vkCmdBeginRenderPass(state.commands, &pass, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(state.commands, VK_PIPELINE_BIND_POINT_GRAPHICS, state.pipeline);
-    VkViewport viewport{0, 0, static_cast<float>(state.extent.width), static_cast<float>(state.extent.height), 0, 1};
-    VkRect2D scissor{{0, 0}, state.extent};
+    const auto scale = std::min(state.extent.width / 640.0f, state.extent.height / 360.0f);
+    state.viewportScale = scale;
+    const auto viewWidth = 640 * scale, viewHeight = 360 * scale;
+    const auto left = (state.extent.width - viewWidth) / 2;
+    const auto top = (state.extent.height - viewHeight) / 2;
+    VkViewport viewport{left, top, viewWidth, viewHeight, 0, 1};
+    VkRect2D scissor{{static_cast<int>(left), static_cast<int>(top)},
+                     {static_cast<unsigned>(viewWidth), static_cast<unsigned>(viewHeight)}};
     vkCmdSetViewport(state.commands, 0, 1, &viewport); vkCmdSetScissor(state.commands, 0, 1, &scissor);
     state.recording = true;
 }
@@ -678,12 +741,20 @@ void rectangle(float x, float y, float w, float h, Color color) {
     sprite(state.white, {0, 0, 1, 1}, {x, y, w, h}, {0, 0}, 0, color);
 }
 void text(const char* content, float x, float y, float size, Color color) {
-    float origin = x, scale = size / 48;
+    const float pixels = size * state.viewportScale;
+    const int glyphSize = pixels <= 34 ? 24 : pixels <= 68 ? 48 : 96;
+    const auto atlas = glyphSize == 24 ? state.smallFont : glyphSize == 48 ? state.font : state.largeFont;
+    const auto cell = fontAtlasCell(glyphSize);
+    const float sourceExtent = glyphSize * 4 / 3;
+    const float extent = size * 4 / 3;
+    const float origin = x, scale = size / 48;
     for (const unsigned char* c = reinterpret_cast<const unsigned char*>(content); *c; ++c) {
         if (*c == '\n') { x = origin; y += size * 1.25f; continue; }
         int glyph = (*c >= 32 && *c < 127 ? *c : '?') - 32;
-        sprite(state.font, {static_cast<float>(glyph % 16 * 64), static_cast<float>(glyph / 16 * 64), 64, 64},
-               {x, y, 64 * scale, 64 * scale}, {0, 0}, 0, color);
+        const auto left = static_cast<float>(glyph % fontAtlasColumns * cell + fontAtlasPadding);
+        const auto top = static_cast<float>(glyph / fontAtlasColumns * cell + fontAtlasPadding);
+        sprite(atlas, {left, top, sourceExtent, sourceExtent},
+               {x, y, extent, extent}, {0, 0}, 0, color);
         x += state.advances[glyph] * scale;
     }
 }

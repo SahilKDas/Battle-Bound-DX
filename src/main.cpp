@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
         std::uint32_t seed = 3005;
         std::int64_t epoch = 1793966460;
         bool deterministic = false, clockOverride = false, showCredits = false;
+        bool classicControls = false;
         bool arsenalCheck = false, opponentCheck = false, legacyCombat = false, legacyMovement = false, legacyCamera = false, cameraCheck = false;
         std::filesystem::path replayPath, recordPath, tracePath, systemsPath;
         std::string username = "DX_Player";
@@ -77,6 +78,7 @@ int main(int argc, char** argv) {
             else if (arg == "--username" && i + 1 < argc) username = argv[++i];
             else if (arg == "--credits") showCredits = true;
             else if (arg == "--legacy-combat") legacyCombat = true;
+            else if (arg == "--classic-controls") classicControls = true;
             else if (arg == "--legacy-movement") legacyMovement = true;
             else if (arg == "--legacy-camera") legacyCamera = true;
             else if (arg == "--arsenal-check") arsenalCheck = true;
@@ -148,7 +150,7 @@ int main(int argc, char** argv) {
         } else if (peerPort) connection = std::make_unique<bb::PeerConnection>(peerPort, peerHost);
         if (!headless) {
             bb::gfx::setVsync(vsync);
-            bb::gfx::initialize(1280, 720, "Battle Bound DX | Vulkan", renderSmoke);
+            bb::gfx::initialize(1920, 1080, "Battle Bound DX | Vulkan", renderSmoke);
             bb::gfx::setFrameRate(renderSmoke ? 0 : fps);
             if (unmuted) InitAudioDevice();
         }
@@ -160,6 +162,7 @@ int main(int argc, char** argv) {
             runtime.load();
             runtime.useLegacyCamera(legacyCamera);
             runtime.useLegacyCombat(legacyCombat);
+            runtime.useClassicControls(classicControls);
             runtime.useLegacyMovement(legacyMovement);
             if (deterministic) runtime.setDeterministic(seed, epoch);
             else if (connection) runtime.setDeterministic(

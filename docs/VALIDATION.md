@@ -14,7 +14,7 @@ Command: `tools/build.ps1 -Test -Preview`, after the user authorized testing.
   executable, with no asset root and no development toolchain on PATH.
 - Vulkan graphics path: a hidden window rendered 90 gameplay ticks, captured
   the swapchain image through a staging buffer, and exited successfully.
-- Visual inspection: `scratch/native-preview.png` is 1280×720 and shows the
+- Visual inspection: `scratch/native-preview.png` shows the
   map/scenery, player, held weapon and HUD. The test window was closed normally.
 
 The packaged executable is approximately 27.81 MB. Workspace usage after this

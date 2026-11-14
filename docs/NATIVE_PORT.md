@@ -20,10 +20,11 @@ For a direct offline gameplay entry point:
 
 F5 restarts the project; F6 enters offline gameplay. The original configurable
 controls remain in use (W/A/D/S, mouse, Space, R, T, M, wheel and number keys).
-The default is a windowed 1280×720 client area with a 640×360 logical stage
-and 30 simulation steps per second. Rendering uses a full 1280×720 target;
+The default is a windowed 1920×1080 client area with a 640×360 logical stage
+and 30 simulation steps per second. Rendering uses a full 1920×1080 target;
 SVG-derived textures are rasterized at 2× resolution with fractional placement
-and bilinear filtering. Native text uses the Windows Segoe UI font when available.
+and bilinear filtering. Vulkan uses up to 4× MSAA when supported. Native text uses
+antialiased Nunito atlases at three raster sizes.
 Mouse coordinates use the same viewport transform.
 
 The installed GCC 14.1 accepts `-std=c++2c`, C++26 draft mode. This does not
@@ -149,7 +150,7 @@ is retained for CPU image decoding, collision helpers and audio only.
 The renderer draws alpha-blended textured quads with fractional positions,
 rotation/mirroring, ghost/color/brightness effects and bilinear sampling.
 UI text uses an antialiased Windows font atlas uploaded to a Vulkan image.
-The default remains a windowed 1280×720 viewport with a 640×360 logical space.
+The default is a windowed 1920×1080 viewport with a 640×360 logical space.
 
 GLSL 450 sources live in `src/shaders/`. CMake compiles them with the installed
 `glslc`, validates both modules with `spirv-val --target-env vulkan1.0`, and
@@ -166,7 +167,7 @@ The GPU must support Vulkan 1.0, VK_KHR_swapchain and the Windows surface.
 Following renewed user authorization, this revision passes **compile, SPIR-V
 validation, package/import inspection, four native tests, isolated single-file
 gameplay and Vulkan rendering/readback inspection**. The updated
-`scratch/native-preview.png` is the 1280×720 Vulkan capture. See
+`scratch/native-preview.png` is the Vulkan gameplay capture. See
 `docs/VALIDATION.md` for scope and remaining coverage gaps. The unsigned publisher
 warning remains a signing issue, independent of the API.
 

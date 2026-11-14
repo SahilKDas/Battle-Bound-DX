@@ -27,12 +27,15 @@ a conservative 450 MB limit beneath the requested 500 MB ceiling; builds stay
 in the system temporary directory.
 
 The generated `bin/battle_bound_dx.exe` contains its runtime assets and native
-dependencies. Double-click it for a windowed 1280×720 launch. Current target:
+dependencies. Double-click it for a windowed 1920×1080 launch. Current target:
 Windows 10/11 x64 with a Vulkan-capable graphics driver. The developer build is unsigned.
 
 Rendering now uses Vulkan textured quads and embedded SPIR-V shaders. The
 Vulkan backend passes the native checks, isolated single-file gameplay test and
-1280×720 rendering/capture check. See `docs/VALIDATION.md` for the test scope.
+framebuffer capture check. See `docs/VALIDATION.md` for the test scope.
+
+The checked-in textures are ready to build. To regenerate scenery textures from
+the original SVGs, install `resvg-py==0.5.0` in the build Python environment.
 
 ## Two-player LAN match
 

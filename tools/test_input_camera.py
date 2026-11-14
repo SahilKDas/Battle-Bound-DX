@@ -16,7 +16,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='bbdx-input-camera-') as directory:
         work = Path(directory)
         def run(*arguments):
-            result = subprocess.run([str(executable), '--headless', *map(str, arguments)],
+            result = subprocess.run([str(executable), '--classic-controls', '--headless', *map(str, arguments)],
                                     cwd=work, capture_output=True, encoding='utf-8', timeout=45)
             assert result.returncode == 0, (result.stdout, result.stderr)
             return result.stdout

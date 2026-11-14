@@ -25,7 +25,7 @@ def main():
         tape.write_text('\n'.join(header + rows) + '\n', encoding='utf-8')
         outputs = [folder / 'native.jsonl', folder / 'scratch.jsonl']
         for flags, trace in zip([[], ['--legacy-combat']], outputs):
-            result = subprocess.run([str(exe), '--replay', str(tape), '--trace', str(trace), *flags],
+            result = subprocess.run([str(exe), '--classic-controls', '--replay', str(tape), '--trace', str(trace), *flags],
                                     cwd=folder, capture_output=True, encoding='utf-8', timeout=55)
             assert result.returncode == 0, (result.stdout, result.stderr)
         assert outputs[0].read_bytes() == outputs[1].read_bytes(), compare(outputs[1], outputs[0])

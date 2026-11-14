@@ -23,7 +23,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='bbdx-replay-') as directory:
         temporary = Path(directory)
         def run(*flags, success=True, env=None):
-            result = subprocess.run([str(executable), '--headless', *map(str, flags)],
+            result = subprocess.run([str(executable), '--classic-controls', '--headless', *map(str, flags)],
                                     cwd=temporary, capture_output=True, text=True,
                                     timeout=40, env=env, encoding='utf-8')
             assert (result.returncode == 0) == success, (result.returncode, result.stdout, result.stderr)

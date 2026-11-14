@@ -465,6 +465,20 @@ void Runtime::run(Task& task) {
             push(body("SUBSTACK"));
             continue;
         }
+        if (!classicControls && d.name == "[Player]") {
+            // Use the cursor pose while running and with an empty magazine.
+            if (b.id == "R" || b.id == "S") {
+                push(body("SUBSTACK2"));
+                continue;
+            }
+            if (b.id == "pk") {
+                // Aim from the gun pivot after the item has moved into position.
+                const auto dx = mx() - a.x;
+                const auto dy = my() - a.y;
+                if (dx || dy) a.direction = std::atan2(dx, dy) / radians;
+                continue;
+            }
+        }
         if (op == "procedures_call") {
             if (multiplayerEnabled && d.name == "[Player]" &&
                 (b.procedure == "Bestem kart" || b.procedure == "Kalkuler riktig spill modus" ||
@@ -475,6 +489,15 @@ void Runtime::run(Task& task) {
             auto& definition = d.blocks[it->second]; auto& prototype = d.blocks.at(definition.inputs.at("custom_block").block);
             Frame call; call.pc = definition.next; call.warp = prototype.warp; call.procedure = true;
             for (auto& [id, name] : prototype.arguments) call.arguments[name] = v(id).text;
+            if (!classicControls && d.name == "[Player]" && b.procedure == "Point at: %s %s From %s %s") {
+                const auto number = [&](const char* argument) { return Value(call.arguments.at(argument)).number(); };
+                const bool cursor = b.id == "cq" ||
+                    (b.id == "V" && namedValue("Player ARM Direction offset").number() == 0);
+                const auto dx = (cursor ? mx() : number("x")) - number("sx");
+                const auto dy = (cursor ? my() : number("y")) - number("sy");
+                if (dx || dy) a.direction = std::atan2(dx, dy) / radians;
+                continue;
+            }
             if (runNativeMovement(task, b, call) || runNativeCombat(task, b, call)) continue;
             if (task.frames.size() > 512) throw std::runtime_error("Procedure stack limit");
             task.frames.push_back(std::move(call)); continue;
@@ -709,7 +732,7 @@ void Runtime::draw() {
             static_cast<std::size_t>(actor.costume) < definition.costumes.size();
         if (hasCostume) {
             const auto& name = definition.costumes[actor.costume].name;
-            if (name == "Crosshair" || name == "lonely game") return false;
+            if (name == "Crosshair" || name == "lonely game" || name == "Alone") return false;
         }
         if (definition.name != "[GAME UI]") return true;
         for (const auto& [id, name] : definition.variableNames) {

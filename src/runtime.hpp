@@ -102,6 +102,7 @@ public:
     const PlayerInput& playerInput() const { return mappedInput; }
     const CameraSystem& camera() const { return cameraSystem; }
     void useLegacyCombat(bool legacy) { nativeCombat = !legacy; }
+    void useClassicControls(bool classic) { classicControls = classic; }
     void useLegacyMovement(bool legacy) { nativeMovement = !legacy; }
     void useLegacyCamera(bool legacy) { nativeCamera = !legacy; }
     int matchSecondsRemaining() const;
@@ -177,6 +178,7 @@ private:
     std::string& weaponVariable(Actor& actor, std::string_view name);
     bool runNativeWeaponAction(Task& task, const Block& block);
     bool runNativeCombat(Task& task, const Block& block, Frame& call);
+    bool classicControls{};
     bool nativeMovement{true};
     bool runNativeMovement(Task& task, const Block& block, const Frame& frame);
     void playActorSound(Actor& actor, const Value& wanted);

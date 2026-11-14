@@ -7,6 +7,8 @@
 namespace bb {
 int testArsenalCombat(const std::filesystem::path& root) {
     Runtime native(root, true), legacy(root, true);
+    native.useClassicControls(true);
+    legacy.useClassicControls(true);
     native.load();
     legacy.load();
     legacy.useLegacyCombat(true);
@@ -64,6 +66,7 @@ int testArsenalCombat(const std::filesystem::path& root) {
 
 int testOpponentCombat(const std::filesystem::path& root) {
     Runtime runtime(root, true);
+    runtime.useClassicControls(true);
     runtime.load();
     runtime.setDeterministic(3005, 1793966460);
     runtime.greenFlag();

@@ -8,19 +8,21 @@
 
 namespace bb {
 namespace {
-constexpr Color ink{240, 246, 255, 255};
-constexpr Color muted{160, 179, 200, 255};
-constexpr Color accent{99, 240, 196, 255};
-constexpr Color surface{16, 27, 43, 245};
-constexpr Color track{52, 70, 90, 255};
-constexpr Rectangle primary{34, 233, 185, 39};
-constexpr Rectangle restart{34, 280, 185, 33};
-constexpr Rectangle hostButton{34, 182, 116, 37};
-constexpr Rectangle joinButton{161, 182, 116, 37};
-constexpr Rectangle lobbyAction{34, 259, 190, 38};
-constexpr Rectangle lobbyBack{237, 259, 130, 38};
-constexpr Rectangle loadoutBack{34, 285, 185, 33};
-constexpr Rectangle loadoutRow(int row) { return {34, static_cast<float>(95 + row * 59), 572, 48}; }
+constexpr Color ink{237, 242, 255, 255};
+constexpr Color muted{167, 182, 212, 255};
+constexpr Color accent{181, 255, 107, 255};
+constexpr Color background{12, 16, 31, 255};
+constexpr Color surface{24, 33, 55, 255};
+constexpr Color track{51, 66, 97, 255};
+constexpr Color outline{65, 81, 116, 255};
+constexpr Rectangle primary{48, 222, 135, 33};
+constexpr Rectangle restart{193, 222, 134, 33};
+constexpr Rectangle hostButton{362, 155, 105, 33};
+constexpr Rectangle joinButton{479, 155, 105, 33};
+constexpr Rectangle lobbyAction{282, 252, 156, 33};
+constexpr Rectangle lobbyBack{448, 252, 128, 33};
+constexpr Rectangle loadoutBack{24, 67, 126, 33};
+constexpr Rectangle loadoutRow(int slot) { return {static_cast<float>(24 + slot * 200), 140, 192, 150}; }
 
 void label(const std::string& value, float x, float y, float size, Color color = ink) {
     gfx::text(value.c_str(), x, y, size, color);
@@ -32,12 +34,27 @@ bool over(StagePoint pointer, Rectangle box) {
     return x >= box.x && x < box.x + box.width && y >= box.y && y < box.y + box.height;
 }
 
+void card(Rectangle box, Color fill = surface) {
+    gfx::rectangle(box.x, box.y, box.width, box.height, outline);
+    gfx::rectangle(box.x + 1, box.y + 1, box.width - 2, box.height - 2, fill);
+}
+
 void button(Rectangle box, const char* title, StagePoint pointer, bool main) {
     const bool hover = over(pointer, box);
-    const Color fill = main ? (hover ? ink : accent) : (hover ? track : surface);
-    gfx::rectangle(box.x, box.y, box.width, box.height, fill);
-    label(title, box.x + 14, box.y + 7, 15, main ? surface : ink);
+    if (main) gfx::rectangle(box.x, box.y, box.width, box.height, hover ? ink : accent);
+    else card(box, hover ? track : surface);
+    label(title, box.x + 13, box.y + 8, 13, main ? background : ink);
 }
+
+void pageHeader(const char* section) {
+    gfx::rectangle(0, 0, 640, 47, surface);
+    gfx::rectangle(0, 46, 640, 1, outline);
+    gfx::rectangle(24, 16, 22, 16, accent);
+    label("DX", 27, 16, 11, background);
+    label("Battle Bound", 54, 14, 14);
+    label(section, 504, 16, 11, muted);
+}
+
 }
 
 GameUi::GameUi(bool startInGame) : page(startInGame ? Page::Playing : Page::Title) {}
@@ -155,66 +172,88 @@ bool GameUi::update(Runtime& runtime, const RawInput& input) {
 }
 
 void GameUi::draw(Runtime& runtime) const {
+    if (page == Page::Playing) {
+        runtime.draw();
+        return;
+    }
+    if (page == Page::Paused) runtime.draw();
+    gfx::rectangle(0, 0, 640, 360, page == Page::Paused ? Color{12, 16, 31, 215} : background);
+
     if (page == Page::Lobby) {
-        gfx::rectangle(0, 0, 640, 360, {9, 16, 29, 255});
-        label("MULTIPLAYER / LAN", 34, 35, 11, accent);
-        label(hostLobby ? "Host a match" : "Join a match", 34, 53, 32);
+        pageHeader("Multiplayer");
+        label(hostLobby ? "Host a match" : "Join a match", 24, 88, 30);
+        label(hostLobby ? "Open a lobby on your local network." : "Connect to a lobby on your local network.", 24, 140, 12, muted);
+        label("Both players must ready up.", 24, 164, 12, muted);
+        card({264, 72, 332, 233});
+        label(hostLobby ? "Listen port" : "Host IPv4 address and port", 282, 87, 12);
+        card({282, 108, 294, 38}, background);
+        label(endpoint.empty() ? "_" : endpoint, 294, 116, 16);
         const auto state = lobby ? lobby->status() : LobbyStatus{};
-        gfx::rectangle(34, 107, 572, 128, surface);
-        label(hostLobby ? "LISTEN PORT" : "HOST IPV4 ADDRESS AND PORT", 49, 116, 10, muted);
-        label(endpoint.empty() ? "_" : endpoint, 49, 135, 18);
-        if (!lobbyError.empty()) label(lobbyError, 49, 183, 13, {255, 149, 149, 255});
-        else if (!lobby) label("Type to edit. Delete clears the field.", 49, 183, 12, muted);
+        if (!lobbyError.empty()) {
+            const auto wrap = lobbyError.size() > 46 ? lobbyError.rfind(' ', 46) : std::string::npos;
+            const auto message = wrap == std::string::npos ? lobbyError :
+                lobbyError.substr(0, wrap) + "\n" + lobbyError.substr(wrap + 1);
+            label(message, 282, 160, 11, {255, 149, 149, 255});
+        } else if (!lobby) label("Type to edit. Delete clears the field.", 282, 160, 11, muted);
         else if (state.peer.empty())
-            label(hostLobby ? "Waiting for a guest to join..." : "Connecting to host...", 49, 183, 14);
+            label(hostLobby ? "Waiting for a guest..." : "Connecting to host...", 282, 160, 13, accent);
         else {
-            label(lobby->isReady() ? "YOU  Ready" : "YOU  Waiting to ready up", 49, 177, 13, accent);
-            label("PEER  " + state.peer.substr(0, 28) + (state.peerReady ? "  Ready" : "  Waiting"), 49, 200, 13);
+            label(lobby->isReady() ? "You are ready" : "You are waiting to ready up", 282, 160, 13, accent);
+            label(state.peer.substr(0, 28) + (state.peerReady ? " is ready" : " is waiting"), 282, 184, 13);
         }
         const auto action = !lobby ? (hostLobby ? "Open lobby" : "Connect") :
             state.peer.empty() ? "Waiting..." : lobby->isReady() ? "Ready" : "Ready up";
         button(lobbyAction, action, pointer, !lobby || (!state.peer.empty() && !lobby->isReady()));
-        button(lobbyBack, "Back  /  Esc", pointer, false);
+        button(lobbyBack, "Back", pointer, false);
         return;
     }
     if (page == Page::Loadout) {
-        gfx::rectangle(0, 0, 640, 360, {9, 16, 29, 255});
-        label("OFFLINE LOADOUT", 34, 32, 28);
-        label("Click a slot or press 1, 2 or 3 to cycle its gear.", 34, 68, 11, muted);
-        constexpr const char* labels[]{"PRIMARY", "SECONDARY", "GADGET"};
+        pageHeader("Offline loadout");
+        button(loadoutBack, "<  Back to title", pointer, false);
+        label("Build your loadout", 224, 66, 27);
+        label("Click a card or use 1, 2 and 3 to cycle gear.", 226, 102, 12, muted);
+        constexpr const char* labels[]{"Primary", "Secondary", "Gadget"};
         for (int slot = 0; slot < 3; ++slot) {
             const auto row = loadoutRow(slot);
             const auto item = content::findItem(runtime.loadoutCode(slot));
-            gfx::rectangle(row.x, row.y, row.width, row.height, over(pointer, row) ? track : surface);
-            label(labels[slot], row.x + 14, row.y + 6, 9, accent);
-            label(item ? std::string(content::item(*item).name) : "Empty", row.x + 14, row.y + 20, 15);
-            label("NEXT >", row.x + row.width - 66, row.y + 17, 12, muted);
+            card(row, over(pointer, row) ? track : surface);
+            label(labels[slot], row.x + 14, row.y + 14, 12, accent);
+            label(item ? std::string(content::item(*item).name) : "Empty", row.x + 14, row.y + 49, 15);
+            gfx::rectangle(row.x + 14, row.y + 93, row.width - 28, 1, outline);
+            label("Change gear  >", row.x + 14, row.y + 108, 12, muted);
         }
-        button(loadoutBack, "Back  /  Esc", pointer, false);
         return;
     }
-    if (page != Page::Title) runtime.draw();
-    if (page == Page::Playing) return;
-    gfx::rectangle(0, 0, 640, 360, page == Page::Title ? Color{9, 16, 29, 255} : Color{9, 16, 29, 237});
-    gfx::rectangle(34, 42, 24, 3, accent);
-    label("BATTLE BOUND / DX", 34, 55, 12, accent);
-    label(page == Page::Title ? "Battle Bound" : "Paused", 31, 77, 44);
-    label(page == Page::Title ? "Solo or two-player LAN" : "Your match is on hold.", 34, 141, 17, muted);
-    gfx::rectangle(354, 50, 252, 262, surface);
-    label("CONTROLS", 374, 67, 12, accent);
-    constexpr const char* keys[]{"A / D", "W", "S", "Space", "Left click", "R", "Esc"};
-    constexpr const char* actions[]{"Move", "Jump", "Crouch", "Crawl / Dive", "Fire", "Reload", "Pause"};
-    for (int row = 0; row < 7; ++row) {
-        const auto y = static_cast<float>(99 + row * 27);
-        label(keys[row], 374, y, 13);
-        label(actions[row], 474, y, 13, muted);
-    }
-    if (page == Page::Title) {
+
+    const bool title = page == Page::Title;
+    pageHeader(title ? "Play" : "Paused");
+    card({24, 67, 320, 215});
+    gfx::rectangle(48, 90, 36, 3, accent);
+    label(title ? "Battle Bound DX" : "Match paused", 46, 101, 35);
+    label(title ? "Play offline or start a two-player LAN match." : "Resume play or restart the match.", 48, 153, 12, muted);
+    button(primary, title ? "Play offline" : "Resume", pointer, true);
+    button(restart, title ? "Loadout" : "Restart match", pointer, false);
+    if (title) {
+        card({350, 67, 266, 141});
+        label("Multiplayer", 362, 82, 21);
+        label("Connect over your local network.", 362, 118, 12, muted);
         button(hostButton, "Host", pointer, false);
         button(joinButton, "Join", pointer, false);
     }
-    button(primary, page == Page::Title ? "Play  /  Enter" : "Resume  /  Enter", pointer, true);
-    button(restart, page == Page::Paused ? "Restart match" : "Loadout", pointer, false);
+    const auto controlsY = title ? 218.0f : 67.0f;
+    card({350, controlsY, 266, title ? 64.0f : 215.0f});
+    label("Controls", 362, controlsY + 8, 13);
+    if (title) {
+        label("A / D  Move     W  Jump     Left click  Fire", 362, controlsY + 32, 11, muted);
+    } else {
+        constexpr const char* keys[]{"A / D", "W", "S", "Space", "Left click", "R", "Esc"};
+        constexpr const char* actions[]{"Move", "Jump", "Crouch", "Crawl / Dive", "Fire", "Reload", "Resume"};
+        for (int row = 0; row < 7; ++row) {
+            const auto y = controlsY + 36 + row * 23;
+            label(keys[row], 362, y, 12, accent);
+            label(actions[row], 470, y, 12, muted);
+        }
+    }
 }
 
 bool drawMatchPanel(const Runtime& runtime, std::string_view role, std::string_view costume,
@@ -232,7 +271,8 @@ bool drawMatchPanel(const Runtime& runtime, std::string_view role, std::string_v
              "Melee only?", "1v1?", "You killed me"}
         };
         const int page = std::clamp(static_cast<int>(runtime.namedValue(":Chat.Page").number()), 1, 4);
-        gfx::rectangle(x - 60, y - 100, 120, 200, surface);
+        card({x - 60, y - 100, 120, 200});
+        gfx::rectangle(x - 59, y - 77, 118, 1, outline);
         label("QUICK CHAT", x - 52, y - 94, 9, accent);
         for (int row = 0; row < 9; ++row)
             label(std::to_string(row + 1) + "  " + phrases[page - 1][row], x - 52, y - 75 + row * 16, 9);
@@ -242,13 +282,14 @@ bool drawMatchPanel(const Runtime& runtime, std::string_view role, std::string_v
     if (role == "vote" && digit >= 1 && digit <= 4) {
         const auto& mode = content::matches()[digit - 1];
         const bool selected = runtime.namedValue("::VALG").number() == digit;
-        gfx::rectangle(x - 48, y - 24, 96, 48, selected ? track : surface);
+        card({x - 48, y - 24, 96, 48}, selected ? track : surface);
         label(std::string(mode.name), x - 41, y - 16, 10);
         label(selected ? "SELECTED" : "VOTE", x - 41, y + 3, 8, accent);
         return true;
     }
     if (role == "game result") {
-        gfx::rectangle(208, 130, 224, 82, surface);
+        card({208, 130, 224, 82});
+        gfx::rectangle(209, 131, 222, 2, accent);
         label("MATCH COMPLETE", 227, 144, 11, accent);
         const char* result = info == "1w" ? "Team 1 wins" : info == "2w" ? "Team 2 wins" :
                              info == "e" ? "Draw" : info == "mg" ? "Match ended" : "Round ended";
@@ -265,48 +306,49 @@ void drawGameHud(const Runtime& runtime) {
     const bool helicopter = runtime.namedValue("::[Spiller-action]").text == "heli";
     const auto health = std::max(0.0, number(helicopter ? "::Helicopter HP" : "::Spiller-liv"));
     const auto maximum = helicopter ? 500.0 : 100.0;
-    gfx::rectangle(14, 299, 152, 47, surface);
-    label(helicopter ? "AIRFRAME" : "HEALTH", 24, 304, 9, muted);
-    label(std::to_string(static_cast<int>(std::ceil(health))), 24, 315, 16);
-    gfx::rectangle(66, 324, 90, 4, track);
-    gfx::rectangle(66, 324, static_cast<float>(90 * std::clamp(health / maximum, 0.0, 1.0)), 4,
+    card({14, 304, 142, 42});
+    label(helicopter ? "AIRFRAME" : "HEALTH", 24, 307, 9, muted);
+    label(std::to_string(static_cast<int>(std::ceil(health))), 24, 318, 16);
+    gfx::rectangle(66, 327, 78, 4, track);
+    gfx::rectangle(66, 327, static_cast<float>(78 * std::clamp(health / maximum, 0.0, 1.0)), 4,
                    health < maximum / 4 ? Color{255, 110, 115, 255} : accent);
 
     const auto id = content::findItem(runtime.namedValue("::Våpen holdt").text);
-    gfx::rectangle(474, 299, 152, 47, surface);
-    label(id ? std::string(content::item(*id).name) : "Weapon", 484, 304, 10, muted);
+    card({484, 304, 142, 42});
+    label(id ? std::string(content::item(*id).name) : "Weapon", 494, 307, 10, muted);
     const auto ammo = number("::Ammonisjon");
     const auto capacity = number("Magazine size");
     if (capacity > 0) {
         label(std::to_string(static_cast<int>(std::max(0.0, ammo))) + " / " +
-              std::to_string(static_cast<int>(capacity)), 484, 317, 15);
+              std::to_string(static_cast<int>(capacity)), 494, 320, 15);
     }
     if (number("Reload Spin") > 0) label("RELOAD", 572, 323, 8, accent);
 
-    gfx::rectangle(253, 14, 134, 34, surface);
+    card({232, 12, 176, 37});
     const auto mode = number(";Spill-Modus");
     for (const auto& match : content::matches())
-        if (mode == static_cast<int>(match.id)) label(std::string(match.name), 262, 17, 11);
+        if (mode == static_cast<int>(match.id)) label(std::string(match.name), 244, 16, 12);
     label(runtime.networkMatch() ? "LAN MATCH" : "KILLS  " +
-          std::to_string(static_cast<int>(number("::draphehe"))), 262, 31, 9, accent);
+          std::to_string(static_cast<int>(number("::draphehe"))), 244, 32, 9, accent);
     const auto time = runtime.matchSecondsRemaining();
     const auto seconds = time % 60;
     label(std::to_string(time / 60) + ":" + (seconds < 10 ? "0" : "") +
-          std::to_string(seconds), 350, 31, 9, muted);
+          std::to_string(seconds), 372, 27, 11, muted);
     label(number("#PlayersOnline") <= 1 ? "SOLO" : "PLAYERS  " +
           std::to_string(static_cast<int>(number("#PlayersOnline"))), 14, 15, 9, muted);
     if (const auto* match = runtime.networkMatch()) {
-        gfx::rectangle(478, 14, 148, 33, surface);
+        card({478, 12, 148, 37});
         label("ROUND " + std::to_string(match->round) + "  /  MAP " + std::to_string(match->map), 488, 17, 10, muted);
         label("HOST " + std::to_string(match->hostScore) + "   GUEST " + std::to_string(match->guestScore),
               488, 31, 10, accent);
         if (match->phase == MatchPhase::Countdown) {
-            gfx::rectangle(250, 74, 140, 40, surface);
+            card({250, 74, 140, 40});
             label("MATCH STARTS IN " + std::to_string(runtime.matchSecondsRemaining()), 263, 83, 13, accent);
         } else if (match->phase == MatchPhase::Finished) {
             const auto winner = match->hostScore == match->guestScore ? "Draw" :
                 match->hostScore > match->guestScore ? "Host wins" : "Guest wins";
-            gfx::rectangle(189, 104, 262, 136, surface);
+            card({189, 104, 262, 136});
+            gfx::rectangle(190, 105, 260, 2, accent);
             label(winner, 208, 119, 24, accent);
             label("Enter to ready for a rematch", 208, 159, 14);
             label(std::string("Host ") + (match->hostReady ? "ready" : "waiting") +
@@ -318,7 +360,7 @@ void drawGameHud(const Runtime& runtime) {
     }
 
     if (number(":Kart Åpent") > 0) {
-        gfx::rectangle(220, 55, 200, 22, surface);
+        card({220, 55, 200, 22});
         label("TACTICAL MAP", 232, 58, 10, accent);
         label("M  CLOSE", 361, 59, 8, muted);
         return;
@@ -326,8 +368,9 @@ void drawGameHud(const Runtime& runtime) {
     constexpr const char* slots[]{"PRIMARY", "SECONDARY", "GADGET"};
     const int activeSlot = static_cast<int>(number("inventory scroll"));
     for (int slot = 0; slot < 3; ++slot) {
-        const auto left = static_cast<float>(206 + slot * 77);
-        gfx::rectangle(left, 321, 73, 25, activeSlot == slot + 1 ? track : surface);
+        const auto left = static_cast<float>(191 + slot * 87);
+        card({left, 319, 83, 27}, activeSlot == slot + 1 ? track : surface);
+        if (activeSlot == slot + 1) gfx::rectangle(left + 1, 320, 81, 2, accent);
         label(std::to_string(slot + 1) + "  " + slots[slot], left + 6, 326, 9,
               activeSlot == slot + 1 ? accent : muted);
     }

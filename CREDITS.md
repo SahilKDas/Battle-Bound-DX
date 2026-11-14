@@ -81,7 +81,7 @@ credits document are embedded in the standalone executable. They are not
 relicensed as project content. Build-only tools include Python and PyMuPDF; their packages
 are not included in the game executable or copied into this repository.
 
-The native port now defaults to a windowed 1280×720 viewport, uses 2× SVG-derived
+The native port now defaults to a windowed 1920×1080 viewport, uses 2× SVG-derived
 textures and packages assets inside the executable without runtime extraction.
 The original asset files remain unchanged.
 

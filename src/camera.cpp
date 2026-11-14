@@ -13,8 +13,9 @@ StagePoint Viewport::pixelToStage(PixelPoint point, bool clampToViewport) const 
     if (pixelWidth <= 0 || pixelHeight <= 0 || logicalWidth <= 0 || logicalHeight <= 0) {
         throw std::invalid_argument("Viewport dimensions must be positive");
     }
-    StagePoint result{point.x * logicalWidth / pixelWidth - logicalWidth / 2,
-                      logicalHeight / 2 - point.y * logicalHeight / pixelHeight};
+    const auto scale = std::min(pixelWidth / logicalWidth, pixelHeight / logicalHeight);
+    StagePoint result{(point.x - pixelWidth / 2) / scale,
+                      (pixelHeight / 2 - point.y) / scale};
     if (clampToViewport) {
         result.x = std::clamp(result.x, -logicalWidth / 2, logicalWidth / 2);
         result.y = std::clamp(result.y, -logicalHeight / 2, logicalHeight / 2);
@@ -23,8 +24,8 @@ StagePoint Viewport::pixelToStage(PixelPoint point, bool clampToViewport) const 
 }
 
 PixelPoint Viewport::stageToPixel(StagePoint point) const {
-    const auto logical = stageToLogical(point);
-    return {logical.x * pixelWidth / logicalWidth, logical.y * pixelHeight / logicalHeight};
+    const auto scale = std::min(pixelWidth / logicalWidth, pixelHeight / logicalHeight);
+    return {pixelWidth / 2 + point.x * scale, pixelHeight / 2 - point.y * scale};
 }
 
 PixelPoint Viewport::stageToLogical(StagePoint point) const {
@@ -112,6 +113,12 @@ void testCameraSystem() {
             "Fractional viewport coordinates must round-trip");
     require(viewport.pixelToStage({0, 0}).x == -320 &&
             viewport.pixelToStage({1920, 1080}).y == -180, "Viewport corners");
+    const Viewport tall{1280, 1000};
+    const Viewport wide{1600, 720};
+    require(tall.stageToPixel({-320, 180}).y == 140 &&
+            tall.pixelToStage({1280, 860}).y == -180, "Tall window letterboxes the viewport");
+    require(wide.stageToPixel({-320, 180}).x == 160 &&
+            wide.pixelToStage({1440, 720}).x == 320, "Wide window pillarboxes the viewport");
     CameraSystem camera;
     camera.reset({{100.25, -20.5}, {}, 0});
     auto world = camera.stageToWorld({3.5, 4.25});
