@@ -76,6 +76,10 @@ The game starts at a 60 FPS cap. Use `--fps 144` to set a launch cap or
 The Vulkan device can fall back to FIFO when it offers no other present mode.
 
 From the title screen, choose **Host** or **Join** to open the LAN lobby.
+The host can use **Copy address** to share the current IPv4 address and port.
+Use **Next** to select a different network adapter if several are available.
+The guest can paste the address with Ctrl+V. If either player disconnects,
+the other returns to the lobby with their previous endpoint ready to retry.
 The host opens a port and the guest enters the host's IPv4 address and port.
 Once connected, both players choose **Ready up**. The match starts when both
 are ready. Connection errors appear in the lobby, where you can retry or go

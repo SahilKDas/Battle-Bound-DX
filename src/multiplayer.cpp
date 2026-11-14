@@ -1,5 +1,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <iphlpapi.h>
+#include <algorithm>
 #include "multiplayer.hpp"
 #include <array>
 #include <cmath>
@@ -10,6 +12,33 @@
 #include <stdexcept>
 
 namespace bb {
+std::vector<std::string> lanAddresses() {
+    unsigned long bytes = 15 * 1024;
+    constexpr unsigned flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST |
+                               GAA_FLAG_SKIP_DNS_SERVER;
+    for (int attempt = 0; attempt < 3; ++attempt) {
+        std::vector<unsigned long long> storage((bytes + sizeof(unsigned long long) - 1) /
+                                                sizeof(unsigned long long));
+        auto* adapters = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(storage.data());
+        const auto result = GetAdaptersAddresses(AF_INET, flags, nullptr, adapters, &bytes);
+        if (result == ERROR_BUFFER_OVERFLOW) continue;
+        if (result != NO_ERROR) break;
+        std::vector<std::string> addresses;
+        for (auto* adapter = adapters; adapter; adapter = adapter->Next) {
+            if (adapter->OperStatus != IfOperStatusUp || adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK) continue;
+            for (auto* entry = adapter->FirstUnicastAddress; entry; entry = entry->Next) {
+                if (!entry->Address.lpSockaddr || entry->Address.iSockaddrLength < static_cast<int>(sizeof(sockaddr_in)) ||
+                    entry->Address.lpSockaddr->sa_family != AF_INET) continue;
+                const auto& address = reinterpret_cast<const sockaddr_in*>(entry->Address.lpSockaddr)->sin_addr;
+                char text[INET_ADDRSTRLEN]{};
+                if (InetNtopA(AF_INET, &address, text, sizeof(text)) &&
+                    std::find(addresses.begin(), addresses.end(), text) == addresses.end()) addresses.emplace_back(text);
+            }
+        }
+        return addresses;
+    }
+    return {};
+}
 namespace {
 constexpr std::size_t maxFrame = 8192;
 constexpr std::size_t maxAttacks = 16;

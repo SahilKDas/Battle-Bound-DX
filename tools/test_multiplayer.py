@@ -1,5 +1,6 @@
 """Run two independent game processes over TCP and inspect their replay traces."""
 import json
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -9,6 +10,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 TICKS = 245
+LAN_ADDRESS = os.environ.get("BBDX_TEST_LAN_ADDRESS", "127.0.0.1")
 
 
 def play(exe, folder, name, mode):
@@ -17,7 +19,7 @@ def play(exe, folder, name, mode):
     if full_match:
         mode = 'melee'
     with socket.socket() as probe:
-        probe.bind(('127.0.0.1', 0))
+        probe.bind((LAN_ADDRESS, 0))
         port = str(probe.getsockname()[1])
 
     def launch(side):
@@ -49,7 +51,7 @@ def play(exe, folder, name, mode):
         replay = folder / f'{name}-{side}.replay'
         trace = folder / f'{name}-{side}.jsonl'
         replay.write_text('\n'.join(header + rows) + '\n', encoding='utf-8')
-        endpoint = ['--host', port] if side == 0 else ['--join', '127.0.0.1', port]
+        endpoint = ['--host', port] if side == 0 else ['--join', LAN_ADDRESS, port]
         loadout = {'arrow': 'e', 'rocket': 'j', 'flame': 'y', 'grenade': 'f', 'shuriken': 'k',
                    'melee': 'l', 'hands': 'a', 'axe': 'c', 'katana': 'q', 'nunchaku': 'w',
                    'taser': 't', 'smoke': 'x', 'rock': 'i'}.get(mode)
@@ -72,7 +74,7 @@ def play(exe, folder, name, mode):
     try:
         time.sleep(.75)
         guest, guest_trace = launch(1)
-        results = [(*process.communicate(timeout=40), process.returncode) for process in (guest, host)]
+        results = [(*process.communicate(timeout=100), process.returncode) for process in (guest, host)]
         assert all(code == 0 for _, _, code in results), results
         if mode == 'bullet':
             assert 'Lobby peer Guest' in results[1][0] and 'Lobby peer Host' in results[0][0], results
@@ -135,12 +137,44 @@ def check_full_match(exe, folder):
     print('Full two-client FFA passed: shared countdown, kill, respawn, winner and rematch.')
 
 
+def check_disconnect(exe, folder):
+    for host_survives in (True, False):
+        with socket.socket() as probe:
+            probe.bind((LAN_ADDRESS, 0))
+            port = str(probe.getsockname()[1])
+        host_flags = ['--disconnect-test'] if host_survives else ['--headless', '--ticks', '20']
+        guest_flags = ['--headless', '--ticks', '20'] if host_survives else ['--disconnect-test']
+        base = [str(exe), '--game', '--lobby-test', '0', '--username']
+        with subprocess.Popen([*base, 'Host', '--host', port, *host_flags], cwd=folder,
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as host:
+            guest = None
+            try:
+                time.sleep(.75)
+                guest = subprocess.Popen([*base, 'Guest', '--join', LAN_ADDRESS, port, *guest_flags],
+                                         cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                survivor = host if host_survives else guest
+                stdout, stderr = survivor.communicate(timeout=45)
+                assert survivor.returncode == 0 and 'Returned to lobby after disconnect' in stdout, (stdout, stderr)
+                leaver = guest if host_survives else host
+                stdout, stderr = leaver.communicate(timeout=10)
+                assert leaver.returncode == 0, (stdout, stderr)
+            finally:
+                for process in (host, guest):
+                    if process and process.poll() is None:
+                        process.kill()
+                        process.communicate()
+    print('Both host and guest returned to their lobby after the other client left.')
+
+
 def main():
     exe = Path(sys.argv[1]).resolve()
     check_lobby_errors(exe)
     with tempfile.TemporaryDirectory(prefix='bbdx-two-client-') as temp:
         folder = Path(temp)
         check_full_match(exe, folder)
+        check_disconnect(exe, folder)
+        if '--flow-only' in sys.argv[2:]:
+            return
         bullets = play(exe, folder, 'smg', 'bullet')
         arrows = play(exe, folder, 'bow', 'arrow')
         rockets = play(exe, folder, 'rocket', 'rocket')

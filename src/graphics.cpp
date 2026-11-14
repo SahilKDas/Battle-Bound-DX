@@ -658,6 +658,11 @@ bool mouseDown(int button) { return glfwGetMouseButton(state.window, button) == 
 float mouseX() { double x{}, y{}; glfwGetCursorPos(state.window, &x, &y); return static_cast<float>(x); }
 float mouseY() { double x{}, y{}; glfwGetCursorPos(state.window, &x, &y); return static_cast<float>(y); }
 float mouseWheel() { return state.wheel; }
+void copyText(const std::string& text) { glfwSetClipboardString(state.window, text.c_str()); }
+std::string clipboardText() {
+    const auto* value = glfwGetClipboardString(state.window);
+    return value ? value : "";
+}
 int nextCharacter() { if (state.characters.empty()) return 0; int c = state.characters.front(); state.characters.pop_front(); return c; }
 int width() { int w{}, h{}; glfwGetWindowSize(state.window, &w, &h); return w; }
 int height() { int w{}, h{}; glfwGetWindowSize(state.window, &w, &h); return h; }

@@ -15,6 +15,7 @@ public:
     std::unique_ptr<PeerConnection> takeLobbyConnection();
     bool hosting() const { return hostLobby; }
     void showConnectionError(std::string message);
+    void returnToLobby(bool host, std::string address, unsigned port, std::string message);
 
 private:
     enum class Page { Title, Loadout, Lobby, Playing, Paused, Settings, Controls };
@@ -26,6 +27,10 @@ private:
     StagePoint pointer;
     bool hostLobby{};
     std::string endpoint, lobbyError;
+    std::vector<std::string> hostAddresses;
+    std::size_t hostAddressIndex{};
+    bool addressCopied{};
+    std::string hostInvite() const;
     std::unique_ptr<LobbySession> lobby;
     bool mouseHeld{}, waitForMouseRelease{};
 };

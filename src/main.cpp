@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
         std::uint32_t seed = 3005;
         std::int64_t epoch = 1793966460;
         bool deterministic = false, clockOverride = false, showCredits = false;
-        bool classicControls = false;
+        bool classicControls = false, disconnectTest = false;
         bool arsenalCheck = false, opponentCheck = false, legacyCombat = false, legacyMovement = false, legacyCamera = false, cameraCheck = false;
         std::filesystem::path replayPath, recordPath, tracePath, systemsPath;
         std::string username = "DX_Player";
@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
             }
             else if (arg == "--vsync") vsync = true;
             else if (arg == "--audio") unmuted = true;
+            else if (arg == "--disconnect-test") disconnectTest = true;
             else if (arg == "--render-smoke") renderSmoke = true;
             else if (arg == "--exercise") { exercise = true; game = true; }
             else if (arg == "--ticks" && i + 1 < argc) ticks = parseInteger<int>(argv[++i]);
@@ -92,7 +93,9 @@ int main(int argc, char** argv) {
             else if (arg == "--systems-trace" && i + 1 < argc) { systemsPath = argv[++i]; deterministic = true; game = true; }
             else throw std::runtime_error("Unknown or incomplete option: " + arg);
         }
-        if (renderSmoke) headless = false;
+        if (renderSmoke || disconnectTest) headless = false;
+        if (disconnectTest && (renderSmoke || !peerPort || lobbyDelay < 0))
+            throw std::runtime_error("Disconnect test requires a lobby endpoint");
         if (!roundSeconds || roundSeconds > 600) throw std::runtime_error("Round duration must be 1..600 seconds");
         if (fps < 0 || fps > 1000) throw std::runtime_error("FPS must be 0..1000");
         if (ticks < 1 || ticks > 10000) throw std::runtime_error("Ticks must be 1..10000");
@@ -129,7 +132,7 @@ int main(int argc, char** argv) {
         if (peerPort && legacyCombat) throw std::runtime_error("Multiplayer requires native combat");
         std::unique_ptr<bb::PeerConnection> connection;
         if (lobbyDelay >= 0) {
-            if (!peerPort || (!headless && !renderSmoke) || lobbyDelay > 10000) throw std::runtime_error("Invalid lobby test configuration");
+            if (!peerPort || (!headless && !renderSmoke && !disconnectTest) || lobbyDelay > 10000) throw std::runtime_error("Invalid lobby test configuration");
             bb::LobbySession lobby(peerPort, peerHost, username);
             auto connected = std::chrono::steady_clock::time_point{};
             const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(40);
@@ -153,7 +156,7 @@ int main(int argc, char** argv) {
             if (!connection) throw std::runtime_error("Lobby ready-up timed out");
             std::cout << "Both players ready\n";
         } else if (peerPort) connection = std::make_unique<bb::PeerConnection>(peerPort, peerHost);
-        const bool usePreferences = !headless && !renderSmoke && !deterministic;
+        const bool usePreferences = !headless && !renderSmoke && !disconnectTest && !deterministic;
         const auto settingsPath = usePreferences ? bb::preferencesPath() : std::filesystem::path{};
         auto preferences = usePreferences ? bb::loadPreferences(settingsPath) : bb::Preferences{};
         if (sampleOverride) preferences.samples = sampleOverride;
@@ -168,7 +171,7 @@ int main(int argc, char** argv) {
         if (!headless) {
             bb::gfx::setVsync(vsync);
             bb::gfx::setAntialiasing(preferences.samples);
-            bb::gfx::initialize(1920, 1080, "Battle Bound DX | Vulkan", renderSmoke);
+            bb::gfx::initialize(1920, 1080, "Battle Bound DX | Vulkan", renderSmoke || disconnectTest);
             bb::gfx::setFrameRate(renderSmoke ? 0 : fps);
             if (preferences.maximized) bb::gfx::setMaximized(true);
             if (unmuted) {
@@ -290,13 +293,18 @@ int main(int argc, char** argv) {
                 auto previous = Clock::now();
                 bb::RawInput buffered;
                 bool suppressReadyClick = false;
+                bool returnedToLobby = false;
+                bool commandLinePeer = connection != nullptr;
                 constexpr std::array caps{30, 60, 120, 144, 0};
                 const auto drawSettings = [&](float y) {
                     const auto display = "F7 " + (fps ? std::to_string(fps) : "Unlimited") +
                         (vsync ? " FPS / F8 VSync on" : " FPS / F8 VSync off");
                     bb::gfx::text(display.c_str(), 14, y, 8, WHITE);
                 };
+                const auto disconnectDeadline = Clock::now() + std::chrono::seconds(25);
                 while (!bb::gfx::shouldClose()) {
+                    if (disconnectTest && Clock::now() > disconnectDeadline)
+                        throw std::runtime_error("Timed out waiting for peer disconnect");
                     if ((!recordPath.empty() || trace || systemsTrace) && tick >= static_cast<std::size_t>(ticks)) break;
                     const auto now = Clock::now();
                     accumulator = std::min(accumulator + std::chrono::duration<double>(now - previous).count(),
@@ -319,11 +327,12 @@ int main(int argc, char** argv) {
                         suppressReadyClick = physical.primaryMouse;
                         physical.primaryMouse = false;
                     }
-                    const bool advanceGameplay = connection || deterministic || ui.update(runtime, physical);
+                    const bool advanceGameplay = connection || (deterministic && !returnedToLobby) || ui.update(runtime, physical);
                     if (usePreferences) applyPreferences();
                     if (!advanceGameplay) {
                         if (auto joined = ui.takeLobbyConnection()) {
                             connection = std::move(joined);
+                            commandLinePeer = false;
                             suppressReadyClick = physical.primaryMouse;
                             if (runtime.username == "DX_Player") runtime.username = ui.hosting() ? "Host" : "Guest";
                             runtime.setDeterministic(static_cast<std::uint32_t>(connection->epoch()) ^
@@ -357,7 +366,10 @@ int main(int argc, char** argv) {
                             if (!connection) throw;
                             connection.reset();
                             runtime.disableMultiplayer();
-                            ui.showConnectionError(error.what());
+                            ui.returnToLobby(peerHost.empty(), peerHost, commandLinePeer ? peerPort : 0,
+                                             error.what());
+                            returnedToLobby = true;
+                            runtime.username = username;
                             accumulator = 0;
                             buffered = {};
                             break;
@@ -376,8 +388,12 @@ int main(int argc, char** argv) {
                     runtime.setRenderBlend(std::clamp(accumulator / step, 0.0, 1.0));
                     bb::gfx::beginFrame();
                     ui.draw(runtime);
-                    drawSettings(30);
+                    if (connection || !returnedToLobby) drawSettings(30);
                     bb::gfx::endFrame();
+                    if (disconnectTest && returnedToLobby) {
+                        std::cout << "Returned to lobby after disconnect\n";
+                        break;
+                    }
                 }
                 std::cout << runtime.diagnostics() << '\n';
             }
@@ -391,7 +407,7 @@ int main(int argc, char** argv) {
     } catch (const std::exception& error) {
         std::cerr << "Battle Bound DX: " << error.what() << '\n';
         bool diagnostic = false;
-        for (int i = 1; i < argc; ++i) if (std::string(argv[i]) == "--headless" || std::string(argv[i]) == "--self-test") diagnostic = true;
+        for (int i = 1; i < argc; ++i) if (std::string(argv[i]) == "--headless" || std::string(argv[i]) == "--self-test" || std::string(argv[i]) == "--disconnect-test") diagnostic = true;
         if (!diagnostic) bb::showStartupError(error.what());
         return 1;
     }

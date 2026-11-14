@@ -24,7 +24,7 @@ target_include_directories(battle_bound_dx PRIVATE ${RAYLIB_INCLUDE_DIR} ${VULKA
 target_link_libraries(battle_bound_dx PRIVATE ${RAYLIB_LIBRARY} ${GLFW_LIBRARY})
 if(WIN32)
   target_link_options(battle_bound_dx PRIVATE -static -static-libgcc -static-libstdc++)
-  target_link_libraries(battle_bound_dx PRIVATE winmm gdi32 opengl32 user32 shell32 ws2_32)
+  target_link_libraries(battle_bound_dx PRIVATE winmm gdi32 opengl32 user32 shell32 ws2_32 iphlpapi)
 endif()
 enable_testing()
 add_test(NAME native_self_test COMMAND battle_bound_dx --self-test)

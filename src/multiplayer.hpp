@@ -7,6 +7,7 @@
 #include <stop_token>
 
 namespace bb {
+std::vector<std::string> lanAddresses();
 enum class RemoteAttack : unsigned {
     Bullet, Arrow, Shuriken, Rocket, Grenade, Rock, Flame, Melee, Taser, Smoke
 };

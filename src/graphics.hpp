@@ -1,5 +1,6 @@
 #pragma once
 #include <raylib.h>
+#include <string>
 
 namespace bb::gfx {
 void initialize(int width, int height, const char* title, bool hidden);
@@ -19,6 +20,8 @@ float mouseX();
 float mouseY();
 float mouseWheel();
 int nextCharacter();
+void copyText(const std::string& text);
+std::string clipboardText();
 int width();
 int height();
 Texture2D upload(Image image);

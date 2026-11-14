@@ -31,6 +31,8 @@ constexpr Rectangle primary{48, 222, 135, 33};
 constexpr Rectangle restart{193, 222, 134, 33};
 constexpr Rectangle hostButton{362, 155, 105, 33};
 constexpr Rectangle joinButton{479, 155, 105, 33};
+constexpr Rectangle copyAddress{24, 204, 146, 30};
+constexpr Rectangle nextAddress{179, 204, 66, 30};
 constexpr Rectangle lobbyAction{282, 252, 156, 33};
 constexpr Rectangle lobbyBack{448, 252, 128, 33};
 constexpr Rectangle loadoutBack{24, 67, 126, 33};
@@ -87,6 +89,25 @@ void GameUi::showConnectionError(std::string message) {
     lobby.reset();
     lobbyError = std::move(message);
     page = Page::Lobby;
+}
+
+void GameUi::returnToLobby(bool host, std::string address, unsigned port, std::string message) {
+    if (port) {
+        hostLobby = host;
+        endpoint = host ? std::to_string(port) : std::move(address) + ":" + std::to_string(port);
+    }
+    if (hostLobby) hostAddresses = lanAddresses();
+    hostAddressIndex = 0;
+    addressCopied = false;
+    showConnectionError(std::move(message));
+}
+
+std::string GameUi::hostInvite() const {
+    unsigned port{};
+    const auto parsed = std::from_chars(endpoint.data(), endpoint.data() + endpoint.size(), port);
+    if (hostAddresses.empty() || parsed.ec != std::errc{} ||
+        parsed.ptr != endpoint.data() + endpoint.size() || !port || port > 65535) return {};
+    return hostAddresses[hostAddressIndex] + ":" + std::to_string(port);
 }
 
 bool GameUi::update(Runtime& runtime, const RawInput& input) {
@@ -146,6 +167,9 @@ bool GameUi::update(Runtime& runtime, const RawInput& input) {
     if (page == Page::Title && clicked && (over(pointer, hostButton) || over(pointer, joinButton))) {
         hostLobby = over(pointer, hostButton);
         endpoint = hostLobby ? "37026" : "127.0.0.1:37026";
+        if (hostLobby) hostAddresses = lanAddresses();
+        hostAddressIndex = 0;
+        addressCopied = false;
         lobbyError.clear();
         while (gfx::nextCharacter() > 0) {}
         page = Page::Lobby;
@@ -157,12 +181,39 @@ bool GameUi::update(Runtime& runtime, const RawInput& input) {
             page = Page::Title;
             return false;
         }
+        if (hostLobby && clicked) {
+            if (over(pointer, nextAddress) && hostAddresses.size() > 1) {
+                hostAddressIndex = (hostAddressIndex + 1) % hostAddresses.size();
+                addressCopied = false;
+                return false;
+            }
+            if (over(pointer, copyAddress)) {
+                const auto invite = hostInvite();
+                if (!invite.empty()) {
+                    gfx::copyText(invite);
+                    addressCopied = true;
+                }
+                return false;
+            }
+        }
         if (lobby) {
             const auto state = lobby->status();
             if (!state.error.empty()) showConnectionError(state.error);
             else if (!state.peer.empty() && (gfx::keyPressed(KEY_ENTER) || (clicked && over(pointer, lobbyAction))))
                 lobby->ready();
             return false;
+        }
+        const auto previousEndpoint = endpoint;
+        if (!hostLobby && gfx::keyPressed(KEY_V) &&
+            (gfx::keyDown(KEY_LEFT_CONTROL) || gfx::keyDown(KEY_RIGHT_CONTROL))) {
+            const auto clipboard = gfx::clipboardText();
+            const auto first = clipboard.find_first_not_of(" \t\r\n");
+            const auto last = clipboard.find_last_not_of(" \t\r\n");
+            if (first != std::string::npos) {
+                const auto address = clipboard.substr(first, last - first + 1);
+                if (address.size() <= 21 && address.find_first_not_of("0123456789.:") == std::string::npos)
+                    endpoint = address;
+            }
         }
         for (int character; (character = gfx::nextCharacter()) > 0;) {
             if (endpoint.size() < 21 && ((character >= '0' && character <= '9') ||
@@ -171,6 +222,7 @@ bool GameUi::update(Runtime& runtime, const RawInput& input) {
         }
         if (gfx::keyPressed(KEY_BACKSPACE) && !endpoint.empty()) endpoint.pop_back();
         if (gfx::keyPressed(KEY_DELETE)) endpoint.clear();
+        if (endpoint != previousEndpoint) addressCopied = false;
         if (gfx::keyPressed(KEY_ENTER) || (clicked && over(pointer, lobbyAction))) {
             const auto colon = endpoint.find(':');
             const std::string_view value(endpoint);
@@ -286,7 +338,12 @@ void GameUi::draw(Runtime& runtime) const {
         pageHeader("Multiplayer");
         label(hostLobby ? "Host a match" : "Join a match", 24, 88, 30);
         label(hostLobby ? "Open a lobby on your local network." : "Connect to a lobby on your local network.", 24, 140, 12, muted);
-        label("Both players must ready up.", 24, 164, 12, muted);
+        if (hostLobby) {
+            const auto invite = hostInvite();
+            label(invite.empty() ? "No LAN address for this port" : invite, 24, 170, 14, accent);
+            if (!invite.empty()) button(copyAddress, addressCopied ? "Copied" : "Copy address", pointer, true);
+            if (hostAddresses.size() > 1) button(nextAddress, "Next", pointer, false);
+        } else label("Paste the host address with Ctrl+V.", 24, 164, 12, muted);
         card({264, 72, 332, 233});
         label(hostLobby ? "Listen port" : "Host IPv4 address and port", 282, 87, 12);
         card({282, 108, 294, 38}, background);
